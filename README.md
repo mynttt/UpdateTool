@@ -37,7 +37,7 @@ There are two modes:
 - Normal mode:
 
 ```bash
-java -jar ImdbUpdater-xxx.jar <PlexRoot> <ApiKey>
+java -jar ImdbUpdater-xxx.jar <PlexData> <ApiKey>
 ```
 
 - DB mode:
@@ -48,12 +48,14 @@ java -jar ImdbUpdater-xxx.jar dbmode <DbPath> <ApiKey>
 
 ```bash
 # Parameters
-<PlexRoot> is the path that points to the PlexMediaServer directory i.e. /mnt/user/appdata/PlexMediaServer
+<PlexData> is the path that points to the Plex Media Server folder which contains folders like Cache, Metadata and Plug-ins
 <DbPath> is the database that plex uses usually named com.plexapp.plugins.library.db
 <ApiKey> is an APIKey for the OMDB service https://www.omdbapi.com/
 
 The free option only allows for 1000 requests every 24h. That is not a problem, the tool will halt, persist the state can thus be resumed again when the limit expires. The owner offers a paid 1$ per Month 100000 requests / 24h option that might be attractive to users with larger libraries.
 ```
+
+[Where is the data folder of the Plex Media Server located on my system?](https://support.plex.tv/articles/202915258-where-is-the-plex-media-server-data-directory-located/)
 
 You can either build the tool yourself using the command below in the root folder or get it [here](https://github.com/mynttt/PlexImdbUpdateTool/releases/tag/1.0.2) as an already packaged .jar file.
 ```bash
