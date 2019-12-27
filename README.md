@@ -63,6 +63,7 @@ java -jar ImdbUpdater-1.0.3.jar "/mnt/data/Plex Media Server" abcdefg
 
 # Database only mode
 java -jar ImdbUpdater-1.0.3.jar dbmode "mnt/data/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db" abcdefg
+```
 
 [Where is the data folder of the Plex Media Server located on my system?](https://support.plex.tv/articles/202915258-where-is-the-plex-media-server-data-directory-located/)
 
