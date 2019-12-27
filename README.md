@@ -37,13 +37,13 @@ There are two modes:
 - Normal mode:
 
 ```bash
-java -jar ImdbUpdater-1.0.0.jar <PlexRoot> <ApiKey>
+java -jar ImdbUpdater-xxx.jar <PlexRoot> <ApiKey>
 ```
 
 - DB mode:
 
 ```bash
-java -jar ImdbUpdater-1.0.0 dbmode <DbPath> <ApiKey>
+java -jar ImdbUpdater-xxx.jar dbmode <DbPath> <ApiKey>
 ```
 
 ```bash
