@@ -30,7 +30,7 @@ dependencies {
     compile group: 'org.xerial', name: 'sqlite-jdbc', version: '3.30.1'
 }
 
-version = '1.0.2'
+version = '1.0.3'
 sourceCompatibility = '11'
 
 application {
