@@ -14,6 +14,10 @@ The Plex IMDB agent is kind of meh... Sometimes it is not able to retrieve the r
 
 This tool allows you to update the database that stores this data with the correct IMDB ratings. It will correct outdated and missing ratings and also set a flag to display the IMDB badge next to the ratings. The source used to retrieve the ratings is the OMDB API.
 
+An advantage is that it works outside Plex by manipulating the local Plex database. Thus, no metadata refresh operations have to be done within Plex. It is faster and will not lead into the unforeseen consequences that one sometimes experiences with a Plex metadata refresh (missing or changed posters if not using a custom poster).
+
+This tool currently only works on movies and will only allow you to select libraries that use the Plex IMDB agent (because it depends on the IMDB ids). 
+
 Before (Not IMDB matched)            |  After Match
 :-------------------------:|:-------------------------:
 ![](img/star.PNG)  |  ![](img/imdb.PNG)
