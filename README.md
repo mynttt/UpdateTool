@@ -1,4 +1,4 @@
-# ImdbUpdater
+# Plex IMDB Rating Update Tool
 
 A tool to update the IMDB rating for Plex libraries that contain movies.
 
