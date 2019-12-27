@@ -55,6 +55,15 @@ java -jar ImdbUpdater-xxx.jar dbmode <DbPath> <ApiKey>
 The free option only allows for 1000 requests every 24h. That is not a problem, the tool will halt, persist the state can thus be resumed again when the limit expires. The owner offers a paid 1$ per Month 100000 requests / 24h option that might be attractive to users with larger libraries.
 ```
 
+Example:
+
+```bash
+# Normal mode
+java -jar ImdbUpdater-1.0.3.jar "/mnt/data/Plex Media Server" abcdefg
+
+# Database only mode
+java -jar ImdbUpdater-1.0.3.jar dbmode "mnt/data/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db" abcdefg
+
 [Where is the data folder of the Plex Media Server located on my system?](https://support.plex.tv/articles/202915258-where-is-the-plex-media-server-data-directory-located/)
 
 You can either build the tool yourself using the command below in the root folder or get it [here](https://github.com/mynttt/PlexImdbUpdateTool/releases/tag/1.0.3) as an already packaged .jar file.
