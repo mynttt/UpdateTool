@@ -118,7 +118,6 @@ public class JobRunner {
         @Override
         public Void call() throws Exception {
             for(var item : sub) {
-
                 var response = api.queryId(item.imdbId);
 
                 if(response.statusCode() == 401)
@@ -255,13 +254,10 @@ public class JobRunner {
                 Throwable t = e;
                 while(t.getCause() != null)
                     t = t.getCause();
-                if(t instanceof RatelimitException) {
-                    if(!rateLimited)
-                        System.err.println(t.getMessage());
+                if(t instanceof RatelimitException)
                     rateLimited = true;
-                    continue;
-                }
-                ex = e.getCause();
+                if(!rateLimited)
+                    ex = e.getCause();
             }
             job.responses.putAll(map.get(entry.getKey()).map);
         }
