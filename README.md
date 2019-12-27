@@ -55,7 +55,7 @@ java -jar ImdbUpdater-xxx.jar dbmode <DbPath> <ApiKey>
 The free option only allows for 1000 requests every 24h. That is not a problem, the tool will halt, persist the state can thus be resumed again when the limit expires. The owner offers a paid 1$ per Month 100000 requests / 24h option that might be attractive to users with larger libraries.
 ```
 
-You can either build the tool yourself using the command below in the root folder or get it [here](https://github.com/mynttt/PlexImdbUpdateTool/releases/tag/1.0.1) as an already packaged .jar file.
+You can either build the tool yourself using the command below in the root folder or get it [here](https://github.com/mynttt/PlexImdbUpdateTool/releases/tag/1.0.2) as an already packaged .jar file.
 ```bash
 gradle build
 ```
