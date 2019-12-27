@@ -19,7 +19,7 @@ import ImdbUpdater.PlexDatabaseSupport.LibraryItem;
 import ImdbUpdater.State.Job;
 
 public class Main {
-    private static final String ROOT_TO_DB = "Library/Application Support/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db";
+    private static final String ROOT_TO_DB = "Plug-in Support/Databases/com.plexapp.plugins.library.db";
     private static final ArrayDeque<Job> QUEUE = new ArrayDeque<>();
     private static final List<String> OPTIONS = List.of("Run jobs", "Create jobs", "Remove jobs", "Exit");
     public static final Path PWD = Paths.get(".");
@@ -45,12 +45,13 @@ public class Main {
             System.out.println("Database Only Mode:");
             System.out.println(" -> Only updates the database and ignores the XML files.");
             System.out.println(" -> Useful if your Plex is on a server and can't easily install the JRE there.\n");
-            System.out.println("java -jar ImdbUpdater <plexroot> <api key>");
+            System.out.println("java -jar ImdbUpdater <plexdata> <api key>");
             System.out.println("Normal Mode: ");
             System.out.println(" -> Does the same as the database only mode but also updates the XML fallback files.");
-            System.out.println(" -> Requires a fully valid PlexMediaServer root folder structure.\n");
+            System.out.println(" -> Requires the data folder of plex folder structure.\n");
             System.out.println("Parameters:");
-            System.err.println("<plexroot> : Path to root directory of plex data usually named PlexMediaServer");
+            System.out.println("<plexdata> : Plex data root, the folder that contains folders like Cache, Codecs, Media, Plug-ins, ...");
+            System.out.println("-> https://support.plex.tv/articles/202915258-where-is-the-plex-media-server-data-directory-located/");
             System.out.println("<*.db>     : Path to the database that plex uses usually named com.plexapp.plugins.library.db");
             System.out.println("<api key>  : OMDB API Key");
             System.exit(-1);
@@ -63,13 +64,8 @@ public class Main {
         Path root = Paths.get(rootdir);
 
         if(!dbmode) {
-            if(!Files.exists(root)) {
-                System.err.println("Supplied plex root does not exist @ " + root.toAbsolutePath().toString());
-                System.exit(-1);
-            }
-            if(!Files.isDirectory(root) || !root.getFileName().toString().toLowerCase().equals("plexmediaserver")) {
-                System.err.println("Invalid argument. Root dir must be a directory with the name of PlexMediaServer");
-                System.err.println("Your input: " + root.toAbsolutePath().toString());
+            if(!Files.exists(root) || !Files.isDirectory(root)) {
+                System.err.println("Supplied plex data root does not exist @ " + root.toAbsolutePath().toString());
                 System.exit(-1);
             }
         }
@@ -85,7 +81,8 @@ public class Main {
         }
 
         System.out.println("PWD: " + PWD.toAbsolutePath().toString());
-        System.out.println("Plex: " + root.toAbsolutePath().toString());
+        if(!dbmode)
+            System.out.println("Plex Data: " + root.toAbsolutePath().toString());
         System.out.println();
 
         testApi(apikey);
@@ -133,7 +130,7 @@ public class Main {
             System.out.println("Job queue is currently empty");
             return -2;
         }
-        var runner = new JobRunner(db, service, apikey, root.resolve("Library/Application Support/Plex Media Server/Metadata/Movies/"));
+        var runner = new JobRunner(db, service, apikey, root.resolve("Metadata/Movies/"));
         boolean error = false;
         JobReport lastReport = null;
 
