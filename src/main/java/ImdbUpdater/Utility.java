@@ -49,9 +49,18 @@ public class Utility {
     }
 
     public static boolean needsNoUpdate(Map.Entry<MetadataResult, OMDBResponse> check) {
-        return check.getKey().rating != null
-                && areEqualDouble(check.getKey().rating, Double.parseDouble(check.getValue().imdbRating), 3)
-                && check.getKey().extraData.contains("ratingImage=imdb");
+        var meta = check.getKey();
+        var imdb = check.getValue();
+        double d = 0;
+        try {
+            d = Double.parseDouble(imdb.imdbRating);
+        } catch(NumberFormatException e) {
+            System.out.println("Ignoring: " + meta.title + " with IMDB ID: " + meta.imdbId + " supplies no valid rating from OMDB: " + imdb.imdbRating);
+            return true;
+        }
+        return meta.rating != null
+                && areEqualDouble(meta.rating, d, 3)
+                && meta.extraData.contains("ratingImage=imdb");
     }
 
     public static String doubleToOneDecimalString(Double d) {
