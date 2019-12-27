@@ -67,7 +67,7 @@ public class Main {
                 System.err.println("Supplied plex root does not exist @ " + root.toAbsolutePath().toString());
                 System.exit(-1);
             }
-            if(!Files.isDirectory(root) || !root.getFileName().toString().equals("PlexMediaServer")) {
+            if(!Files.isDirectory(root) || !root.getFileName().toString().toLowerCase().equals("plexmediaserver")) {
                 System.err.println("Invalid argument. Root dir must be a directory with the name of PlexMediaServer");
                 System.err.println("Your input: " + root.toAbsolutePath().toString());
                 System.exit(-1);
