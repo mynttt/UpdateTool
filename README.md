@@ -1,6 +1,6 @@
 # Plex IMDB Rating Update Tool
 
-A tool to update the IMDB rating for Plex libraries that contain movies.
+A tool to update the IMDB ratings for Plex libraries that contain movies.
 
 ![](img/dbmode.gif)
 
