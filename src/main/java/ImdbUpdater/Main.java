@@ -40,7 +40,7 @@ public class Main {
 
         Class.forName("org.sqlite.JDBC");
 
-        if(args.length < 2 || args.length > 3) {
+        if(args.length < 2 || args.length > 3 || args[0].toLowerCase().equals("dbmode") && args.length != 3) {
             System.out.println("java -jar ImdbUpdater dbmode <*.db> <api key>");
             System.out.println("Database Only Mode:");
             System.out.println(" -> Only updates the database and ignores the XML files.");
