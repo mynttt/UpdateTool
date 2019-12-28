@@ -36,6 +36,13 @@ Provides a CLI wizard to add and process IMDB update jobs on the supporting libr
 
 - Java >= 11
 
+# Created files in PWD
+
+- cache-imdb.json - Cache for Agent
+- state-imdb.json - Set of jobs that have not finished
+- xml-error-<uuid>-<library>.log - List of files that could not be updated by the XML transform step (not important tbh, plex reads from the DB)
+- imdbupdatetool.log - Log file
+
 # Usage
 
 ### Docker mode:
