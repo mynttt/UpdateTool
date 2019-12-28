@@ -22,23 +22,19 @@ Before (Not IMDB matched)            |  After Match
 
 # Docker
 
-There are probably much easier ways to deploy a docker than like this.
-
-To build the docker clone or download the repository, make sure you are in the root of this repository and then execute this command:
-
-```bash
-docker build -t imdbupdater imdbupdater-docker
-```
+Docker is on [dockerhub](https://hub.docker.com/repository/docker/mynttt/imdbupdater/general).
 
 To run your docker:
 
 ```bash
+docker pull mynttt/imdbupdater
+
 docker run -dit -e OMDB_API_KEY=yourkey \
     -e RUN_EVERY_N_HOURS=12 \
     -e CLEAR_CACHE_EVERY_N_DAYS=14 \
     -v "/mnt/data/Plex Media Server":/plexdata \
     -v "/mnt/data/imdpupdaterconfig":/config \
-    imdbupdater
+    mynttt/imdbupdater
 ```
 
 Explained:
