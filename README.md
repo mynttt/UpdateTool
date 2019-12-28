@@ -88,7 +88,7 @@ java -jar ImdbUpdater-xxx.jar imdb-cli "/mnt/data/Plex Media Server" abcdefg
 
 [Where is the data folder of the Plex Media Server located on my system?](https://support.plex.tv/articles/202915258-where-is-the-plex-media-server-data-directory-located/)
 
-You can either build the tool yourself using the command below in the root folder or get it [here](https://github.com/mynttt/PlexImdbUpdateTool/releases/tag/1.0.3) as an already packaged .jar file.
+You can either build the tool yourself using the command below in the root folder or get it [here](https://github.com/mynttt/PlexImdbUpdateTool/releases/latest) as an already packaged .jar file.
 ```bash
 gradle build
 ```
