@@ -22,7 +22,7 @@ Before (Not IMDB matched)            |  After Match
 
 # Docker
 
-Docker is on [dockerhub](https://hub.docker.com/repository/docker/mynttt/imdbupdater/general).
+Docker is on [dockerhub](https://hub.docker.com/r/mynttt/imdbupdater).
 
 To run your docker:
 
