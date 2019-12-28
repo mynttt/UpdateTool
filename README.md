@@ -35,11 +35,11 @@ docker build -t imdbupdater imdbupdater-docker
 To run your docker:
 
 ```bash
-docker run -dit -e OMDB_API_KEY=yourkey \
-    -e RUN_EVERY_N_HOURS=12 \
-    -e CLEAR_CACHE_EVERY_N_DAYS=14 \
-    -v "plex data root like /mnt/data/Plex Media Server":/plexdata \
-    -v "some path where you want to have the logs of the tool":/config \
+docker run -dit -e OMDB_API_KEY=yourkey \              # OMDB Api Key
+    -e RUN_EVERY_N_HOURS=12 \                          # Invoke every 12h
+    -e CLEAR_CACHE_EVERY_N_DAYS=14 \                   # Purge cache entries older than 14 days
+    -v "/mnt/data/Plex Media Server":/plexdata \       # The plex data root (see the link at the end if you dont know where this is
+    -v "/mnt/data/imdpupdaterconfig":/config \         # A path where you want to store the log and state files
     imdbupdater
 ```
 
