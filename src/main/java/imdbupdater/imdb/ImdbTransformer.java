@@ -32,15 +32,15 @@ public class ImdbTransformer {
         var imdb = target.getValue();
         double d = Double.parseDouble(imdb.imdbRating);
         if(meta.rating == null || !areEqualDouble(meta.rating, d, 3)) {
-            System.out.println("Adjust rating: " + doubleToOneDecimalString(meta.rating) + " -> " + d + " for " + meta.title);
+            Logger.info("Adjust rating: " + doubleToOneDecimalString(meta.rating) + " -> " + d + " for " + meta.title);
             meta.rating = d;
         }
         if(!meta.extraData.contains("ratingImage=imdb")) {
             if(meta.extraData.trim().isEmpty()) {
-                System.out.println("Set IMDB Flag for: " + meta.title);
+                Logger.info("(Set) Set IMDB Badge for: " + meta.title);
                 meta.extraData = IMDB_FLAG_EMPTY;
             } else {
-                System.out.println("Preprend IMDB Flag for: " + meta.title);
+                Logger.info("(Prepend) Set IMDB Badge for: " + meta.title);
                 meta.extraData = IMDB_FLAG+meta.extraData;
             }
         }
