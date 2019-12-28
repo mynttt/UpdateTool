@@ -47,9 +47,9 @@ public class ImdbDockerImplementation implements Implementation {
             RUN_EVERY_N_HOUR = parseCommandInt(args[1], i -> i > 0, "Invalid parameter for: RUN_EVERY_N_HOUR (must be number and > 0)");
         }
 
-        if(args.length == 3) {
+        if(args.length >= 3) {
             RUN_EVERY_N_HOUR = parseCommandInt(args[1], i -> i > 0, "Invalid parameter for: RUN_EVERY_N_HOUR (must be number and > 0)");
-            CACHE_PURGE_TIME_DAYS = parseCommandInt(args[1], i -> i >= 0, "Invalid parameter for: CACHE_PURGE_TIME_DAYS (must be number and >= 0)");
+            CACHE_PURGE_TIME_DAYS = parseCommandInt(args[2], i -> i >= 0, "Invalid parameter for: CACHE_PURGE_TIME_DAYS (must be number and >= 0)");
         }
 
         Logger.info("Starting IMDB Watchdog");

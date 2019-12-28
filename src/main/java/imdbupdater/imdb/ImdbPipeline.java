@@ -156,7 +156,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
             Logger.warn(nofile.size() + " XML file(s) have failed to be updated due to them not being present on the file system.");
             Logger.warn("This is not an issue as they're not important for Plex as it reads the ratings from the database.");
             Logger.warn("The files have been dumped as " + errorFile + " in the PWD.");
-            ErrorReports.fileReport(nofile);
+            ErrorReports.fileReport(nofile, errorFile);
         }
         if(t != null)
             throw Utility.rethrow(t);
