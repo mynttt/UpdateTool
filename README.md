@@ -22,19 +22,19 @@ Before (Not IMDB matched)            |  After Match
 
 # Docker
 
-Docker is on [dockerhub](https://hub.docker.com/r/mynttt/imdbupdater).
+Docker is on [dockerhub](https://hub.docker.com/r/mynttt/updatetool).
 
 To run your docker:
 
 ```bash
-docker pull mynttt/imdbupdater
+docker pull mynttt/updatetool
 
 docker run -dit -e OMDB_API_KEY=yourkey \
     -e RUN_EVERY_N_HOURS=12 \
     -e CLEAR_CACHE_EVERY_N_DAYS=14 \
     -v "/mnt/data/Plex Media Server":/plexdata \
     -v "/mnt/data/imdpupdaterconfig":/config \
-    mynttt/imdbupdater
+    mynttt/updatetool
 ```
 
 Explained:
@@ -52,7 +52,7 @@ docker run -dit
     -v "/mnt/data/Plex Media Server":/plexdata \
      # A path where you want to store the log and state files
     -v "/mnt/data/imdpupdaterconfig":/config \
-    imdbupdater
+    mynttt/updatetool
 ```
 
 # Technical details
