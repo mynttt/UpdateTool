@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION_URL=https://raw.githubusercontent.com/mynttt/PlexImdbUpdateTool/master/VERSION
+VERSION_URL=https://raw.githubusercontent.com/mynttt/UpdateTool/master/VERSION
 
 function download() {
     VERSION=$1
