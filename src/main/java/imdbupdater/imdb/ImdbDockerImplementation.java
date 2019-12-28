@@ -102,6 +102,7 @@ public class ImdbDockerImplementation implements Implementation {
             this.plexdata = plexdata;
             this.apikey = apikey;
             this.state = state;
+            cache.purge();
         }
 
         @Override
