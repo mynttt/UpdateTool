@@ -36,7 +36,7 @@ Provides a CLI wizard to add and process IMDB update jobs on the supporting libr
 
 # Usage
 
-- Docker mode:
+#### Docker mode:
 
 In docker mode the tool will read the two environment variables OMDB_API_KEY and PLEX_DATA_DIR.
 
@@ -60,7 +60,7 @@ java -jar ImdbUpdater-xxx.jar imdb-docker 5
 java -jar ImdbUpdater-xxx.jar imdb-docker 12 0
 ```
 
-- Legacy CLI mode:
+#### Legacy CLI mode:
 
 ```bash
 java -jar ImdbUpdater-xxx.jar imdb-cli <PlexData> <ApiKey>
