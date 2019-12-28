@@ -52,6 +52,11 @@ java -jar ImdbUpdater-xxx.jar imdb-docker [] | [{every_n_hour}] | [{every_n_hour
 Example:
 
 ```bash
+OMDB_API_KEY=abcdefg
+PLEX_DATA_DIR="/mnt/user/Plex Media Server"
+export OMDB_API_KEY
+export PLEX_DATA_DIR
+
 # Default start
 java -jar ImdbUpdater-xxx.jar imdb-docker
 # Run every 5 hours
