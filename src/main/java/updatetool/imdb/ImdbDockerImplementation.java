@@ -1,4 +1,4 @@
-package imdbupdater.imdb;
+package updatetool.imdb;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,13 +11,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import org.tinylog.Logger;
-import common.DatabaseSupport;
-import common.SqliteDatabaseProvider;
-import common.State;
-import common.Utility;
-import imdbupdater.Main;
-import imdbupdater.api.Implementation;
-import imdbupdater.api.JobReport.StatusCode;
+import updatetool.Main;
+import updatetool.api.Implementation;
+import updatetool.api.JobReport.StatusCode;
+import updatetool.common.DatabaseSupport;
+import updatetool.common.SqliteDatabaseProvider;
+import updatetool.common.State;
+import updatetool.common.Utility;
 
 public class ImdbDockerImplementation implements Implementation {
     public int CACHE_PURGE_TIME_DAYS = 14;

@@ -1,4 +1,4 @@
-package common;
+package updatetool.common;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -10,8 +10,8 @@ import java.util.Set;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import imdbupdater.api.Job;
-import imdbupdater.imdb.ImdbJob;
+import updatetool.api.Job;
+import updatetool.imdb.ImdbJob;
 
 public class State <T extends Job> {
     public static final Charset UTF_8 = StandardCharsets.UTF_8;

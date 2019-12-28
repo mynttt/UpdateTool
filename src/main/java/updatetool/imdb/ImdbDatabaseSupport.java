@@ -1,4 +1,4 @@
-package imdbupdater.imdb;
+package updatetool.imdb;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -6,8 +6,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import common.SqliteDatabaseProvider;
-import common.Utility;
+import updatetool.common.SqliteDatabaseProvider;
+import updatetool.common.Utility;
 
 public class ImdbDatabaseSupport {
     private final SqliteDatabaseProvider provider;

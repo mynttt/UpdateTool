@@ -1,4 +1,4 @@
-package imdbupdater.api;
+package updatetool.api;
 
 public interface Implementation {
     public void invoke(String[] args) throws Exception;

@@ -1,4 +1,4 @@
-package imdbupdater.imdb;
+package updatetool.imdb;
 
 import java.net.http.HttpResponse;
 import java.util.List;
@@ -6,12 +6,12 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.tinylog.Logger;
 import com.google.gson.Gson;
-import common.OmdbApi;
-import common.OmdbApi.OMDBResponse;
-import common.Utility;
-import imdbupdater.Main;
-import imdbupdater.exceptions.RatelimitException;
-import imdbupdater.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
+import updatetool.Main;
+import updatetool.common.OmdbApi;
+import updatetool.common.Utility;
+import updatetool.common.OmdbApi.OMDBResponse;
+import updatetool.exceptions.RatelimitException;
+import updatetool.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
 
 class ImdbOmdbWorker implements Callable<Void> {
     private static final Integer RETRY_BEFORE_FAILURE = 5;

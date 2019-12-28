@@ -1,6 +1,6 @@
-package imdbupdater;
+package updatetool;
 
-import static common.Utility.seperator;
+import static updatetool.common.Utility.seperator;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,20 +15,20 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.tinylog.Logger;
-import common.DatabaseSupport;
-import common.DatabaseSupport.LibraryItem;
-import common.SqliteDatabaseProvider;
-import common.State;
-import imdbupdater.Main.Implementations;
-import imdbupdater.api.Implementation;
-import imdbupdater.api.Job;
-import imdbupdater.api.JobReport;
-import imdbupdater.api.JobReport.StatusCode;
-import imdbupdater.imdb.ImdbDatabaseSupport;
-import imdbupdater.imdb.ImdbJob;
-import imdbupdater.imdb.ImdbJobRunner;
-import imdbupdater.imdb.ImdbOmdbCache;
-import imdbupdater.imdb.ImdbPipeline;
+import updatetool.Main.Implementations;
+import updatetool.api.Implementation;
+import updatetool.api.Job;
+import updatetool.api.JobReport;
+import updatetool.api.JobReport.StatusCode;
+import updatetool.common.DatabaseSupport;
+import updatetool.common.SqliteDatabaseProvider;
+import updatetool.common.State;
+import updatetool.common.DatabaseSupport.LibraryItem;
+import updatetool.imdb.ImdbDatabaseSupport;
+import updatetool.imdb.ImdbJob;
+import updatetool.imdb.ImdbJobRunner;
+import updatetool.imdb.ImdbOmdbCache;
+import updatetool.imdb.ImdbPipeline;
 
 public class LegacyImplementation implements Implementation {
     private final String ROOT_TO_DB = "Plug-in Support/Databases/com.plexapp.plugins.library.db";

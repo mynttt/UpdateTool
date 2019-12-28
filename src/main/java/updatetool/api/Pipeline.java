@@ -1,4 +1,4 @@
-package imdbupdater.api;
+package updatetool.api;
 
 public abstract class Pipeline<T extends Job> {
 

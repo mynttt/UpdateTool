@@ -1,4 +1,4 @@
-package imdbupdater.imdb;
+package updatetool.imdb;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -14,13 +14,13 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.tinylog.Logger;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
-import common.ErrorReports;
-import common.OmdbApi;
-import common.OmdbApi.OMDBResponse;
-import common.Utility;
-import imdbupdater.api.Pipeline;
-import imdbupdater.exceptions.RatelimitException;
-import imdbupdater.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
+import updatetool.api.Pipeline;
+import updatetool.common.ErrorReports;
+import updatetool.common.OmdbApi;
+import updatetool.common.Utility;
+import updatetool.common.OmdbApi.OMDBResponse;
+import updatetool.exceptions.RatelimitException;
+import updatetool.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
 
 public class ImdbPipeline extends Pipeline<ImdbJob> {
     private static final int LIST_PARTITIONS = 16;

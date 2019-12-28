@@ -1,4 +1,4 @@
-package common;
+package updatetool.common;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
