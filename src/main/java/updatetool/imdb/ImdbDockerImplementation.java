@@ -109,6 +109,7 @@ public class ImdbDockerImplementation implements Implementation {
         public void run() {
             SqliteDatabaseProvider connection = null;
             try {
+                cache.purge();
                 connection = new SqliteDatabaseProvider(plexdata.resolve("Plug-in Support/Databases/com.plexapp.plugins.library.db").toAbsolutePath().toString());
                 var libraries = new DatabaseSupport(connection).requestLibraries();
                 var jobs = new ArrayDeque<ImdbJob>();
