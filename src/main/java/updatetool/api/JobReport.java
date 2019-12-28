@@ -1,4 +1,4 @@
-package imdbupdater.api;
+package updatetool.api;
 
 public class JobReport {
     public enum StatusCode { PASS, ERROR, RATE_LIMIT }

@@ -1,4 +1,4 @@
-package common;
+package updatetool.common;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

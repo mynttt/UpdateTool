@@ -1,12 +1,12 @@
-package imdbupdater.imdb;
+package updatetool.imdb;
 
 import java.util.Objects;
-import imdbupdater.api.JobReport;
-import imdbupdater.api.JobReport.StatusCode;
-import imdbupdater.api.JobRunner;
-import imdbupdater.api.Pipeline;
-import imdbupdater.api.Pipeline.PipelineStage;
-import imdbupdater.exceptions.RatelimitException;
+import updatetool.api.JobReport;
+import updatetool.api.JobRunner;
+import updatetool.api.Pipeline;
+import updatetool.api.JobReport.StatusCode;
+import updatetool.api.Pipeline.PipelineStage;
+import updatetool.exceptions.RatelimitException;
 
 public class ImdbJobRunner implements JobRunner<ImdbJob> {
 

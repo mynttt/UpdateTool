@@ -5,7 +5,7 @@ VERSION_URL=https://raw.githubusercontent.com/mynttt/PlexImdbUpdateTool/master/V
 function download() {
     VERSION=$1
     echo "**** Downloading version ${VERSION} ****"
-    __DURL="https://github.com/mynttt/PlexImdbUpdateTool/releases/download/${VERSION}/PlexImdbUpdateTool-${VERSION}.jar"
+    __DURL="https://github.com/mynttt/UpdateTool/releases/download/${VERSION}/UpdateTool-${VERSION}.jar"
     wget -O tool.jar $__DURL #2>&1 | grep "^wget:"
 }
 

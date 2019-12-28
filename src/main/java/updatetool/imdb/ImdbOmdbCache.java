@@ -1,4 +1,4 @@
-package imdbupdater.imdb;
+package updatetool.imdb;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import common.OmdbApi.OMDBResponse;
+import updatetool.common.OmdbApi.OMDBResponse;
 
 public class ImdbOmdbCache {
     private long purgeMillis;

@@ -1,4 +1,4 @@
-package imdbupdater;
+package updatetool;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -7,9 +7,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.tinylog.Logger;
-import common.OmdbApi;
-import imdbupdater.api.Implementation;
-import imdbupdater.imdb.ImdbDockerImplementation;
+import updatetool.api.Implementation;
+import updatetool.common.OmdbApi;
+import updatetool.imdb.ImdbDockerImplementation;
 
 public class Main {
     public static final Path PWD = Paths.get(".");

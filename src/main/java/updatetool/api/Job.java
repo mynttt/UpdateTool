@@ -1,7 +1,7 @@
-package imdbupdater.api;
+package updatetool.api;
 
 import java.util.Objects;
-import imdbupdater.api.Pipeline.PipelineStage;
+import updatetool.api.Pipeline.PipelineStage;
 
 public abstract class Job {
     public String library;

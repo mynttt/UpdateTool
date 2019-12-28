@@ -1,4 +1,4 @@
-package imdbupdater.imdb;
+package updatetool.imdb;
 
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -14,9 +14,9 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Document;
-import common.Utility;
-import imdbupdater.Main;
-import imdbupdater.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
+import updatetool.Main;
+import updatetool.common.Utility;
+import updatetool.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
 
 class ImdbXmlWorker implements Callable<Void> {
     private final List<ImdbMetadataResult> sub;

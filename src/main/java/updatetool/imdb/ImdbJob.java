@@ -1,9 +1,9 @@
-package imdbupdater.imdb;
+package updatetool.imdb;
 
 import java.util.ArrayList;
 import java.util.List;
-import imdbupdater.api.Job;
-import imdbupdater.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
+import updatetool.api.Job;
+import updatetool.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
 
 public class ImdbJob extends Job {
     public List<ImdbMetadataResult> items = new ArrayList<>();

@@ -74,7 +74,7 @@ Provides a CLI wizard to add and process IMDB update jobs on the supporting libr
 - cache-imdb.json - Cache for Agent
 - state-imdb.json - Set of jobs that have not finished
 - xml-error-{uuid}-{library}.log - List of files that could not be updated by the XML transform step (not important tbh, plex reads from the DB)
-- imdbupdatetool.log - Log file
+- updatetool.log - Log file
 
 # Usage
 
@@ -88,7 +88,7 @@ It can then be invoked with:
 - two args (cache purge every n day(s) every n hours(s)) (invoking with 0 days will clear the cache entirely)
 
 ```
-java -jar ImdbUpdater-xxx.jar imdb-docker [] | [{every_n_hour}] | [{every_n_hour} {cache_purge_in_days}]
+java -jar UpdateTool-xxx.jar imdb-docker [] | [{every_n_hour}] | [{every_n_hour} {cache_purge_in_days}]
 ```
 
 Example:
@@ -100,17 +100,17 @@ export OMDB_API_KEY
 export PLEX_DATA_DIR
 
 # Default start
-java -jar ImdbUpdater-xxx.jar imdb-docker
+java -jar UpdateTool-xxx.jar imdb-docker
 # Run every 5 hours
-java -jar ImdbUpdater-xxx.jar imdb-docker 5
+java -jar UpdateTool-xxx.jar imdb-docker 5
 # Run every 12 hours but always purge the cache
-java -jar ImdbUpdater-xxx.jar imdb-docker 12 0
+java -jar UpdateTool-xxx.jar imdb-docker 12 0
 ```
 
 ### Legacy CLI mode:
 
 ```bash
-java -jar ImdbUpdater-xxx.jar imdb-cli <PlexData> <ApiKey>
+java -jar UpdateTool-xxx.jar imdb-cli <PlexData> <ApiKey>
 ```
 
 Parameters
@@ -125,12 +125,12 @@ Example:
 
 ```bash
 # Normal mode
-java -jar ImdbUpdater-xxx.jar imdb-cli "/mnt/data/Plex Media Server" abcdefg
+java -jar UpdateTool-xxx.jar imdb-cli "/mnt/data/Plex Media Server" abcdefg
 ```
 
 [Where is the data folder of the Plex Media Server located on my system?](https://support.plex.tv/articles/202915258-where-is-the-plex-media-server-data-directory-located/)
 
-You can either build the tool yourself using the command below in the root folder or get it [here](https://github.com/mynttt/PlexImdbUpdateTool/releases/latest) as an already packaged .jar file.
+You can either build the tool yourself using the command below in the root folder or get it [here](https://github.com/mynttt/UpdateTool/releases/latest) as an already packaged .jar file.
 ```bash
 gradle build
 ```

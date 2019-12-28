@@ -1,11 +1,11 @@
-package imdbupdater.imdb;
+package updatetool.imdb;
 
-import static common.Utility.areEqualDouble;
-import static common.Utility.doubleToOneDecimalString;
+import static updatetool.common.Utility.areEqualDouble;
+import static updatetool.common.Utility.doubleToOneDecimalString;
 import java.util.Map;
 import org.tinylog.Logger;
-import common.OmdbApi.OMDBResponse;
-import imdbupdater.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
+import updatetool.common.OmdbApi.OMDBResponse;
+import updatetool.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
 
 public class ImdbTransformer {
     private static final String IMDB_FLAG_EMPTY = "at%3AratingImage=imdb%3A%2F%2Fimage%2Erating";
