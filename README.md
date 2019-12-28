@@ -4,9 +4,7 @@ A tool to update the IMDB ratings for Plex libraries that contain movies.
 
 ## What does this do?
 
-#### It is recommended to shut down Plex and creating a backup of your database before using this tool!
-
-#### This tool could in theory break if either the Plex database schema changes or the OMDB API breaks!
+#### This tool could in theory break if either the Plex database schema changes or the OMDB API breaks! This would not be dangerous tho as it stops when something goes wrong. 
 
 The Plex IMDB agent is kind of meh... Sometimes it is not able to retrieve the ratings for newly released movies even tho it matches the IMDB ID with them. It is impossible to comfortable add the rating manually from the users perspective.
 
