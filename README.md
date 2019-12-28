@@ -83,7 +83,7 @@ Example:
 
 ```bash
 # Normal mode
-java -jar ImdbUpdater-1.0.3.jar "/mnt/data/Plex Media Server" abcdefg
+java -jar ImdbUpdater-xxx.jar imdb-cli "/mnt/data/Plex Media Server" abcdefg
 ```
 
 [Where is the data folder of the Plex Media Server located on my system?](https://support.plex.tv/articles/202915258-where-is-the-plex-media-server-data-directory-located/)
