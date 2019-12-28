@@ -1,7 +1,5 @@
 # Plex IMDB Rating Update Tool
 
-*Docker mode added but no docker container created yet!*
-
 A tool to update the IMDB ratings for Plex libraries that contain movies.
 
 ## What does this do?
@@ -23,6 +21,29 @@ Before (Not IMDB matched)            |  After Match
 ![](img/star.PNG)  |  ![](img/imdb.PNG)
 
 *These are two different movies, that why the genres changed*
+
+# Docker
+
+There are probably much easier ways to deploy a docker than like this.
+
+To build the docker clone or download the repository, make sure you are in the root of this repository and then execute this command:
+
+```bash
+docker build -t imdbupdater imdbupdater-docker
+```
+
+To run your docker:
+
+```bash
+docker run -dit -e OMDB_API_KEY=yourkey \
+    -e RUN_EVERY_N_HOURS=12 \
+    -e CLEAR_CACHE_EVERY_N_DAYS=14 \
+    -v "plex data root like /mnt/data/Plex Media Server":/plexdata \
+    -v "some path where you want to have the logs of the tool":/config \
+    imdbupdater
+```
+
+# Technical details
 
 This tool supplies two modes at the moment:
 
