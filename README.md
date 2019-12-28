@@ -1,5 +1,7 @@
 # Plex IMDB Rating Update Tool
 
+*Docker mode added but no docker container created yet!*
+
 A tool to update the IMDB ratings for Plex libraries that contain movies.
 
 ## What does this do?
