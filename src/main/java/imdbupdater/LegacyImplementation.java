@@ -19,6 +19,7 @@ import common.DatabaseSupport;
 import common.DatabaseSupport.LibraryItem;
 import common.SqliteDatabaseProvider;
 import common.State;
+import imdbupdater.Main.Implementations;
 import imdbupdater.api.Implementation;
 import imdbupdater.api.Job;
 import imdbupdater.api.JobReport;
@@ -38,6 +39,12 @@ public class LegacyImplementation implements Implementation {
 
     @Override
     public void invoke(String[] args) throws Exception {
+
+        if(args.length != 3) {
+            Main.printHelp(Implementations.of(args[0]), true);
+            System.exit(-1);
+        }
+
         String rootdir = args[1];
         String apikey = args[2];
         root = Paths.get(rootdir);
