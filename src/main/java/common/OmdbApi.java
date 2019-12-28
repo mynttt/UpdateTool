@@ -1,4 +1,4 @@
-package ImdbUpdater;
+package common;
 
 import java.io.IOException;
 import java.net.URI;
@@ -11,13 +11,14 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
 import java.util.Objects;
 
-public class OMDBApi {
+public class OmdbApi {
     private final String apiKey;
     private final HttpClient client;
 
     public static class OMDBResponse {
         public final String Title, imdbRating, imdbID, Error;
         public final boolean Response;
+        private long created;
 
         public OMDBResponse(String title, String imdbRating, String imdbID, String error, boolean response) {
             Title = title;
@@ -26,9 +27,17 @@ public class OMDBApi {
             Error = error;
             Response = response;
         }
+
+        public void touch() {
+            created = System.currentTimeMillis();
+        }
+
+        public long created() {
+            return created;
+        }
     }
 
-    public OMDBApi(String apiKey) {
+    public OmdbApi(String apiKey) {
         Objects.requireNonNull(apiKey);
         this.apiKey = apiKey;
         this.client = HttpClient.newBuilder()
