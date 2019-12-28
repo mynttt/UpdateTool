@@ -49,6 +49,13 @@ public class Main {
             this.parameters = parameters;
         }
 
+        public static Implementations of(String string) {
+            for(var v : values())
+                if(v.id.equals(string))
+                    return v;
+            return null;
+        }
+
     }
 
     public static void main(String[] args) throws Exception {
