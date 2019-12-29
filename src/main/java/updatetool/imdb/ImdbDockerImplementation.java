@@ -134,6 +134,12 @@ public class ImdbDockerImplementation implements Implementation {
                         try { connection.close(); } catch (Exception e) {}
                         return;
                     }
+                    if(result.code == StatusCode.API_ERROR) {
+                        Logger.error(result.userDefinedMessage);
+                        Logger.error("Original message: {}", result.exception.getMessage());
+                        try { connection.close(); } catch (Exception e) {}
+                        System.exit(-1);
+                    }
                     if(result.code == StatusCode.ERROR)
                         throw Utility.rethrow(result.exception);
                 }
