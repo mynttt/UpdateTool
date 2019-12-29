@@ -6,6 +6,7 @@ import updatetool.api.JobRunner;
 import updatetool.api.Pipeline;
 import updatetool.api.JobReport.StatusCode;
 import updatetool.api.Pipeline.PipelineStage;
+import updatetool.exceptions.ApiCallFailedException;
 import updatetool.exceptions.RatelimitException;
 
 public class ImdbJobRunner implements JobRunner<ImdbJob> {
@@ -20,7 +21,9 @@ public class ImdbJobRunner implements JobRunner<ImdbJob> {
             } catch(Throwable t) {
                 if(t instanceof RatelimitException)
                     return new JobReport("Aborted job queue due to being rate limited. Either change the API key or wait a while to continue.", StatusCode.RATE_LIMIT, null);
-                return new JobReport(null, StatusCode.ERROR, t);
+                if(t instanceof ApiCallFailedException)
+                    return new JobReport("Aborted job queue due to the API failing to deliver a result.", StatusCode.API_ERROR, t);
+                return new JobReport(t.getMessage(), StatusCode.ERROR, t);
             }
         }
 
