@@ -76,7 +76,10 @@ This tool supplies two modes at the moment:
 ### docker mode
 Provides a watchdog that once started will run every N hours over all IMDB supported libraries.
 
-### CLI mode (legacy)
+### CLI mode (deprecated)
+***Don't use this it will be removed in the future and is currently not supported***
+***No support for TMDB fallback here***
+
 Provides a CLI wizard to add and process IMDB update jobs on the supporting libraries.
 
 # Runtime requirements
