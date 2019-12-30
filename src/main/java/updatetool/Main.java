@@ -1,6 +1,7 @@
 package updatetool;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -17,6 +18,16 @@ public class Main {
 
     public static final Path STATE_IMDB = Main.PWD.resolve("state-imdb.json");
     public static final Path CACHE_IMDB = Main.PWD.resolve("cache-imdb.json");
+
+    private static String VERSION;
+
+    static {
+        try {
+            VERSION = new String(Main.class.getResourceAsStream("/VERSION").readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            VERSION = "FAILED_TO_READ_VERSION";
+        }
+    }
 
     public static boolean PRINT_STATUS = false;
 
@@ -65,7 +76,7 @@ public class Main {
             Logger.error("========================================");
             Logger.error(e);
             Logger.error("========================================");
-            Logger.error("The application will terminate now.");
+            Logger.error("The application will terminate now. (Version: " + VERSION + ")");
             System.exit(-1);
         });
 
@@ -89,6 +100,7 @@ public class Main {
             System.exit(-1);
         }
 
+        Logger.info("Running version: " + VERSION);
         var constructor = impls.get(0).entry.getConstructor(new Class[0]);
         constructor.newInstance().invoke(args);
     }
