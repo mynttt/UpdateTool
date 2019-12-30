@@ -36,7 +36,7 @@ class ImdbOmdbWorker implements Callable<Void> {
     @Override
     public Void call() throws Exception {
         for(var item : sub) {
-            if(cache.isCached(item.imdbId))
+            if(cache.isOmdbResponseCached(item.imdbId))
                 continue;
 
             HttpResponse<String> response = null;
@@ -75,7 +75,7 @@ class ImdbOmdbWorker implements Callable<Void> {
             result.touch();
             if(Main.PRINT_STATUS)
                 Utility.printStatusBar(counter.getAndIncrement(), n, 15);
-            cache.cache(item.imdbId, result);
+            cache.cacheOmdbResponse(item.imdbId, result);
         }
         return null;
     }

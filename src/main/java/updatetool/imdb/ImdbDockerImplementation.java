@@ -18,20 +18,22 @@ import updatetool.common.DatabaseSupport;
 import updatetool.common.SqliteDatabaseProvider;
 import updatetool.common.State;
 import updatetool.common.Utility;
+import updatetool.imdb.ImdbPipeline.ImdbPipelineConfiguration;
 
 public class ImdbDockerImplementation implements Implementation {
     public int CACHE_PURGE_TIME_DAYS = 14;
     public int RUN_EVERY_N_HOUR = 12;
 
-    private String apikey;
+    private String apikeyOmdb, apikeyTmdb;
     private Path plexdata;
 
     @Override
     public void invoke(String[] args) throws Exception {
-        apikey = System.getenv("OMDB_API_KEY");
+        apikeyOmdb = System.getenv("OMDB_API_KEY");
+        apikeyTmdb = System.getenv("TMDB_API_KEY");
         String data = System.getenv("PLEX_DATA_DIR");
 
-        Objects.requireNonNull(apikey, "Environment variable OMDB_API_KEY is not set");
+        Objects.requireNonNull(apikeyOmdb, "Environment variable OMDB_API_KEY is not set");
         Objects.requireNonNull(data, "Environment variable PLEX_DATA_DIR is not set");
 
         plexdata = Path.of(data);
@@ -41,7 +43,14 @@ public class ImdbDockerImplementation implements Implementation {
             System.exit(-1);
         }
 
-        Main.testApiImdb(apikey);
+        Main.testApiImdb(apikeyOmdb);
+
+        if(apikeyTmdb == null || apikeyTmdb.trim().isEmpty()) {
+            Logger.info("No TMDB API key detected. Will not attempt to do an TMDB <=> IMDB ID conversion to update TMDB matched items (unless already matched previously).");
+        } else {
+            Main.testApiTmdb(apikeyTmdb);
+            Logger.info("TMDB API key enabled TMDB <=> IMDB matching. Will fetch IMDB ratings for non matched IMDB items.");
+        }
 
         if(args.length == 2) {
             RUN_EVERY_N_HOUR = parseCommandInt(args[1], i -> i > 0, "Invalid parameter for: RUN_EVERY_N_HOUR (must be number and > 0)");
@@ -58,12 +67,12 @@ public class ImdbDockerImplementation implements Implementation {
         Logger.info("Purge cache every " + CACHE_PURGE_TIME_DAYS + " day(s)");
 
         var state = State.recoverImdb(Main.STATE_IMDB);
-        var cache = ImdbOmdbCache.of(Main.CACHE_IMDB, CACHE_PURGE_TIME_DAYS);
+        var cache = ImdbOmdbCache.of(Main.PWD, CACHE_PURGE_TIME_DAYS);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
-                ImdbOmdbCache.dump(Main.CACHE_IMDB, cache);
-            } catch (IOException e) {
+                ImdbOmdbCache.dump(Main.PWD, cache);
+            } catch (Exception e) {
                 Logger.error("Failed to save cache.");
                 Logger.error(e);
             }
@@ -81,27 +90,28 @@ public class ImdbDockerImplementation implements Implementation {
         if(!state.isEmpty())
             Logger.info("Loaded " + state.size() + " unfinished job(s).\n");
 
+        var config = new ImdbPipelineConfiguration(apikeyOmdb, apikeyTmdb, plexdata.resolve("Metadata/Movies"));
 
         var scheduler = Executors.newSingleThreadScheduledExecutor();
         Logger.info("Running first task...");
-        scheduler.schedule(new ImdbBatchJob(apikey, plexdata, cache, state), 1, TimeUnit.SECONDS);
+        scheduler.schedule(new ImdbBatchJob(config, plexdata, cache, state), 1, TimeUnit.SECONDS);
         Logger.info("Scheduling next tasks to run @ every " + RUN_EVERY_N_HOUR + " hour(s)");
-        scheduler.scheduleAtFixedRate(new ImdbBatchJob(apikey, plexdata, cache, state), 1, RUN_EVERY_N_HOUR, TimeUnit.HOURS);
+        scheduler.scheduleAtFixedRate(new ImdbBatchJob(config, plexdata, cache, state), 1, RUN_EVERY_N_HOUR, TimeUnit.HOURS);
     }
 
     private static class ImdbBatchJob implements Runnable {
-        String apikey;
-        Path plexdata;
-        ExecutorService service;
-        ImdbOmdbCache cache;
-        Set<ImdbJob> state;
+        private final ImdbPipelineConfiguration config;
+        private final ExecutorService service;
+        private final ImdbOmdbCache cache;
+        private final Set<ImdbJob> state;
+        private final String dbLocation;
 
-        public ImdbBatchJob(String apikey, Path plexdata, ImdbOmdbCache cache, Set<ImdbJob> state) {
+        public ImdbBatchJob(ImdbPipelineConfiguration config, Path plexdata, ImdbOmdbCache cache, Set<ImdbJob> state) {
             service = Executors.newFixedThreadPool(6);
+            this.config = config;
             this.cache = cache;
-            this.plexdata = plexdata;
-            this.apikey = apikey;
             this.state = state;
+            this.dbLocation = plexdata.resolve("Plug-in Support/Databases/com.plexapp.plugins.library.db").toAbsolutePath().toString();
             cache.purge();
         }
 
@@ -110,11 +120,11 @@ public class ImdbDockerImplementation implements Implementation {
             SqliteDatabaseProvider connection = null;
             try {
                 cache.purge();
-                connection = new SqliteDatabaseProvider(plexdata.resolve("Plug-in Support/Databases/com.plexapp.plugins.library.db").toAbsolutePath().toString());
+                connection = new SqliteDatabaseProvider(dbLocation);
                 var libraries = new DatabaseSupport(connection).requestLibraries();
                 var jobs = new ArrayDeque<ImdbJob>();
                 var db = new ImdbDatabaseSupport(connection);
-                var pipeline = new ImdbPipeline(db, service, apikey, cache, plexdata.resolve("Metadata/Movies"));
+                var pipeline = new ImdbPipeline(db, service, cache, config);
                 var runner = new ImdbJobRunner();
                 for(var lib : libraries) {
                     jobs.add(new ImdbJob(lib.name, lib.uuid));
@@ -143,7 +153,7 @@ public class ImdbDockerImplementation implements Implementation {
                     if(result.code == StatusCode.ERROR)
                         throw Utility.rethrow(result.exception);
                 }
-                ImdbOmdbCache.dump(Main.CACHE_IMDB, cache);
+                ImdbOmdbCache.dump(Main.PWD, cache);
                 Logger.info("Completed batch successfully. Waiting till next invocation...");
                 try { connection.close(); } catch (Exception e) {}
             } catch(Exception e) {

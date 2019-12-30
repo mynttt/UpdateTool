@@ -17,7 +17,9 @@ public class ImdbDatabaseSupport {
     }
 
     public static class ImdbMetadataResult {
-        public final String guid, imdbId, title, hash;
+      //Id will be resolved in the pipeline and not here
+        public String imdbId;
+        public final String guid, title, hash;
         public final Integer id, libraryId;
         public String extraData;
         public Double rating;
@@ -30,7 +32,6 @@ public class ImdbDatabaseSupport {
             extraData = rs.getString(5);
             hash = rs.getString(6);
             rating = (Double) rs.getObject(7);
-            imdbId = ImdbUtility.extractImdbId(guid);
         }
 
         @Override

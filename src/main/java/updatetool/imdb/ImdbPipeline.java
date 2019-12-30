@@ -9,46 +9,84 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.tinylog.Logger;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
+import updatetool.api.AgentResolvementStrategy;
 import updatetool.api.Pipeline;
 import updatetool.common.ErrorReports;
 import updatetool.common.OmdbApi;
-import updatetool.common.Utility;
 import updatetool.common.OmdbApi.OMDBResponse;
+import updatetool.common.TmdbApi;
+import updatetool.common.Utility;
 import updatetool.exceptions.RatelimitException;
 import updatetool.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
+import updatetool.imdb.resolvement.DefaultResolvement;
+import updatetool.imdb.resolvement.ImdbResolvement;
+import updatetool.imdb.resolvement.TmdbToImdbResolvement;
 
 public class ImdbPipeline extends Pipeline<ImdbJob> {
+    private static final Pattern RESOLVEMENT = Pattern.compile(
+                "(?<IMDB>agents.imdb:\\/\\/tt)"
+                + "|(?<TMDB>agents.themoviedb:\\/\\/)"
+            );
+
     private static final int LIST_PARTITIONS = 16;
     private final ImdbDatabaseSupport db;
     private final ExecutorService service;
-    private final String apikey;
-    private final Path metadataRoot;
     private final ImdbOmdbCache cache;
+    private final ImdbPipelineConfiguration configuration;
+    private final HashMap<String, AgentResolvementStrategy<ImdbMetadataResult>> resolve = new HashMap<>();
+    public final AgentResolvementStrategy<ImdbMetadataResult> resolveDefault = new DefaultResolvement();
 
-    public ImdbPipeline(ImdbDatabaseSupport db, ExecutorService service, String apikey, ImdbOmdbCache cache, Path metadataRoot) {
+    public static class ImdbPipelineConfiguration {
+        public final String omdbApiKey, tmdbApiKey;
+        public final Path metadataRoot;
+
+        public ImdbPipelineConfiguration(String omdbApiKey, String tmdbApiKey, Path metadataRoot) {
+            this.omdbApiKey = omdbApiKey;
+            this.tmdbApiKey = tmdbApiKey;
+            this.metadataRoot = metadataRoot;
+        }
+
+        public boolean resolveTmdbConflicts() {
+            return tmdbApiKey != null;
+        }
+    }
+
+    public ImdbPipeline(ImdbDatabaseSupport db, ExecutorService service, ImdbOmdbCache cache, ImdbPipelineConfiguration configuration) {
         this.db = db;
         this.service = service;
-        this.apikey = apikey;
-        this.metadataRoot = metadataRoot;
         this.cache = cache;
+        this.configuration = configuration;
+        resolve.put("IMDB", new ImdbResolvement());
+        resolve.put("TMDB", new TmdbToImdbResolvement(cache, new TmdbApi(configuration.tmdbApiKey)));
     }
 
     @Override
     public void analyseDatabase(ImdbJob job) throws Exception {
         var items = db.requestEntries(db.requestLibraryIdOfUuid(job.uuid));
+        Logger.info("Resolving IMDB identifiers for items. Only warnings and errors will show up...");
+        Logger.info("Items that show up here will not be processed by further stages of the pipeline.");
         int skipped = 0;
         for(var it = items.iterator(); it.hasNext(); ) {
             var item = it.next();
-            if(item.imdbId == null) {
-                if(skipped == 0)
-                    Logger.warn("Detected items with invalid guid. These items will be ignored as they do not provide IMDB IDs.");
+            var matcher = RESOLVEMENT.matcher(item.guid);
+            if(matcher.find()) {
+                for(var entry : resolve.entrySet()) {
+                    if(matcher.group(entry.getKey()) == null)
+                        continue;
+                    var resolved = entry.getValue().resolve(item);
+                    if(!resolved)
+                        it.remove();
+                    break;
+                }
+            } else {
+                resolveDefault.resolve(item);
                 skipped++;
-                Logger.warn("Item: " + item.title + " has non matching imdb guid: " + item.guid);
                 it.remove();
             }
         }
@@ -60,7 +98,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
     @Override
     public void accumulateMetadata(ImdbJob job) throws Exception {
         Logger.info("Items: " + job.items.size());
-        var unprocessed = job.items.stream().filter(j -> !cache.isCached(j.imdbId)).collect(Collectors.toList());
+        var unprocessed = job.items.stream().filter(j -> !cache.isOmdbResponseCached(j.imdbId)).collect(Collectors.toList());
         Logger.info("Metadata missing for: " + unprocessed.size());
         Logger.info("Retrieving metadata...");
         int n = unprocessed.size()/LIST_PARTITIONS;
@@ -72,7 +110,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         AtomicInteger counter = new AtomicInteger();
 
         for(var sub : sublists) {
-            ImdbOmdbWorker w = new ImdbOmdbWorker(sub, gson, new OmdbApi(apikey), counter, unprocessed.size(), cache);
+            ImdbOmdbWorker w = new ImdbOmdbWorker(sub, gson, new OmdbApi(configuration.omdbApiKey), counter, unprocessed.size(), cache);
             map.put(service.submit(w), w);
         }
 
@@ -103,7 +141,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
     @Override
     public void transformMetadata(ImdbJob job) throws Exception {
         var map = new HashMap<ImdbMetadataResult, OMDBResponse>();
-        job.items.forEach(i -> map.put(i, cache.get(i.imdbId)));
+        job.items.forEach(i -> map.put(i, cache.getOmdbResponse(i.imdbId)));
         var noUpdate = map.entrySet().stream().filter(ImdbTransformer::needsNoUpdate).collect(Collectors.toSet());
         if(!noUpdate.isEmpty()) {
             Logger.info(noUpdate.size() + " item(s) need no update.");
@@ -136,7 +174,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         HashMap<Future<Void>, ImdbXmlWorker> map = new HashMap<>();
         var nofile = Collections.synchronizedCollection(new ArrayList<String>());
         for(var sub : sublists) {
-            var worker = new ImdbXmlWorker(sub, factory.newDocumentBuilder(), counter, job.items.size(), nofile, metadataRoot);
+            var worker = new ImdbXmlWorker(sub, factory.newDocumentBuilder(), counter, job.items.size(), nofile, configuration.metadataRoot);
             map.put(service.submit(worker), worker);
         }
         Throwable t = null;
