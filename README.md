@@ -29,9 +29,21 @@ To run your docker:
 ```bash
 docker pull mynttt/updatetool
 
+# Without TMDB fallback
+
 docker run -dit -e OMDB_API_KEY=yourkey \
     -e RUN_EVERY_N_HOURS=12 \
     -e CLEAR_CACHE_EVERY_N_DAYS=14 \
+    -v "/mnt/data/Plex Media Server":/plexdata \
+    -v "/mnt/data/imdpupdaterconfig":/config \
+    mynttt/updatetool
+
+# With TMDB fallback
+
+docker run -dit -e OMDB_API_KEY=yourkey \
+    -e RUN_EVERY_N_HOURS=12 \
+    -e CLEAR_CACHE_EVERY_N_DAYS=14 \
+    -e TMDB_API_KEY=yourkey \
     -v "/mnt/data/Plex Media Server":/plexdata \
     -v "/mnt/data/imdpupdaterconfig":/config \
     mynttt/updatetool
@@ -47,6 +59,8 @@ docker run -dit
     -e RUN_EVERY_N_HOURS=12 \
      # Purge cache entries older than 14 days
     -e CLEAR_CACHE_EVERY_N_DAYS=14 \
+     # Optional parameter: will try to get an IMDB ID from TMDB matched items
+    -e TMDB_API_KEY=yourkey \
      # The plex data root (that contains Plug-ins, Metadata, ...
      # https://support.plex.tv/articles/202915258-where-is-the-plex-media-server-data-directory-located/
     -v "/mnt/data/Plex Media Server":/plexdata \
