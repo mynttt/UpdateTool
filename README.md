@@ -12,7 +12,7 @@ This tool allows you to update the database that stores this data with the corre
 
 An advantage is that it works outside Plex by manipulating the local Plex database. Thus, no metadata refresh operations have to be done within Plex. It is faster and will not lead into the unforeseen consequences that one sometimes experiences with a Plex metadata refresh (missing or changed posters if not using a custom poster).
 
-This tool currently only works on movies and will only allow you to select libraries that use the Plex IMDB agent (because it depends on the IMDB ids). In my library with 1800 movies it transformed entries for 698 items.
+This tool currently only works on movies and will only allow you to select libraries that use the Plex IMDB agent (because it depends on the IMDB ids). In my library with 1800 movies it transformed entries for 698 items. In case that even tho you use the IMDB agent you still have items that are TMDB matched you can run it with an TMDB API key and it will match an IMDB rating to the TMDB item (if TMDB provides an IMDB id).
 
 Before (Not IMDB matched)            |  After Match
 :-------------------------:|:-------------------------:
