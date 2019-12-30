@@ -63,7 +63,8 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         this.cache = cache;
         this.configuration = configuration;
         resolve.put("IMDB", new ImdbResolvement());
-        resolve.put("TMDB", new TmdbToImdbResolvement(cache, new TmdbApi(configuration.tmdbApiKey)));
+        if(configuration.resolveTmdbConflicts())
+            resolve.put("TMDB", new TmdbToImdbResolvement(cache, new TmdbApi(configuration.tmdbApiKey)));
     }
 
     @Override
