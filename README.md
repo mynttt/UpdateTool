@@ -116,7 +116,7 @@ export PLEX_DATA_DIR
 
 # Export variables if on Windows
 set OMDB_API_KEY=abcdefg
-set PLEX_DATA_DIR="C:\User\Data\Plex Media Server
+set PLEX_DATA_DIR=C:\User\Data\Plex Media Server
 
 # Default start
 java -jar UpdateTool-xxx.jar imdb-docker
