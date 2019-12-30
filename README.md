@@ -108,12 +108,15 @@ java -jar UpdateTool-xxx.jar imdb-docker [] | [{every_n_hour}] | [{every_n_hour}
 Example:
 
 ```bash
-# On windows you need to export your environment variables differently before attempting to start the tool
-
+# Export variables if on Linux/Mac
 OMDB_API_KEY=abcdefg
 PLEX_DATA_DIR="/mnt/user/Plex Media Server"
 export OMDB_API_KEY
 export PLEX_DATA_DIR
+
+# Export variables if on Windows
+set OMDB_API_KEY=abcdefg
+set PLEX_DATA_DIR="C:\User\Data\Plex Media Server
 
 # Default start
 java -jar UpdateTool-xxx.jar imdb-docker
