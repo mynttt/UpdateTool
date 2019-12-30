@@ -39,4 +39,5 @@ public class Utility {
             return "null";
         return DECIMAL_FORMAT.format(d);
     }
+
 }

@@ -13,34 +13,41 @@ import com.google.gson.JsonSyntaxException;
 import updatetool.common.OmdbApi.OMDBResponse;
 
 public class ImdbOmdbCache {
-    private long purgeMillis;
-    private final ConcurrentHashMap<String, OMDBResponse> data;
+    private static final String IMDB = "cache-imdb.json";
+    private static final String TMDB2IMDB = "cache-tmdb2imdb.json";
 
-    private ImdbOmdbCache(int purgeOlderThanNdays, ConcurrentHashMap<String, OMDBResponse> data) {
-        if(data == null) {
-            this.data = new ConcurrentHashMap<>();
-        } else {
-            this.data = data;
-        }
+    private long purgeMillis;
+    private final ConcurrentHashMap<String, OMDBResponse> data = new ConcurrentHashMap<>();
+    private final HashMap<String, String> tmdb2imdb = new HashMap<>();
+
+    private ImdbOmdbCache(int purgeOlderThanNdays) {
         purgeMillis = TimeUnit.DAYS.toMillis(purgeOlderThanNdays);
     }
 
-    private ImdbOmdbCache(int purgeOlderThanNdays) {
-        this(purgeOlderThanNdays, null);
-    }
-
+    @SuppressWarnings("serial")
     public static ImdbOmdbCache of(Path p, int purgeOlderThanNdays) {
+        var cache = new ImdbOmdbCache(purgeOlderThanNdays);
         try {
-            @SuppressWarnings("serial")
-            HashMap<String, OMDBResponse> m = new Gson().fromJson(Files.readString(p, StandardCharsets.UTF_8), new TypeToken<HashMap<String, OMDBResponse>>() {}.getType());
-            return new ImdbOmdbCache(purgeOlderThanNdays, new ConcurrentHashMap<>(m)).purge();
-        } catch (JsonSyntaxException | IOException e) {
-            return new ImdbOmdbCache(purgeOlderThanNdays, null);
-        }
+            HashMap<String, OMDBResponse> m = new Gson().fromJson(Files.readString(p.resolve(IMDB), StandardCharsets.UTF_8), new TypeToken<HashMap<String, OMDBResponse>>() {}.getType());
+            cache.data.putAll(m);
+        } catch (JsonSyntaxException | IOException e) {}
+        try {
+            HashMap<String, String> m = new Gson().fromJson(Files.readString(p.resolve(TMDB2IMDB), StandardCharsets.UTF_8), new TypeToken<HashMap<String, String>>() {}.getType());
+            cache.tmdb2imdb.putAll(m);
+        } catch(JsonSyntaxException | IOException e) {}
+        return cache.purge();
     }
 
-    public static void dump(Path p, ImdbOmdbCache data) throws IOException {
-        Files.writeString(p, new Gson().toJson(data.data), StandardCharsets.UTF_8);
+    public static void dump(Path p, ImdbOmdbCache data) throws Exception {
+        Exception ex = null;
+        try {
+            Files.writeString(p.resolve(IMDB), new Gson().toJson(data.data), StandardCharsets.UTF_8);
+        } catch (Exception e) { ex = e; }
+        try {
+            Files.writeString(p.resolve(TMDB2IMDB), new Gson().toJson(data.tmdb2imdb), StandardCharsets.UTF_8);
+        } catch(Exception e) { ex = e; }
+        if(ex != null)
+            throw ex;
     }
 
     public ImdbOmdbCache purge() {
@@ -48,16 +55,24 @@ public class ImdbOmdbCache {
         return this;
     }
 
-    public void cache(String imdbId, OMDBResponse value) {
+    public void cacheOmdbResponse(String imdbId, OMDBResponse value) {
         data.putIfAbsent(imdbId, value);
     }
 
-    public boolean isCached(String imdbId) {
+    public boolean isOmdbResponseCached(String imdbId) {
         return data.get(imdbId) != null;
     }
 
-    public OMDBResponse get(String imdbId) {
+    public OMDBResponse getOmdbResponse(String imdbId) {
         return data.get(imdbId);
+    }
+
+    public String lookupTmdb(String tmdbId) {
+        return tmdb2imdb.get(tmdbId);
+    }
+
+    public void cacheTmdb(String tmdbId, String imdbId) {
+        tmdb2imdb.put(tmdbId, imdbId);
     }
 
 }

@@ -1,7 +1,6 @@
 package updatetool;
 
 import static updatetool.common.Utility.seperator;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -21,14 +20,15 @@ import updatetool.api.Job;
 import updatetool.api.JobReport;
 import updatetool.api.JobReport.StatusCode;
 import updatetool.common.DatabaseSupport;
+import updatetool.common.DatabaseSupport.LibraryItem;
 import updatetool.common.SqliteDatabaseProvider;
 import updatetool.common.State;
-import updatetool.common.DatabaseSupport.LibraryItem;
 import updatetool.imdb.ImdbDatabaseSupport;
 import updatetool.imdb.ImdbJob;
 import updatetool.imdb.ImdbJobRunner;
 import updatetool.imdb.ImdbOmdbCache;
 import updatetool.imdb.ImdbPipeline;
+import updatetool.imdb.ImdbPipeline.ImdbPipelineConfiguration;
 
 public class LegacyImplementation implements Implementation {
     private final String ROOT_TO_DB = "Plug-in Support/Databases/com.plexapp.plugins.library.db";
@@ -56,6 +56,9 @@ public class LegacyImplementation implements Implementation {
 
         Main.testApiImdb(apikey);
 
+        Logger.warn("!!! THIS MODE IS DEPRECATED AND WILL NOT BE SUPPORTED ANYMORE !!! Alternative: imdb-docker.");
+        Logger.warn("!!! TMDB <=> IMDB MATCHING WILL BE DISABLED BY THIS MODE !!!");
+
         System.out.println("PWD: " + Main.PWD.toAbsolutePath().toString());
         System.out.println("Plex Data: " + root.toAbsolutePath().toString());
         System.out.println();
@@ -68,12 +71,12 @@ public class LegacyImplementation implements Implementation {
         if(!state.isEmpty())
             System.out.println("Loaded " + state.size() + " unfinished job(s).\n");
 
-        var cache = ImdbOmdbCache.of(Main.CACHE_IMDB, 7);
+        var cache = ImdbOmdbCache.of(Main.PWD, 7);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
-                ImdbOmdbCache.dump(Main.CACHE_IMDB, cache);
-            } catch (IOException e) {
+                ImdbOmdbCache.dump(Main.PWD, cache);
+            } catch (Exception e) {
                 Logger.error("Failed to save cache.");
                 Logger.error(e);
             }
@@ -120,7 +123,8 @@ public class LegacyImplementation implements Implementation {
             return -2;
         }
         var runner = new ImdbJobRunner();
-        var pipeline = new ImdbPipeline(db, service, apikey, cache, root.resolve("Metadata/Movies"));
+        var config = new ImdbPipelineConfiguration(apikey, null, root.resolve("Metadata/Movies"));
+        var pipeline = new ImdbPipeline(db, service, cache, config);
         boolean error = false;
         JobReport lastReport = null;
 

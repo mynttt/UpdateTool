@@ -9,7 +9,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.tinylog.Logger;
 import updatetool.api.Implementation;
+import updatetool.common.AbstractApi;
 import updatetool.common.OmdbApi;
+import updatetool.common.TmdbApi;
 import updatetool.imdb.ImdbDockerImplementation;
 
 public class Main {
@@ -17,7 +19,6 @@ public class Main {
     public static final List<Implementations> IMPLEMENTATIONS = Arrays.asList(Implementations.values());
 
     public static final Path STATE_IMDB = Main.PWD.resolve("state-imdb.json");
-    public static final Path CACHE_IMDB = Main.PWD.resolve("cache-imdb.json");
 
     private static String VERSION;
 
@@ -36,7 +37,10 @@ public class Main {
                 "Watchdog mode implementation, will update ratings every n hours",
                 ImdbDockerImplementation.class,
                 "Usage: this.jar imdb-docker [] | [{every_n_hour}] | [{every_n_hour} {cache_purge_in_days}]",
-                new String[] { "Environment variables PLEX_DATA_DIR and OMDB_API_KEY are used for the data dir and the api key.",
+                new String[] { "The following environment variables must be set and exported before launching this tool successfully!",
+                             "PLEX_DATA_DIR: Used for the data directory of plex",
+                             "OMDB_API_KEY: Used to access the OMDB database and fetch IMDB ratings",
+                             "(Optional) TMDB_API_KEY: Used to convert TMDB matched items to IMDB items. The fallback will only be available if this is set.",
                              "No parameters starts with the default of {every_n_hour} = 12, {cache_pruge_in_days} = 14 and {new_movie_cache_purge_threshold} = 12",
                              "{every_n_hour} : Invoke this every n hour on all IMDB supported libraries",
                              "{cache_purge_in_days} : Purge the responses for movies over the new movie threshold every n hours (will send more requests to OMDB the lower the number)"}),
@@ -105,19 +109,6 @@ public class Main {
         constructor.newInstance().invoke(args);
     }
 
-    public static void testApiImdb(String key) throws IOException, InterruptedException {
-        Logger.info("Testing API key: " + key);
-        var api = new OmdbApi(key);
-        var response = api.testApi();
-        if(response.statusCode() != 200) {
-            Logger.error("API Test failed: Code " + response.statusCode());
-            Logger.error("Payload:" + response.body());
-            Logger.error("Key available under https://www.omdbapi.com/");
-            System.exit(-1);
-        }
-        Logger.info("Test passed. API Key is valid.");
-    }
-
     public static void printHelp(Implementations i, boolean datahint) {
         if(datahint)
             System.out.println("Data folder: https://support.plex.tv/articles/202915258-where-is-the-plex-media-server-data-directory-located");
@@ -139,6 +130,29 @@ public class Main {
             printHelp(i, false);
             System.out.println();
         }
+    }
+
+    public static void testApiTmdb(String apikeyTmdb) throws Exception {
+        Logger.info("Testing TMDB API key: " + apikeyTmdb);
+        var api = new TmdbApi(apikeyTmdb);
+        genericApiTest(api);
+    }
+
+    public static void testApiImdb(String key) throws Exception {
+        Logger.info("Testing OMDB API key: " + key);
+        var api = new OmdbApi(key);
+        genericApiTest(api);
+    }
+
+    private static void genericApiTest(AbstractApi api) throws Exception {
+        var response = api.testApi();
+        if(response.statusCode() != 200) {
+            Logger.error("API Test failed: Code " + response.statusCode());
+            Logger.error("Payload:" + response.body());
+            Logger.error("Key available under:" + api.keysWhere());
+            System.exit(-1);
+        }
+        Logger.info("Test passed. API Key is valid.");
     }
 
 }
