@@ -1,6 +1,7 @@
 *.json
 *.log
 .gradle/
+src/main/resources/VERSION
 build/
 .metadata
 bin/

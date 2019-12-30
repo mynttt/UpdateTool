@@ -17,7 +17,7 @@ public class OmdbApi {
 
     public static class OMDBResponse {
         public final String Title, imdbRating, imdbID, Error;
-        public final boolean Response;
+        public final Boolean Response;
         private long created;
 
         public OMDBResponse(String title, String imdbRating, String imdbID, String error, boolean response) {

@@ -8,8 +8,8 @@ import org.tinylog.Logger;
 import com.google.gson.Gson;
 import updatetool.Main;
 import updatetool.common.OmdbApi;
-import updatetool.common.Utility;
 import updatetool.common.OmdbApi.OMDBResponse;
+import updatetool.common.Utility;
 import updatetool.exceptions.ApiCallFailedException;
 import updatetool.exceptions.RatelimitException;
 import updatetool.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
@@ -49,24 +49,28 @@ class ImdbOmdbWorker implements Callable<Void> {
                         break;
                     if(response.statusCode() == 200) {
                         result = gson.fromJson(response.body(), OMDBResponse.class);
+                        if(result.Response == null)
+                            throw new AssertionError("Response should not be null. API broken?");
                         if(!result.Response) {
                             Logger.warn("OMDB API returned a reply with status code 200 but the reply is invalid. Trying again... {}/{}", i+1, RETRY_BEFORE_FAILURE);
                             continue;
                         }
                         break;
                     }
+                    Logger.warn("OMDB API returned a reply with status code != 200. Trying again... {}/{}", i+1, RETRY_BEFORE_FAILURE);
                 } catch(Exception e) {
-                    Logger.warn("OMDB API request failed: [" + (i+1) + "/" + RETRY_BEFORE_FAILURE +"] : " + response.statusCode() + " -> " + response.body());
+                    Logger.warn("OMDB API request failed: [" + (i+1) + "/" + RETRY_BEFORE_FAILURE +"] : " + e.getMessage());
+                    Logger.warn("Dumping response:" + response);
                     if(i == RETRY_BEFORE_FAILURE-1)
                         throw e;
                 }
             }
 
-            if(!result.Response)
-                throw new ApiCallFailedException("API call failed with code 200 after + " + RETRY_BEFORE_FAILURE + " attempt(s): " + response.body());
-
             if(response.statusCode() == 401)
                 throw new RatelimitException();
+
+            if(response.statusCode() != 200 || !result.Response)
+                throw new ApiCallFailedException("API call failed with code " + response.statusCode() + " after + " + RETRY_BEFORE_FAILURE + " attempt(s): " + response.body());
 
             result.touch();
             if(Main.PRINT_STATUS)
