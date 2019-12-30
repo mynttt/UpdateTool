@@ -94,7 +94,7 @@ Provides a CLI wizard to add and process IMDB update jobs on the supporting libr
 
 ### Docker mode:
 
-In docker mode the tool will read the two environment variables OMDB_API_KEY and PLEX_DATA_DIR.
+In docker mode the tool will read the environment variables OMDB_API_KEY and PLEX_DATA_DIR and optionally TMDB_API_KEY if TMDB fallback should be enabled.
 
 It can then be invoked with:
 - no args (default caching (14 days) and every 12h)
@@ -108,6 +108,8 @@ java -jar UpdateTool-xxx.jar imdb-docker [] | [{every_n_hour}] | [{every_n_hour}
 Example:
 
 ```bash
+# On windows you need to export your environment variables differently before attempting to start the tool
+
 OMDB_API_KEY=abcdefg
 PLEX_DATA_DIR="/mnt/user/Plex Media Server"
 export OMDB_API_KEY
