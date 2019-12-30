@@ -78,6 +78,7 @@ Provides a watchdog that once started will run every N hours over all IMDB suppo
 
 ### CLI mode (deprecated)
 ***Don't use this it will be removed in the future and is currently not supported***
+
 ***No support for TMDB fallback here***
 
 Provides a CLI wizard to add and process IMDB update jobs on the supporting libraries.
