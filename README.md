@@ -87,6 +87,8 @@ docker run -dit
 
 **If you want to use TMDB fallback you will also have to add the variable TMDB_API_KEY!**
 
+**If the /config folder does not exist yet in appdata unraid will create it! It is important to access logs easily!**
+
 ![](img/unraid.PNG)
 
 6.) You can now start the container. If it has errors it will stop. The log in the config folder shows you what it does or why it crashed if that happens.
