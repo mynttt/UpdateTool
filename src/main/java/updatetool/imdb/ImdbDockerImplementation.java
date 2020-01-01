@@ -141,6 +141,7 @@ public class ImdbDockerImplementation implements Implementation {
                     }
                     if(result.code == StatusCode.RATE_LIMIT) {
                         Logger.info("Aborting queue duo to being rate limited by the OMDB API. Will wait until next invocation.");
+                        Logger.info("It is now safe to suspend execution if this tool should not run 24/7.");
                         try { connection.close(); } catch (Exception e) {}
                         return;
                     }
@@ -150,11 +151,14 @@ public class ImdbDockerImplementation implements Implementation {
                         try { connection.close(); } catch (Exception e) {}
                         System.exit(-1);
                     }
-                    if(result.code == StatusCode.ERROR)
+                    if(result.code == StatusCode.ERROR) {
+                        try { connection.close(); } catch (Exception e) {}
                         throw Utility.rethrow(result.exception);
+                    }
                 }
                 ImdbOmdbCache.dump(Main.PWD, cache);
                 Logger.info("Completed batch successfully. Waiting till next invocation...");
+                Logger.info("It is now safe to suspend execution if this tool should not run 24/7.");
                 try { connection.close(); } catch (Exception e) {}
             } catch(Exception e) {
                 if(connection!=null)
