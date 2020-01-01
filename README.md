@@ -73,7 +73,7 @@ docker run -dit
 
 *On windows the \ syntax to make the command multiline will not work. You have to remove those and make the command a single line command!*
 
-## Docker on UnRaid
+## Docker on UnRaid in the docker tab without commands
 
 1.) You need the community application plugin.
 
@@ -83,9 +83,13 @@ docker run -dit
 
 4.) It will either show the UpdateTool container or nothing and allow you to display Dockerhub search results. Display them and install.
 
-5.)
+5.) Configure the paths and variables like this (with your own paths and api keys): 
 
+**If you want to use TMDB fallback you will also have to add the variable TMDB_API_KEY!**
 
+![](img/unraid.PNG)
+
+6.) You can now start the container. If it has errors it will stop. The log in the config folder shows you what it does or why it crashed if that happens.
 
 
 # Technical details
