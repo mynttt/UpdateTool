@@ -107,16 +107,4 @@ public class ImdbDatabaseSupport {
         }
     }
 
-
-    public void debg() {
-        try {
-            var s = provider.connection.createStatement();
-            s.executeUpdate("UPDATE metadata_items SET extra_data = 'test', updated_at = DateTime('now') WHERE library_section_id IS NULL");
-            s.close();
-        } catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-
 }
