@@ -69,6 +69,25 @@ docker run -dit
     mynttt/updatetool
 ```
 
+*"/mnt/data/Plex Media Server" and "/mnt/data/imdpupdaterconfig" are just sample paths! Set your own paths there or it will probably not work!*
+
+*On windows the \ syntax to make the command multiline will not work. You have to remove those and make the command a single line command!*
+
+## Docker on UnRaid
+
+1.) You need the community application plugin.
+
+2.) Apps -> Settings -> Enable additional search results from dockerHub to "Yes"
+
+3.) Now you need to go to Apps and search for "mynttt".
+
+4.) It will either show the UpdateTool container or nothing and allow you to display Dockerhub search results. Display them and install.
+
+5.)
+
+
+
+
 # Technical details
 
 This tool supplies two modes at the moment:
