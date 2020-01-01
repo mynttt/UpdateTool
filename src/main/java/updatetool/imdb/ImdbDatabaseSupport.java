@@ -6,6 +6,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import org.sqlite.SQLiteException;
 import updatetool.common.SqliteDatabaseProvider;
 import updatetool.common.Utility;
 
@@ -73,7 +74,7 @@ public class ImdbDatabaseSupport {
         }
     }
 
-    public void requestBatchUpdateOf(List<ImdbMetadataResult> items) {
+    public void requestBatchUpdateOf(List<ImdbMetadataResult> items) throws SQLiteException {
         boolean success = true;
         try {
             var s = provider.connection.prepareStatement("UPDATE metadata_items SET rating = ?, extra_data = ?, updated_at = DateTime('now') WHERE id = ?");
@@ -103,6 +104,18 @@ public class ImdbDatabaseSupport {
             } catch(SQLException e) {
                 throw Utility.rethrow(e);
             }
+        }
+    }
+
+
+    public void debg() {
+        try {
+            var s = provider.connection.createStatement();
+            s.executeUpdate("UPDATE metadata_items SET extra_data = 'test', updated_at = DateTime('now') WHERE library_section_id IS NULL");
+            s.close();
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 

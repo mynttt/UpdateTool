@@ -8,10 +8,12 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.xml.parsers.DocumentBuilderFactory;
+import org.sqlite.SQLiteException;
 import org.tinylog.Logger;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
@@ -22,6 +24,7 @@ import updatetool.common.OmdbApi;
 import updatetool.common.OmdbApi.OMDBResponse;
 import updatetool.common.TmdbApi;
 import updatetool.common.Utility;
+import updatetool.exceptions.DatabaseLockedException;
 import updatetool.exceptions.RatelimitException;
 import updatetool.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
 import updatetool.imdb.resolvement.DefaultResolvement;
@@ -35,6 +38,9 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
             );
 
     private static final int LIST_PARTITIONS = 16;
+    private static final int RETRY_N_SECONDS_IF_DB_LOCKED = 20;
+    private static final int ABORT_DB_LOCK_WAITING_AFTER_N_RETRIES = 200;
+
     private final ImdbDatabaseSupport db;
     private final ExecutorService service;
     private final ImdbOmdbCache cache;
@@ -80,8 +86,10 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
                     if(matcher.group(entry.getKey()) == null)
                         continue;
                     var resolved = entry.getValue().resolve(item);
-                    if(!resolved)
+                    if(!resolved) {
                         it.remove();
+                        skipped++;
+                    }
                     break;
                 }
             } else {
@@ -159,7 +167,20 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
     @Override
     public void updateDatabase(ImdbJob job) throws Exception {
         Logger.info("Updating " + job.items.size() + " via batch request...");
-        db.requestBatchUpdateOf(job.items);
+        int counter = 0;
+        while(true) {
+            if(counter++==(ABORT_DB_LOCK_WAITING_AFTER_N_RETRIES-1))
+                throw new DatabaseLockedException("Plex database is currently locked. After " + ABORT_DB_LOCK_WAITING_AFTER_N_RETRIES + " attempt(s) every " + RETRY_N_SECONDS_IF_DB_LOCKED + " second(s) of accessing an unlocked database this tool is destined to halt execution to prevent endless loops. Either stop Plex to run the tool or start the tool again and hope Plex has removed the lock.");
+            try {
+                db.requestBatchUpdateOf(job.items);
+                break;
+            } catch(SQLiteException e) {
+                if(!(e.getMessage().trim().startsWith("[SQLITE_BUSY]") && e.getMessage().contains("The database file is locked")))
+                    throw e;
+                Logger.warn("Database is currently locked and can't be accessed. Waiting for {} second(s) before attemting again. [{}/{}]", RETRY_N_SECONDS_IF_DB_LOCKED, counter, ABORT_DB_LOCK_WAITING_AFTER_N_RETRIES);
+                Thread.sleep(TimeUnit.SECONDS.toMillis(RETRY_N_SECONDS_IF_DB_LOCKED));
+            }
+        }
         Logger.info("Batch request finished successfully. Database is now up to date!");
         job.stage = PipelineStage.DB_UPDATED;
     }
