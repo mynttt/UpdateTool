@@ -153,7 +153,7 @@ java -jar UpdateTool-xxx.jar imdb-docker 5
 java -jar UpdateTool-xxx.jar imdb-docker 12 0
 ```
 
-### Legacy CLI mode:
+### Legacy CLI mode (deprecated):
 
 ```bash
 java -jar UpdateTool-xxx.jar imdb-cli <PlexData> <ApiKey>
@@ -173,6 +173,8 @@ Example:
 # Normal mode
 java -jar UpdateTool-xxx.jar imdb-cli "/mnt/data/Plex Media Server" abcdefg
 ```
+
+# Other stuff
 
 [Where is the data folder of the Plex Media Server located on my system?](https://support.plex.tv/articles/202915258-where-is-the-plex-media-server-data-directory-located/)
 
