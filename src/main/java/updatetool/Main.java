@@ -30,8 +30,6 @@ public class Main {
         }
     }
 
-    public static boolean PRINT_STATUS = false;
-
     public enum Implementations {
         IMDB_DOCKER("imdb-docker",
                 "Watchdog mode implementation, will update ratings every n hours",

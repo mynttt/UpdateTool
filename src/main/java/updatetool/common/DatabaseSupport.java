@@ -19,11 +19,14 @@ public class DatabaseSupport {
         public final String uuid;
 
         private LibraryItem(ResultSet r, SqliteDatabaseProvider p) throws SQLException {
-            var rs = p.queryFor("SELECT count(*) FROM media_items WHERE library_section_id = " + r.getLong(1));
-            items = rs.getInt(1);
-            id = r.getLong(1);
-            name = r.getString(2);
-            uuid = r.getString(3);
+            try(var handle = p.queryFor("SELECT count(*) FROM media_items WHERE library_section_id = " + r.getLong(1))) {
+                items = handle.result().getInt(1);
+                id = r.getLong(1);
+                name = r.getString(2);
+                uuid = r.getString(3);
+            } catch(SQLException e) {
+                throw e;
+            }
         }
 
         @Override
@@ -33,11 +36,10 @@ public class DatabaseSupport {
     }
 
     public List<LibraryItem> requestLibraries() {
-        try {
+        try(var handle = provider.queryFor("SELECT id, name, uuid FROM library_sections WHERE section_type = 1 AND agent = 'com.plexapp.agents.imdb'")) {
             var list = new ArrayList<LibraryItem>();
-            var rl = provider.queryFor("SELECT id, name, uuid FROM library_sections WHERE section_type = 1 AND agent = 'com.plexapp.agents.imdb'");
-            while(rl.next())
-                list.add(new LibraryItem(rl, provider));
+            while(handle.result().next())
+                list.add(new LibraryItem(handle.result(), provider));
             return list;
         } catch (SQLException e) {
             throw Utility.rethrow(e);

@@ -39,7 +39,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
 
     private static final int LIST_PARTITIONS = 16;
     private static final int RETRY_N_SECONDS_IF_DB_LOCKED = 20;
-    private static final int ABORT_DB_LOCK_WAITING_AFTER_N_RETRIES = 200;
+    private static final int ABORT_DB_LOCK_WAITING_AFTER_N_RETRIES = 500;
 
     private final ImdbDatabaseSupport db;
     private final ExecutorService service;
@@ -175,7 +175,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
                 db.requestBatchUpdateOf(job.items);
                 break;
             } catch(SQLiteException e) {
-                if(!(e.getMessage().trim().startsWith("[SQLITE_BUSY]") && e.getMessage().contains("The database file is locked")))
+                if(!e.getMessage().trim().startsWith("[SQLITE_BUSY]"))
                     throw e;
                 Logger.warn("Database is currently locked and can't be accessed. Waiting for {} second(s) before attemting again. [{}/{}]", RETRY_N_SECONDS_IF_DB_LOCKED, counter, ABORT_DB_LOCK_WAITING_AFTER_N_RETRIES);
                 Thread.sleep(TimeUnit.SECONDS.toMillis(RETRY_N_SECONDS_IF_DB_LOCKED));
