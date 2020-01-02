@@ -69,6 +69,31 @@ docker run -dit
     mynttt/updatetool
 ```
 
+*"/mnt/data/Plex Media Server" and "/mnt/data/imdpupdaterconfig" are just sample paths! Set your own paths there or it will probably not work!*
+
+*On windows the \ syntax to make the command multiline will not work. You have to remove those and make the command a single line command!*
+
+## Docker on UnRaid in the docker tab without commands
+
+1.) You need the community application plugin.
+
+2.) Apps -> Settings -> Enable additional search results from dockerHub to "Yes"
+
+3.) Now you need to go to Apps and search for "mynttt".
+
+4.) It will either show the UpdateTool container or nothing and allow you to display Dockerhub search results. Display them and install.
+
+5.) Configure the paths and variables like this (with your own paths and api keys): 
+
+**If you want to use TMDB fallback you will also have to add the variable TMDB_API_KEY!**
+
+**If the /config folder does not exist yet in appdata unraid will create it! It is important to access logs easily!**
+
+![](img/unraid.PNG)
+
+6.) You can now start the container. If it has errors it will stop. The log in the config folder shows you what it does or why it crashed if that happens.
+
+
 # Technical details
 
 This tool supplies two modes at the moment:
@@ -130,7 +155,7 @@ java -jar UpdateTool-xxx.jar imdb-docker 5
 java -jar UpdateTool-xxx.jar imdb-docker 12 0
 ```
 
-### Legacy CLI mode:
+### Legacy CLI mode (deprecated):
 
 ```bash
 java -jar UpdateTool-xxx.jar imdb-cli <PlexData> <ApiKey>
@@ -150,6 +175,8 @@ Example:
 # Normal mode
 java -jar UpdateTool-xxx.jar imdb-cli "/mnt/data/Plex Media Server" abcdefg
 ```
+
+# Other stuff
 
 [Where is the data folder of the Plex Media Server located on my system?](https://support.plex.tv/articles/202915258-where-is-the-plex-media-server-data-directory-located/)
 
