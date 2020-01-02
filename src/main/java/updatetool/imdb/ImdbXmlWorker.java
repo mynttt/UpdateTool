@@ -13,8 +13,8 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import org.tinylog.Logger;
 import org.w3c.dom.Document;
-import updatetool.Main;
 import updatetool.common.Utility;
 import updatetool.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
 
@@ -44,8 +44,9 @@ class ImdbXmlWorker implements Callable<Void> {
             Path combined = contents.resolve("_combined/Info.xml");
             transformXML(item, imdb, builder);
             transformXML(item, combined, builder);
-            if(Main.PRINT_STATUS)
-                Utility.printStatusBar(counter.getAndIncrement(), n, 15);
+            int c = counter.incrementAndGet();
+            if(c % 100 == 0)
+                Logger.info("Transforming [{}/{}]...", c, n);
             completed.add(item);
         }
         return null;

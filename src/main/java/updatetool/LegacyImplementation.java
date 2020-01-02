@@ -66,8 +66,6 @@ public class LegacyImplementation implements Implementation {
         Set<ImdbJob> state = State.recoverImdb(Main.STATE_IMDB);
         QUEUE.addAll(state);
 
-        Main.PRINT_STATUS = true;
-
         if(!state.isEmpty())
             System.out.println("Loaded " + state.size() + " unfinished job(s).\n");
 

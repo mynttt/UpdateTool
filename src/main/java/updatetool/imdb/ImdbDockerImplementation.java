@@ -148,8 +148,10 @@ public class ImdbDockerImplementation implements Implementation {
                     if(result.code == StatusCode.API_ERROR) {
                         Logger.error(result.userDefinedMessage);
                         Logger.error("Original message: {}", result.exception.getMessage());
+                        Logger.info("Aborting queue duo to failing to fetch from the OMDB API. Will wait until next invocation.");
+                        Logger.info("It is now safe to suspend execution if this tool should not run 24/7.");
                         try { connection.close(); } catch (Exception e) {}
-                        System.exit(-1);
+                        return;
                     }
                     if(result.code == StatusCode.ERROR) {
                         try { connection.close(); } catch (Exception e) {}

@@ -1,5 +1,6 @@
 package updatetool.imdb;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -54,11 +55,10 @@ public class ImdbDatabaseSupport {
     }
 
     public List<ImdbMetadataResult> requestEntries(long libraryId) {
-        try {
+        try(var handle = provider.queryFor("SELECT id, library_section_id, guid, title, extra_data, hash, rating from metadata_items WHERE media_item_count = 1 AND library_section_id = " + libraryId)){
             List<ImdbMetadataResult> list = new ArrayList<>();
-            var rs = provider.queryFor("SELECT id, library_section_id, guid, title, extra_data, hash, rating from metadata_items WHERE media_item_count = 1 AND library_section_id = " + libraryId);
-            while(rs.next())
-                list.add(new ImdbMetadataResult(rs));
+            while(handle.result().next())
+                list.add(new ImdbMetadataResult(handle.result()));
             return list;
         } catch (SQLException e) {
             throw Utility.rethrow(e);
@@ -67,8 +67,8 @@ public class ImdbDatabaseSupport {
 
 
     public long requestLibraryIdOfUuid(String uuid) {
-        try {
-            return provider.queryFor("SELECT id FROM library_sections WHERE uuid = '" + uuid + "';").getLong(1);
+        try(var handle = provider.queryFor("SELECT id FROM library_sections WHERE uuid = '" + uuid + "';")) {
+            return handle.result().getLong(1);
         } catch (SQLException e) {
             throw Utility.rethrow(e);
         }
@@ -76,8 +76,9 @@ public class ImdbDatabaseSupport {
 
     public void requestBatchUpdateOf(List<ImdbMetadataResult> items) throws SQLiteException {
         boolean success = true;
+        PreparedStatement s = null;
         try {
-            var s = provider.connection.prepareStatement("UPDATE metadata_items SET rating = ?, extra_data = ?, updated_at = DateTime('now') WHERE id = ?");
+            s = provider.connection.prepareStatement("UPDATE metadata_items SET rating = ?, extra_data = ?, updated_at = DateTime('now') WHERE id = ?");
             for(var item : items) {
                 s.setDouble(1, item.rating);
                 s.setString(2, item.extraData);
@@ -96,6 +97,7 @@ public class ImdbDatabaseSupport {
             throw Utility.rethrow(e);
         } finally {
             try {
+                s.close();
                 if(success) {
                     provider.connection.commit();
                 } else {

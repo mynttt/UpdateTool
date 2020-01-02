@@ -23,7 +23,7 @@ public class ImdbJobRunner implements JobRunner<ImdbJob> {
                     return new JobReport("Aborted job queue due to being rate limited. Either change the API key or wait a while to continue.", StatusCode.RATE_LIMIT, null);
                 if(t instanceof ApiCallFailedException)
                     return new JobReport("Aborted job queue due to the API failing to deliver a result.", StatusCode.API_ERROR, t);
-                return new JobReport(t.getMessage(), StatusCode.ERROR, t);
+                return new JobReport(t.getMessage() == null ? "No message specified." : t.getMessage(), StatusCode.ERROR, t);
             }
         }
 
