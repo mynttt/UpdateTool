@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -11,6 +12,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import org.tinylog.Logger;
+import org.tinylog.configuration.Configuration;
 import updatetool.Main;
 import updatetool.api.Implementation;
 import updatetool.api.JobReport.StatusCode;
@@ -35,6 +37,22 @@ public class ImdbDockerImplementation implements Implementation {
 
         Objects.requireNonNull(apikeyOmdb, "Environment variable OMDB_API_KEY is not set");
         Objects.requireNonNull(data, "Environment variable PLEX_DATA_DIR is not set");
+
+        var levels = List.of("trace", "debug", "info", "error", "warn");
+        String logging = System.getenv("LOG_LEVEL");
+
+        if(logging != null) {
+            logging = logging.toLowerCase();
+            if(levels.contains(logging.toLowerCase())) {
+                Configuration.set("writer.level", logging);
+                Configuration.set("writer2.level", logging);
+                System.out.println("Logging level changed to: " + logging);
+            } else {
+                Logger.warn("Ignoring custom log level. Logging level {} not in allowed levels: {}", logging, levels);
+            }
+        }
+
+        Logger.info("Running version: {}", Main.version());
 
         plexdata = Path.of(data);
 
