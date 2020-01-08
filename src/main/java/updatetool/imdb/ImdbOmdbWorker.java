@@ -66,8 +66,10 @@ class ImdbOmdbWorker implements Callable<Void> {
             if(response.statusCode() == 401)
                 throw new RatelimitException();
 
-            if(response.statusCode() != 200 || !result.Response)
+            if(response.statusCode() != 200 || !result.Response) {
+                Logger.error("OMDB_API_FAIL := TITLE -> {} | IMDB_ID -> {} | GUID -> {} | RESPONSE_CODE -> {} | RESPONSE_BODY -> {}", item.title, item.imdbId, item.guid, response.statusCode(), response.body());
                 throw new ApiCallFailedException("API call failed with code " + response.statusCode() + " after + " + RETRY_BEFORE_FAILURE + " attempt(s): " + response.body());
+            }
 
             int c = counter.incrementAndGet();
             if(c % 100 == 0)

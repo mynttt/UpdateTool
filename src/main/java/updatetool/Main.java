@@ -30,6 +30,10 @@ public class Main {
         }
     }
 
+    public static String version() {
+        return VERSION;
+    }
+
     public enum Implementations {
         IMDB_DOCKER("imdb-docker",
                 "Watchdog mode implementation, will update ratings every n hours",
@@ -102,7 +106,6 @@ public class Main {
             System.exit(-1);
         }
 
-        Logger.info("Running version: " + VERSION);
         var constructor = impls.get(0).entry.getConstructor(new Class[0]);
         constructor.newInstance().invoke(args);
     }
