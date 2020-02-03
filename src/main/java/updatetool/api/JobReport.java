@@ -1,7 +1,7 @@
 package updatetool.api;
 
 public class JobReport {
-    public enum StatusCode { PASS, ERROR, API_ERROR, RATE_LIMIT }
+    public enum StatusCode { PASS, ERROR, API_ERROR }
 
     public final String userDefinedMessage;
     public final StatusCode code;
