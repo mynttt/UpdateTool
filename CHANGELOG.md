@@ -1,3 +1,7 @@
+## 1.2.5:
+  - Removed deprecated legacy CLI interface from project
+  - Deprecated and removed OMDB interfaces and implementations, this tool will no longer use the OMDB API as IMDB provides a rating dataset that is refreshed daily and thus more up to date
+
 ## 1.2.4:
   - In case that the OMDB API fails for some users this tool will now dump some information that could help investigating the issue
 
