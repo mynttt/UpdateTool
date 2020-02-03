@@ -8,16 +8,25 @@ import updatetool.api.AgentResolvementStrategy;
 import updatetool.common.TmdbApi;
 import updatetool.common.TmdbApi.TMDBResponse;
 import updatetool.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
-import updatetool.imdb.ImdbOmdbCache;
+import updatetool.imdb.ImdbTmdbCache;
 import updatetool.imdb.ImdbUtility;
 
 public class TmdbToImdbResolvement implements AgentResolvementStrategy<ImdbMetadataResult> {
     private static final int MAX_TRIES = 3;
     private final Gson gson;
-    private final ImdbOmdbCache cache;
+  //Deprecation of OMDB: private final ImdbOmdbCache cache;
+    private final ImdbTmdbCache cache;
     private final TmdbApi api;
 
+  //Deprecation of OMDB: 
+    /*
     public TmdbToImdbResolvement(ImdbOmdbCache cache, TmdbApi api) {
+        this.cache = cache;
+        this.api = api;
+        this.gson = new Gson();
+    }*/
+    
+    public TmdbToImdbResolvement(ImdbTmdbCache cache, TmdbApi api) {
         this.cache = cache;
         this.api = api;
         this.gson = new Gson();

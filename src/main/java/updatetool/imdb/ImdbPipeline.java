@@ -16,17 +16,15 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.sqlite.SQLiteException;
 import org.tinylog.Logger;
 import com.google.common.collect.Lists;
-import com.google.gson.Gson;
 import updatetool.api.AgentResolvementStrategy;
+import updatetool.api.ExportedRating;
 import updatetool.api.Pipeline;
 import updatetool.common.ErrorReports;
-import updatetool.common.OmdbApi;
-import updatetool.common.OmdbApi.OMDBResponse;
 import updatetool.common.TmdbApi;
 import updatetool.common.Utility;
 import updatetool.exceptions.DatabaseLockedException;
-import updatetool.exceptions.RatelimitException;
 import updatetool.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
+import updatetool.imdb.ImdbRatingDatasetFactory.ImdbRatingDataset;
 import updatetool.imdb.resolvement.DefaultResolvement;
 import updatetool.imdb.resolvement.ImdbResolvement;
 import updatetool.imdb.resolvement.TmdbToImdbResolvement;
@@ -43,17 +41,16 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
 
     private final ImdbDatabaseSupport db;
     private final ExecutorService service;
-    private final ImdbOmdbCache cache;
+    private final ImdbRatingDataset dataset;
     private final ImdbPipelineConfiguration configuration;
     private final HashMap<String, AgentResolvementStrategy<ImdbMetadataResult>> resolve = new HashMap<>();
     public final AgentResolvementStrategy<ImdbMetadataResult> resolveDefault = new DefaultResolvement();
 
     public static class ImdbPipelineConfiguration {
-        public final String omdbApiKey, tmdbApiKey;
+        public final String tmdbApiKey;
         public final Path metadataRoot;
-
-        public ImdbPipelineConfiguration(String omdbApiKey, String tmdbApiKey, Path metadataRoot) {
-            this.omdbApiKey = omdbApiKey;
+        
+        public ImdbPipelineConfiguration(String tmdbApiKey, Path metadataRoot) {
             this.tmdbApiKey = tmdbApiKey;
             this.metadataRoot = metadataRoot;
         }
@@ -62,12 +59,12 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
             return tmdbApiKey != null;
         }
     }
-
-    public ImdbPipeline(ImdbDatabaseSupport db, ExecutorService service, ImdbOmdbCache cache, ImdbPipelineConfiguration configuration) {
+    
+    public ImdbPipeline(ImdbDatabaseSupport db, ExecutorService service, ImdbTmdbCache cache, ImdbPipelineConfiguration configuration, ImdbRatingDataset dataset) {
         this.db = db;
         this.service = service;
-        this.cache = cache;
         this.configuration = configuration;
+        this.dataset = dataset;
         resolve.put("IMDB", new ImdbResolvement());
         resolve.put("TMDB", configuration.resolveTmdbConflicts() ? new TmdbToImdbResolvement(cache, new TmdbApi(configuration.tmdbApiKey)) : resolveDefault);
     }
@@ -105,51 +102,14 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
 
     @Override
     public void accumulateMetadata(ImdbJob job) throws Exception {
-        Logger.info("Items: " + job.items.size());
-        var unprocessed = job.items.stream().filter(j -> !cache.isOmdbResponseCached(j.imdbId)).collect(Collectors.toList());
-        Logger.info("Metadata missing for: " + unprocessed.size());
-        Logger.info("Retrieving metadata...");
-        int n = unprocessed.size()/LIST_PARTITIONS;
-        var sublists = Lists.partition(unprocessed, n == 0 ? 1 : n);
-        Gson gson = new Gson();
-        HashMap<Future<Void>, ImdbOmdbWorker> map = new HashMap<>();
-        boolean rateLimited = false;
-        Throwable ex = null;
-        AtomicInteger counter = new AtomicInteger();
-
-        for(var sub : sublists) {
-            ImdbOmdbWorker w = new ImdbOmdbWorker(sub, gson, new OmdbApi(configuration.omdbApiKey), counter, unprocessed.size(), cache);
-            map.put(service.submit(w), w);
-        }
-
-        for(var entry : map.entrySet()) {
-            try {
-                entry.getKey().get();
-            } catch(ExecutionException e) {
-                Throwable t = e;
-                while(t.getCause() != null)
-                    t = t.getCause();
-                if(t instanceof RatelimitException)
-                    rateLimited = true;
-                if(!rateLimited)
-                    ex = e.getCause();
-            }
-        }
-
-        if(rateLimited)
-            throw new RatelimitException();
-
-        if(ex != null)
-            throw Utility.rethrow(ex);
-
+        // Accumulation not necessary anymore since we can use the complete IMDB dataset here, thus skipping this step
         job.stage = PipelineStage.ACCUMULATED_META;
-        Logger.info("Fetched all metadata from OMDb.");
     }
 
     @Override
     public void transformMetadata(ImdbJob job) throws Exception {
-        var map = new HashMap<ImdbMetadataResult, OMDBResponse>();
-        job.items.forEach(i -> map.put(i, cache.getOmdbResponse(i.imdbId)));
+        var map = new HashMap<ImdbMetadataResult, ExportedRating>();
+        job.items.forEach(i -> map.put(i, dataset.getRatingFor(i.imdbId)));
         var noUpdate = map.entrySet().stream().filter(ImdbTransformer::needsNoUpdate).collect(Collectors.toSet());
         if(!noUpdate.isEmpty()) {
             Logger.info(noUpdate.size() + " item(s) need no update.");

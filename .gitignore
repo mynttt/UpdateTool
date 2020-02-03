@@ -1,3 +1,6 @@
+*.tsv
+*.gz
+ratingSetLastUpdate
 *.json
 *.log
 .gradle/
