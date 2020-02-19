@@ -2,9 +2,11 @@
 
 A tool to update the IMDB ratings for Plex libraries that contain movies and series.
 
-## What does this do?
-
 #### This tool could in theory break if either the Plex database schema changes or IMDB stops providing a public rating dataset! This would not be dangerous tho as it stops when something goes wrong. 
+
+#### If you want to run this on Windows without docker look [here](https://github.com/mynttt/UpdateTool/wiki/Installation-on-Windows)!
+
+## What does this do?
 
 The Plex IMDB agent is kind of meh... Sometimes it is not able to retrieve the ratings for newly released movies even tho it matches the IMDB ID with them. It is impossible to comfortable add the rating manually from the users perspective.
 
