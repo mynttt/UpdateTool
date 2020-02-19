@@ -73,7 +73,7 @@ docker run -dit
     mynttt/updatetool
 ```
 
-[TVDB User Key](https://thetvdb.com/dashboard/account/editinfo) - [TVDB API Key] (https://thetvdb.com/dashboard/account/apikey)
+[TVDB User Key](https://thetvdb.com/dashboard/account/editinfo) - [TVDB API Key](https://thetvdb.com/dashboard/account/apikey)
 
 *"/mnt/data/Plex Media Server" and "/mnt/data/imdpupdaterconfig" are just sample paths! Set your own paths there or it will probably not work!*
 
