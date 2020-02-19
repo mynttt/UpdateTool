@@ -106,7 +106,7 @@ public class TvdbToImdbResolvement implements AgentResolvementStrategy<ImdbMetad
         }
         var data = gson.fromJson(response.message, Unmarshal.class).data;
         if(data == null || data.imdbId == null || data.imdbId.isBlank()) {
-            Logger.warn("TMDB item {} with id {} does not have an IMDB id associated.", toResolve.title, tvdbId);
+            Logger.warn("TVDB item {} with id {} does not have an IMDB id associated.", toResolve.title, tvdbId);
             blacklist.cache(tvdbId, "x");
             return false;
         }
@@ -129,7 +129,7 @@ public class TvdbToImdbResolvement implements AgentResolvementStrategy<ImdbMetad
         }
         var data = gson.fromJson(response.message, UnmarshalEpisode.class).data;
         if(data == null || data[0] == null || data[0].imdbId == null || data[0].imdbId.isBlank()) {
-            Logger.warn("TMDB item {} with id {} does not have an IMDB id associated.", toResolve.title, tvdbId);
+            Logger.warn("TVDB item {} with id {} does not have an IMDB id associated.", toResolve.title, tvdbId);
             blacklist.cache(tvdbId, "x");
             return false;
         }
