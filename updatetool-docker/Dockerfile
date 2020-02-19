@@ -1,5 +1,6 @@
-FROM openjdk:11
+FROM openjdk:11-jre-slim
 
+RUN apt-get update && apt-get install -y wget
 WORKDIR /usr/app
 COPY *.sh /usr/app/
 RUN /usr/app/bootstrap.sh
