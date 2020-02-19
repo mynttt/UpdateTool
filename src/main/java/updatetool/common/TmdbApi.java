@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.http.HttpResponse;
 
 public class TmdbApi extends AbstractApi {
+    private final String apiKey;
 
     public static class TMDBResponse {
         public final String imdb_id, title;
@@ -15,7 +16,8 @@ public class TmdbApi extends AbstractApi {
     }
 
     public TmdbApi(String apiKey) {
-        super(apiKey);
+        super();
+        this.apiKey = apiKey;
     }
 
     public HttpResponse<String> tmdbId2imdbId(String tmdbId) throws IOException, InterruptedException {
@@ -31,7 +33,7 @@ public class TmdbApi extends AbstractApi {
     }
 
     private String of(String tmdbId) {
-        return String.format("https://api.themoviedb.org/3/movie/%s?api_key=%s", tmdbId, apikey());
+        return String.format("https://api.themoviedb.org/3/movie/%s?api_key=%s", tmdbId, apiKey);
     }
 
     @Override

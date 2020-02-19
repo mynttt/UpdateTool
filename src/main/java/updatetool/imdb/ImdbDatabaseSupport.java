@@ -55,7 +55,19 @@ public class ImdbDatabaseSupport {
     }
 
     public List<ImdbMetadataResult> requestEntries(long libraryId) {
-        try(var handle = provider.queryFor("SELECT id, library_section_id, guid, title, extra_data, hash, rating from metadata_items WHERE media_item_count = 1 AND library_section_id = " + libraryId)){
+        return requestMetadata("SELECT id, library_section_id, guid, title, extra_data, hash, rating from metadata_items WHERE media_item_count = 1 AND library_section_id = " + libraryId);
+    }
+
+    public List<ImdbMetadataResult> requestTvSeriesRoot(long libraryId) {
+        return requestMetadata("SELECT id, library_section_id, guid, title, extra_data, hash, rating from metadata_items WHERE media_item_count = 0 AND parent_id IS NULL AND library_section_id = " + libraryId);
+    }
+    
+    public List<ImdbMetadataResult> requestTvSeasonRoot(long libraryId) {
+        return requestMetadata("SELECT id, library_section_id, guid, title, extra_data, hash, rating from metadata_items WHERE media_item_count = 0 AND parent_id NOT NULL AND library_section_id = " + libraryId);
+    }
+    
+    private List<ImdbMetadataResult> requestMetadata(String query) {
+        try(var handle = provider.queryFor(query)){
             List<ImdbMetadataResult> list = new ArrayList<>();
             while(handle.result().next())
                 list.add(new ImdbMetadataResult(handle.result()));
@@ -64,7 +76,6 @@ public class ImdbDatabaseSupport {
             throw Utility.rethrow(e);
         }
     }
-
 
     public long requestLibraryIdOfUuid(String uuid) {
         try(var handle = provider.queryFor("SELECT id FROM library_sections WHERE uuid = '" + uuid + "';")) {

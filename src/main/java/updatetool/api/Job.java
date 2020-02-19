@@ -2,15 +2,19 @@ package updatetool.api;
 
 import java.util.Objects;
 import updatetool.api.Pipeline.PipelineStage;
+import updatetool.common.DatabaseSupport.Library;
+import updatetool.common.DatabaseSupport.LibraryType;
 
 public abstract class Job {
     public String library;
     public String uuid;
+    public LibraryType libraryType;
     public PipelineStage stage = PipelineStage.CREATED;
 
-    public Job(String library, String uuid) {
-        this.library = library;
-        this.uuid = uuid;
+    public Job(Library library) {
+        this.library = library.name;
+        this.uuid = library.uuid;
+        this.libraryType = library.type;
     }
 
     public abstract String whatKindOfJob();
