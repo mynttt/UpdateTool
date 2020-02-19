@@ -2,6 +2,7 @@ package updatetool;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -11,6 +12,7 @@ import org.tinylog.Logger;
 import updatetool.api.Implementation;
 import updatetool.common.AbstractApi;
 import updatetool.common.TmdbApi;
+import updatetool.common.TvdbApi;
 import updatetool.imdb.ImdbDockerImplementation;
 
 public class Main {
@@ -66,6 +68,8 @@ public class Main {
     }
 
     public static void main(String[] args) throws Exception {
+        preLogPurge();
+        
         Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
             Logger.error("Uncaught " + e.getClass().getSimpleName() + " exception encountered...");
             Logger.error("Please contact the maintainer of the application with the stacktrace below if you think this is unwanted behavior.");
@@ -100,6 +104,30 @@ public class Main {
         constructor.newInstance().invoke(args);
     }
 
+    public static void rollingLogPurge() throws IOException {
+        var files = Files.list(Main.PWD)
+                .filter(p -> p.getFileName().toString().startsWith("updatetool.")).collect(Collectors.toList());
+        var keep = files.stream().max((p1, p2) -> {
+            try {
+                return Files.getLastModifiedTime(p2).compareTo(Files.getLastModifiedTime(p1));
+            } catch (IOException e) {}
+            return 0;
+        });
+        if(files.size() > 1) {
+            keep.ifPresent(f -> files.remove(f));
+            for(var f : files)
+                Files.delete(f);
+        }
+    }
+
+    private static void preLogPurge() throws IOException {
+        var files = Files.list(Main.PWD)
+            .filter(p -> p.getFileName().toString().startsWith("updatetool."))
+            .collect(Collectors.toList());
+        for(var p : files)
+            Files.delete(p);
+    }
+
     public static void printHelp(Implementations i, boolean datahint) {
         if(datahint)
             System.out.println("Data folder: https://support.plex.tv/articles/202915258-where-is-the-plex-media-server-data-directory-located");
@@ -127,6 +155,17 @@ public class Main {
         Logger.info("Testing TMDB API key: " + apikeyTmdb);
         var api = new TmdbApi(apikeyTmdb);
         genericApiTest(api);
+    }
+    
+    public static void testApiTvdb(String[] credentials) {
+        Logger.info("Testing TVDB API authorization: username={} | userkey={} | apikey={}", credentials[0], credentials[1], credentials[2]);
+        try {
+            new TvdbApi(credentials);
+        } catch(IllegalArgumentException e) {
+            Logger.error("API Test failed: " + e.getMessage());
+            Logger.error("Keys available under: https://thetvdb.com/");
+            System.exit(-1);
+        }
     }
 
     private static void genericApiTest(AbstractApi api) throws Exception {
