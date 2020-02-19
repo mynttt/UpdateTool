@@ -1,6 +1,6 @@
 # Rating update tool for IMDB ratings in Plex libraries
 
-A tool to update the IMDB ratings for Plex libraries that contain movies.
+A tool to update the IMDB ratings for Plex libraries that contain movies and series.
 
 ## What does this do?
 
@@ -12,7 +12,7 @@ This tool allows you to update the database that stores this data with the corre
 
 An advantage is that it works outside Plex by manipulating the local Plex database. Thus, no metadata refresh operations have to be done within Plex. It is faster and will not lead into the unforeseen consequences that one sometimes experiences with a Plex metadata refresh (missing or changed posters if not using a custom poster).
 
-This tool currently only works on movies and will only allow you to select libraries that use the Plex IMDB agent (because it depends on the IMDB ids). In my library with 1800 movies it transformed entries for 698 items. In case that even tho you use the IMDB agent you still have items that are TMDB matched you can run it with an TMDB API key and it will match an IMDB rating to the TMDB item (if TMDB provides an IMDB id).
+This tool currently works on movies/series that use the Plex IMDB agent as source of ratings. For the movies it will match items that use the imdb/tmdb agent. For series, it will use the tvdb to resolve the tvdb <=> imdb relationship (which can fail if the tvdb has no imdb id matched to the item). In my library with 1800 movies it transformed entries for 698 items and 1000+ entries for series. In case that even tho you use the IMDB agent you still have items that are TMDB matched you can run it with an TMDB API key and it will match an IMDB rating to the TMDB item (if TMDB provides an IMDB id).
 
 Before (Not IMDB matched)            |  After Match
 :-------------------------:|:-------------------------:
@@ -43,6 +43,15 @@ docker run -dit -e RUN_EVERY_N_HOURS=12 \
     -v "/mnt/data/Plex Media Server":/plexdata \
     -v "/mnt/data/imdpupdaterconfig":/config \
     mynttt/updatetool
+    
+# With TMDB fallback and TVDB resolvement for series
+
+docker run -dit -e RUN_EVERY_N_HOURS=12 \
+    -e TMDB_API_KEY=yourkey \
+    -e TVDB_AUTH_STRING="tvdbusername;tvdbuserid;tvdbapikey" \
+    -v "/mnt/data/Plex Media Server":/plexdata \
+    -v "/mnt/data/imdpupdaterconfig":/config \
+    mynttt/updatetool
 ```
 
 Explained:
@@ -53,6 +62,9 @@ docker run -dit
     -e RUN_EVERY_N_HOURS=12 \
      # Optional parameter: will try to get an IMDB ID from TMDB matched items
     -e TMDB_API_KEY=yourkey \
+     # Three items are required to auth with TVDB username, userkey, apikey
+     # Supply these as semicolon seperated values. Example: username;DAWIDK9CJKWFJAWKF;e33914feabd52e8192011b0ce6c8
+    -e TVDB_AUTH_STRING="tvdbusername;tvdbuserkey;tvdbapikey" \
      # The plex data root (that contains Plug-ins, Metadata, ...
      # https://support.plex.tv/articles/202915258-where-is-the-plex-media-server-data-directory-located/
     -v "/mnt/data/Plex Media Server":/plexdata \
@@ -60,6 +72,8 @@ docker run -dit
     -v "/mnt/data/imdpupdaterconfig":/config \
     mynttt/updatetool
 ```
+
+[TVDB User Key](https://thetvdb.com/dashboard/account/editinfo) - [TVDB API Key](https://thetvdb.com/dashboard/account/apikey)
 
 *"/mnt/data/Plex Media Server" and "/mnt/data/imdpupdaterconfig" are just sample paths! Set your own paths there or it will probably not work!*
 
@@ -81,7 +95,9 @@ docker run -dit
 
 **If the /config folder does not exist yet in appdata unraid will create it! It is important to access logs easily!**
 
-![](img/unraidv2.PNG)
+![](img/unraidv3.PNG)
+
+*TMDB and TVDB are optional settings that are not required for base movie imdb operations! TMDB unlocks matching for movies that have a TMBD match for whatever reason and TVDB allows to update series as well!*
 
 6.) You can now start the container. If it has errors it will stop. The log in the config folder shows you what it does or why it crashed if that happens.
 
@@ -100,9 +116,11 @@ Provides a watchdog that once started will run every N hours over all IMDB suppo
 # Created files in PWD
 
 - cache-tmdb2imdb.json - If TMDB fallback is enabled this file will contain the resolved TMDB <=> IMDB mappings.
+- cache-tvdb2imdb.json - TVDB to IMDB mapping.
+- cache-tvdbBlacklist.json - Items that TVDB provides no IMDB id for or that fail being looked up. The blacklist is reset every 14 days.
 - state-imdb.json - Set of jobs that have not finished
 - xml-error-{uuid}-{library}.log - List of files that could not be updated by the XML transform step (not important tbh, plex reads from the DB)
-- updatetool.log - Log file
+- updatetool.{increment}.log - Log file
 - rating_set.tsv - latest IMDB rating set
 - ratingSetLastUpdate - UNIX timestamp of last rating set update
 

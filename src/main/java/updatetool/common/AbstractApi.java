@@ -6,18 +6,15 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Version;
 import java.net.http.HttpRequest;
+import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
-import java.util.Objects;
 
 public abstract class AbstractApi {
-    private final String apiKey;
     private final HttpClient client;
 
-    public AbstractApi(String apiKey) {
-        Objects.requireNonNull(apiKey);
-        this.apiKey = apiKey;
+    public AbstractApi() {
         this.client = HttpClient.newBuilder()
                 .version(Version.HTTP_2)
                 .connectTimeout(Duration.ofMillis(2000))
@@ -36,12 +33,20 @@ public abstract class AbstractApi {
             throw Utility.rethrow(e);
         }
     }
+    
+    protected final HttpRequest postJson(String url, String jsonBody) {
+        try {
+            return HttpRequest.newBuilder(new URI(url))
+                    .header("Content-Type", "application/json")
+                    .POST(BodyPublishers.ofString(jsonBody))
+                    .build();
+        } catch(URISyntaxException e) {
+            throw Utility.rethrow(e);
+        }
+    }
 
     protected HttpResponse<String> send(HttpRequest request) throws IOException, InterruptedException {
         return client.send(request, BodyHandlers.ofString());
     }
 
-    protected final String apikey() {
-        return apiKey;
-    }
 }

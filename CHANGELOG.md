@@ -1,3 +1,9 @@
+## 1.3:
+  - Series can now also be updated by utilizing TVDB to resolve IMDB ids
+  - TVDB <=> IMDB resolvement only has to be done once
+  - Items that fail to be resolved will be blacklisted for 14 days to prevent spamming TVDB on every iteration of the tool
+  - TVDB authorization is a bit more complex than simply providing an API key, more about the topic is in the README.md
+
 ## 1.2.5:
   - Removed deprecated legacy CLI interface from project
   - Deprecated and removed OMDB interfaces and implementations, this tool will no longer use the OMDB API as IMDB provides a rating dataset that is refreshed daily and thus more up to date

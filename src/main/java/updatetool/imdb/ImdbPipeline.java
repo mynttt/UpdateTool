@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -19,8 +20,10 @@ import com.google.common.collect.Lists;
 import updatetool.api.AgentResolvementStrategy;
 import updatetool.api.ExportedRating;
 import updatetool.api.Pipeline;
+import updatetool.common.DatabaseSupport.LibraryType;
 import updatetool.common.ErrorReports;
 import updatetool.common.TmdbApi;
+import updatetool.common.TvdbApi;
 import updatetool.common.Utility;
 import updatetool.exceptions.DatabaseLockedException;
 import updatetool.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
@@ -28,11 +31,13 @@ import updatetool.imdb.ImdbRatingDatasetFactory.ImdbRatingDataset;
 import updatetool.imdb.resolvement.DefaultResolvement;
 import updatetool.imdb.resolvement.ImdbResolvement;
 import updatetool.imdb.resolvement.TmdbToImdbResolvement;
+import updatetool.imdb.resolvement.TvdbToImdbResolvement;
 
 public class ImdbPipeline extends Pipeline<ImdbJob> {
     private static final Pattern RESOLVEMENT = Pattern.compile(
                 "(?<IMDB>agents.imdb:\\/\\/tt)"
                 + "|(?<TMDB>agents.themoviedb:\\/\\/)"
+                + "|(?<TVDB>agents.thetvdb:\\/\\/)"
             );
 
     private static final int LIST_PARTITIONS = 16;
@@ -48,30 +53,42 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
 
     public static class ImdbPipelineConfiguration {
         public final String tmdbApiKey;
+        public final String[] apiauthTvdb;
         public final Path metadataRoot;
         
-        public ImdbPipelineConfiguration(String tmdbApiKey, Path metadataRoot) {
+        public ImdbPipelineConfiguration(String tmdbApiKey, String[] apiauthTvdb, Path metadataRoot) {
             this.tmdbApiKey = tmdbApiKey;
+            this.apiauthTvdb = apiauthTvdb;
             this.metadataRoot = metadataRoot;
         }
 
         public boolean resolveTmdbConflicts() {
             return tmdbApiKey != null;
         }
+        
+        public boolean resolveTvdb() {
+            return apiauthTvdb != null;
+        }
     }
     
-    public ImdbPipeline(ImdbDatabaseSupport db, ExecutorService service, ImdbTmdbCache cache, ImdbPipelineConfiguration configuration, ImdbRatingDataset dataset) {
+    public ImdbPipeline(ImdbDatabaseSupport db, ExecutorService service, Map<String, KeyValueStore> caches, ImdbPipelineConfiguration configuration, ImdbRatingDataset dataset) {
         this.db = db;
         this.service = service;
         this.configuration = configuration;
         this.dataset = dataset;
         resolve.put("IMDB", new ImdbResolvement());
-        resolve.put("TMDB", configuration.resolveTmdbConflicts() ? new TmdbToImdbResolvement(cache, new TmdbApi(configuration.tmdbApiKey)) : resolveDefault);
+        resolve.put("TMDB", configuration.resolveTmdbConflicts() ? new TmdbToImdbResolvement(caches.get("tmdb"), new TmdbApi(configuration.tmdbApiKey)) : resolveDefault);
+        resolve.put("TVDB", configuration.resolveTvdb() ? new TvdbToImdbResolvement(caches.get("tvdb"), caches.get("tvdb-blacklist"), new TvdbApi(configuration.apiauthTvdb)) : resolveDefault);
     }
 
     @Override
     public void analyseDatabase(ImdbJob job) throws Exception {
-        var items = db.requestEntries(db.requestLibraryIdOfUuid(job.uuid));
+        var lib = db.requestLibraryIdOfUuid(job.uuid);
+        var items = db.requestEntries(lib);
+        if(configuration.resolveTvdb() && job.libraryType == LibraryType.SERIES) {
+            items.addAll(db.requestTvSeriesRoot(lib));
+            items.addAll(db.requestTvSeasonRoot(lib));
+        }
         Logger.info("Resolving IMDB identifiers for items. Only warnings and errors will show up...");
         Logger.info("Items that show up here will not be processed by further stages of the pipeline.");
         int skipped = 0;
