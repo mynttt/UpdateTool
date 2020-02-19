@@ -6,18 +6,19 @@ import org.tinylog.Logger;
 import com.google.gson.Gson;
 import updatetool.api.AgentResolvementStrategy;
 import updatetool.common.TmdbApi;
+import updatetool.common.Utility;
 import updatetool.common.TmdbApi.TMDBResponse;
 import updatetool.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
-import updatetool.imdb.ImdbTmdbCache;
 import updatetool.imdb.ImdbUtility;
+import updatetool.imdb.KeyValueStore;
 
 public class TmdbToImdbResolvement implements AgentResolvementStrategy<ImdbMetadataResult> {
     private static final int MAX_TRIES = 3;
     private final Gson gson;
-    private final ImdbTmdbCache cache;
+    private final KeyValueStore cache;
     private final TmdbApi api;
     
-    public TmdbToImdbResolvement(ImdbTmdbCache cache, TmdbApi api) {
+    public TmdbToImdbResolvement(KeyValueStore cache, TmdbApi api) {
         this.cache = cache;
         this.api = api;
         this.gson = new Gson();
@@ -25,12 +26,12 @@ public class TmdbToImdbResolvement implements AgentResolvementStrategy<ImdbMetad
 
     @Override
     public boolean resolve(ImdbMetadataResult toResolve) {
-        String tmdbId = ImdbUtility.extractId(ImdbUtility.TMDB, toResolve.guid);
+        String tmdbId = ImdbUtility.extractId(ImdbUtility.NUMERIC, toResolve.guid);
         if(tmdbId == null) {
             Logger.error("Item: {} is detected as TMDB but has no id. (guid={})", toResolve.title, toResolve.guid);
             return false;
         }
-        var lookup = cache.lookupTmdb(tmdbId);
+        var lookup = cache.lookup(tmdbId);
         if(lookup != null) {
             toResolve.imdbId = lookup;
             return true;
@@ -40,6 +41,7 @@ public class TmdbToImdbResolvement implements AgentResolvementStrategy<ImdbMetad
 
     public boolean resolveUncached(ImdbMetadataResult toResolve, String tmdbId) {
         Logger.info("Attempting to resolve TMDB identifer {} against IMDB...", tmdbId);
+        Exception ex = null;
         TMDBResponse result = null;
         HttpResponse<String> response = null;
 
@@ -56,10 +58,13 @@ public class TmdbToImdbResolvement implements AgentResolvementStrategy<ImdbMetad
             } catch(Exception e) {
                 Logger.warn("TMBD API request failed: [" + (i+1) + "/" + MAX_TRIES +"] : " + e.getMessage());
                 Logger.warn("Dumping response:" + response);
-                return false;
+                ex = e;
             }
         }
-
+        
+        if(ex != null)
+            throw Utility.rethrow(ex);
+        
         if(result == null) {
             Logger.warn("TMDB API failed to deliver a valid response. Dumping last response: {}", response);
             return false;
@@ -70,7 +75,7 @@ public class TmdbToImdbResolvement implements AgentResolvementStrategy<ImdbMetad
             return false;
         }
 
-        cache.cacheTmdb(tmdbId, result.imdb_id);
+        cache.cache(tmdbId, result.imdb_id);
         toResolve.imdbId = result.imdb_id;
 
         Logger.info("Resolved and cached TMDB {} to IMDB {}.", tmdbId, result.imdb_id);
