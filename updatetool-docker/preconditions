@@ -1,0 +1,5 @@
+#!/bin/bash
+sudo apt-get update && sudo apt-get install qemu-user
+docker buildx create --platform linux/amd64,linux/arm64 --name updatetoolbuilder
+docker buildx use updatetoolbuilder
+docker buildx inspect --bootstrap
