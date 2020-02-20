@@ -6,11 +6,11 @@ import java.util.regex.Pattern;
 import org.tinylog.Logger;
 import com.google.gson.Gson;
 import updatetool.api.AgentResolvementStrategy;
+import updatetool.common.KeyValueStore;
 import updatetool.common.TvdbApi;
 import updatetool.common.Utility;
 import updatetool.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
 import updatetool.imdb.ImdbUtility;
-import updatetool.imdb.KeyValueStore;
 
 public class TvdbToImdbResolvement implements AgentResolvementStrategy<ImdbMetadataResult> {
     private static final Pattern EPISODE = Pattern.compile("[0-9]+\\/[0-9]+\\/[0-9]+");
