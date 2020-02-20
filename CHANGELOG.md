@@ -1,3 +1,8 @@
+## 1.3.1:
+  - Database sections have been made critical
+  - This means that the database is only open once in the beginning per tool iteration and shortly while doing an update (only if necessary)
+  - This should only leave the database open for 1-2 seconds per iteration and hopefully eliminate all issues with plex!
+
 ## 1.3:
   - Series can now also be updated by utilizing TVDB to resolve IMDB ids
   - TVDB <=> IMDB resolvement only has to be done once
