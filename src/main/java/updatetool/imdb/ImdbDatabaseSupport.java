@@ -1,13 +1,14 @@
 package updatetool.imdb;
 
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import org.sqlite.SQLiteException;
+import org.tinylog.Logger;
 import updatetool.common.SqliteDatabaseProvider;
 import updatetool.common.Utility;
 
@@ -77,19 +78,9 @@ public class ImdbDatabaseSupport {
         }
     }
 
-    public long requestLibraryIdOfUuid(String uuid) {
-        try(var handle = provider.queryFor("SELECT id FROM library_sections WHERE uuid = '" + uuid + "';")) {
-            return handle.result().getLong(1);
-        } catch (SQLException e) {
-            throw Utility.rethrow(e);
-        }
-    }
-
     public void requestBatchUpdateOf(List<ImdbMetadataResult> items) throws SQLiteException {
         boolean success = true;
-        PreparedStatement s = null;
-        try {
-            s = provider.connection.prepareStatement("UPDATE metadata_items SET rating = ?, extra_data = ?, updated_at = DateTime('now') WHERE id = ?");
+        try(var s = provider.connection.prepareStatement("UPDATE metadata_items SET rating = ?, extra_data = ?, updated_at = DateTime('now') WHERE id = ?")) {
             for(var item : items) {
                 s.setDouble(1, item.rating);
                 s.setString(2, item.extraData);
@@ -99,6 +90,7 @@ public class ImdbDatabaseSupport {
             int[] records = s.executeBatch();
             for(int c : records) {
                 if (c == Statement.EXECUTE_FAILED) {
+                    Logger.error("Batch Update failed: " + c + " | All: " + Arrays.toString(records));
                     success = false;
                     break;
                 }
@@ -108,7 +100,6 @@ public class ImdbDatabaseSupport {
             throw Utility.rethrow(e);
         } finally {
             try {
-                s.close();
                 if(success) {
                     provider.connection.commit();
                 } else {

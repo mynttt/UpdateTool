@@ -20,8 +20,9 @@ import com.google.common.collect.Lists;
 import updatetool.api.AgentResolvementStrategy;
 import updatetool.api.ExportedRating;
 import updatetool.api.Pipeline;
-import updatetool.common.DatabaseSupport.LibraryType;
 import updatetool.common.ErrorReports;
+import updatetool.common.KeyValueStore;
+import updatetool.common.SqliteDatabaseProvider;
 import updatetool.common.TmdbApi;
 import updatetool.common.TvdbApi;
 import updatetool.common.Utility;
@@ -44,7 +45,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
     private static final int RETRY_N_SECONDS_IF_DB_LOCKED = 20;
     private static final int ABORT_DB_LOCK_WAITING_AFTER_N_RETRIES = 500;
 
-    private final ImdbDatabaseSupport db;
+    private final ImdbLibraryMetadata metadata;
     private final ExecutorService service;
     private final ImdbRatingDataset dataset;
     private final ImdbPipelineConfiguration configuration;
@@ -52,14 +53,15 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
     public final AgentResolvementStrategy<ImdbMetadataResult> resolveDefault = new DefaultResolvement();
 
     public static class ImdbPipelineConfiguration {
-        public final String tmdbApiKey;
+        public final String tmdbApiKey, dbLocation;
         public final String[] apiauthTvdb;
         public final Path metadataRoot;
         
-        public ImdbPipelineConfiguration(String tmdbApiKey, String[] apiauthTvdb, Path metadataRoot) {
+        public ImdbPipelineConfiguration(String tmdbApiKey, String[] apiauthTvdb, Path metadataRoot, String dbLocation) {
             this.tmdbApiKey = tmdbApiKey;
             this.apiauthTvdb = apiauthTvdb;
             this.metadataRoot = metadataRoot;
+            this.dbLocation = dbLocation;
         }
 
         public boolean resolveTmdbConflicts() {
@@ -71,9 +73,9 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         }
     }
     
-    public ImdbPipeline(ImdbDatabaseSupport db, ExecutorService service, Map<String, KeyValueStore> caches, ImdbPipelineConfiguration configuration, ImdbRatingDataset dataset) {
-        this.db = db;
+    public ImdbPipeline(ImdbLibraryMetadata metadata, ExecutorService service, Map<String, KeyValueStore> caches, ImdbPipelineConfiguration configuration, ImdbRatingDataset dataset) {
         this.service = service;
+        this.metadata = metadata;
         this.configuration = configuration;
         this.dataset = dataset;
         resolve.put("IMDB", new ImdbResolvement());
@@ -83,15 +85,10 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
 
     @Override
     public void analyseDatabase(ImdbJob job) throws Exception {
-        var lib = db.requestLibraryIdOfUuid(job.uuid);
-        var items = db.requestEntries(lib);
-        if(configuration.resolveTvdb() && job.libraryType == LibraryType.SERIES) {
-            items.addAll(db.requestTvSeriesRoot(lib));
-            items.addAll(db.requestTvSeasonRoot(lib));
-        }
         Logger.info("Resolving IMDB identifiers for items. Only warnings and errors will show up...");
         Logger.info("Items that show up here will not be processed by further stages of the pipeline.");
         int skipped = 0;
+        var items = metadata.request(job.uuid);
         for(var it = items.iterator(); it.hasNext(); ) {
             var item = it.next();
             var matcher = RESOLVEMENT.matcher(item.guid);
@@ -143,23 +140,33 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
 
     @Override
     public void updateDatabase(ImdbJob job) throws Exception {
+        if(job.items.isEmpty()) {
+            Logger.info("Nothing to update. Skipping...");
+            job.stage = PipelineStage.DB_UPDATED;
+            return;
+        }
         Logger.info("Updating " + job.items.size() + " via batch request...");
         int counter = 0;
-        while(true) {
-            if(counter++==(ABORT_DB_LOCK_WAITING_AFTER_N_RETRIES-1))
-                throw new DatabaseLockedException("Plex database is currently locked. After " + ABORT_DB_LOCK_WAITING_AFTER_N_RETRIES + " attempt(s) every " + RETRY_N_SECONDS_IF_DB_LOCKED + " second(s) of accessing an unlocked database this tool is destined to halt execution to prevent endless loops. Either stop Plex to run the tool or start the tool again and hope Plex has removed the lock.");
-            try {
-                db.requestBatchUpdateOf(job.items);
-                break;
-            } catch(SQLiteException e) {
-                if(!e.getMessage().trim().startsWith("[SQLITE_BUSY]"))
-                    throw e;
-                Logger.warn("Database is currently locked and can't be accessed. Waiting for {} second(s) before attemting again. [{}/{}]", RETRY_N_SECONDS_IF_DB_LOCKED, counter, ABORT_DB_LOCK_WAITING_AFTER_N_RETRIES);
-                Thread.sleep(TimeUnit.SECONDS.toMillis(RETRY_N_SECONDS_IF_DB_LOCKED));
+        try(var connection = new SqliteDatabaseProvider(configuration.dbLocation)) {
+            var db = new ImdbDatabaseSupport(connection);
+            while(true) {
+                if(counter++==(ABORT_DB_LOCK_WAITING_AFTER_N_RETRIES-1))
+                    throw new DatabaseLockedException("Plex database is currently locked. After " + ABORT_DB_LOCK_WAITING_AFTER_N_RETRIES + " attempt(s) every " + RETRY_N_SECONDS_IF_DB_LOCKED + " second(s) of accessing an unlocked database this tool is destined to halt execution to prevent endless loops. Either stop Plex to run the tool or start the tool again and hope Plex has removed the lock.");
+                try {
+                    db.requestBatchUpdateOf(job.items);
+                    break;
+                } catch(SQLiteException e) {
+                    if(!e.getMessage().trim().startsWith("[SQLITE_BUSY]"))
+                        throw e;
+                    Logger.warn("Database is currently locked and can't be accessed. Waiting for {} second(s) before attemting again. [{}/{}]", RETRY_N_SECONDS_IF_DB_LOCKED, counter, ABORT_DB_LOCK_WAITING_AFTER_N_RETRIES);
+                    Thread.sleep(TimeUnit.SECONDS.toMillis(RETRY_N_SECONDS_IF_DB_LOCKED));
+                }
             }
+            Logger.info("Batch request finished successfully. Database is now up to date!");
+            job.stage = PipelineStage.DB_UPDATED;
+        } catch(Exception e) {
+            throw Utility.rethrow(e);
         }
-        Logger.info("Batch request finished successfully. Database is now up to date!");
-        job.stage = PipelineStage.DB_UPDATED;
     }
 
     @Override

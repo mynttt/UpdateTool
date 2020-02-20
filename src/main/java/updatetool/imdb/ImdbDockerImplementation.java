@@ -18,6 +18,8 @@ import updatetool.Main;
 import updatetool.api.Implementation;
 import updatetool.api.JobReport.StatusCode;
 import updatetool.common.DatabaseSupport;
+import updatetool.common.DatabaseSupport.Library;
+import updatetool.common.KeyValueStore;
 import updatetool.common.SqliteDatabaseProvider;
 import updatetool.common.State;
 import updatetool.common.Utility;
@@ -130,7 +132,8 @@ public class ImdbDockerImplementation implements Implementation {
         if(!state.isEmpty())
             Logger.info("Loaded " + state.size() + " unfinished job(s).\n");
 
-        var config = new ImdbPipelineConfiguration(apikeyTmdb, apiauthTvdb, plexdata.resolve("Metadata/Movies"));
+        var dbLocation = plexdata.resolve("Plug-in Support/Databases/com.plexapp.plugins.library.db").toAbsolutePath().toString();
+        var config = new ImdbPipelineConfiguration(apikeyTmdb, apiauthTvdb, plexdata.resolve("Metadata/Movies"), dbLocation);
         var scheduler = Executors.newSingleThreadScheduledExecutor();
         Logger.info("Running first task...");
         scheduler.schedule(new ImdbBatchJob(config, plexdata, caches, state), 1, TimeUnit.SECONDS);
@@ -143,31 +146,40 @@ public class ImdbDockerImplementation implements Implementation {
         private final ExecutorService service;
         private final Map<String, KeyValueStore> caches;
         private final Set<ImdbJob> state;
-        private final String dbLocation;
         
         public ImdbBatchJob(ImdbPipelineConfiguration config, Path plexdata, Map<String, KeyValueStore> caches, Set<ImdbJob> state) {
             service = Executors.newFixedThreadPool(6);
             this.config = config;
             this.caches = caches;
             this.state = state;
-            this.dbLocation = plexdata.resolve("Plug-in Support/Databases/com.plexapp.plugins.library.db").toAbsolutePath().toString();
         }
 
         @Override
         public void run() {
-            try {
-                Main.rollingLogPurge();
-            } catch (IOException e) { e.printStackTrace(); }
-            SqliteDatabaseProvider connection = null;
-            try {
-                connection = new SqliteDatabaseProvider(dbLocation);
+            try { Main.rollingLogPurge(); } catch (IOException e) { Logger.error(e); }
+            
+            List<Library> libraries = null;
+            ImdbLibraryMetadata metadata = null;
+            
+            try(var connection = new SqliteDatabaseProvider(config.dbLocation)) {
                 var support = new DatabaseSupport(connection);
-                var libraries = support.requestMovieLibraries();
+                libraries = support.requestMovieLibraries();
                 if(config.resolveTvdb())
                     libraries.addAll(support.requestSeriesLibraries());
+                metadata = ImdbLibraryMetadata.fetchAll(libraries, new ImdbDatabaseSupport(connection), config); 
+            } catch(Exception e) {
+                Logger.error(e.getClass().getSimpleName() + " exception encountered...");
+                Logger.error("Please contact the maintainer of the application with the stacktrace below if you think this is unwanted behavior.");
+                Logger.error("========================================");
+                Logger.error(e);
+                Logger.error("========================================");
+                Logger.error("The application will terminate now.");
+                System.exit(-1);
+            }
+            
+            try {
                 var jobs = new ArrayDeque<ImdbJob>();
-                var db = new ImdbDatabaseSupport(connection);
-                var pipeline = new ImdbPipeline(db, service, caches, config, ImdbRatingDatasetFactory.requestSet());
+                var pipeline = new ImdbPipeline(metadata, service, caches, config, ImdbRatingDatasetFactory.requestSet());
                 var runner = new ImdbJobRunner();
                 for(var lib : libraries) {
                     jobs.add(new ImdbJob(lib));
@@ -187,21 +199,16 @@ public class ImdbDockerImplementation implements Implementation {
                         Logger.error("Original message: {}", result.exception.getMessage());
                         Logger.info("Aborting queue due to failing to fetch data from a called API. Will wait until next invocation.");
                         Logger.info("It is now safe to suspend execution if this tool should not run 24/7.");
-                        try { connection.close(); } catch (Exception e) {}
                         return;
                     }
                     if(result.code == StatusCode.ERROR) {
-                        try { connection.close(); } catch (Exception e) {}
                         throw Utility.rethrow(result.exception);
                     }
                 }
                 caches.values().forEach(KeyValueStore::dump);
                 Logger.info("Completed batch successfully. Waiting till next invocation...");
                 Logger.info("It is now safe to suspend execution if this tool should not run 24/7.");
-                try { connection.close(); } catch (Exception e) {}
             } catch(ImdbDatasetAcquireException e) {
-                if(connection!=null)
-                    try { connection.close(); } catch (Exception e1) {}
                 Logger.error("Failed to acquire IMDB dataset due to {}.", e.getCause().getClass().getSimpleName());
                 Logger.error("Please contact the maintainer of the application with the stacktrace below if you think this is unwanted behavior.");
                 Logger.error("========================================");
@@ -210,8 +217,6 @@ public class ImdbDockerImplementation implements Implementation {
                 try { Thread.sleep(10); } catch (InterruptedException e1) {} // Let the separate logger thread print the stack trace before printing the info
                 Logger.info("Aborting queue due to failing to retrieve the IMDB data set. Will wait until next invocation.");
             } catch(Exception e) {
-                if(connection!=null)
-                    try { connection.close(); } catch (Exception e1) {}
                 Logger.error(e.getClass().getSimpleName() + " exception encountered...");
                 Logger.error("Please contact the maintainer of the application with the stacktrace below if you think this is unwanted behavior.");
                 Logger.error("========================================");

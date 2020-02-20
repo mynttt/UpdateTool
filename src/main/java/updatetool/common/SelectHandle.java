@@ -21,10 +21,11 @@ public class SelectHandle implements AutoCloseable {
         return rs;
     }
 
+    @Override
     public void close() {
         try {
-            statement.close();
             connection.commit();
+            statement.close();
         } catch (SQLException e) {
             Logger.error("Failed to close handle.");
             Logger.error(e);

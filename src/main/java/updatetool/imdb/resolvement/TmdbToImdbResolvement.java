@@ -5,12 +5,12 @@ import java.util.Objects;
 import org.tinylog.Logger;
 import com.google.gson.Gson;
 import updatetool.api.AgentResolvementStrategy;
+import updatetool.common.KeyValueStore;
 import updatetool.common.TmdbApi;
 import updatetool.common.Utility;
 import updatetool.common.TmdbApi.TMDBResponse;
 import updatetool.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
 import updatetool.imdb.ImdbUtility;
-import updatetool.imdb.KeyValueStore;
 
 public class TmdbToImdbResolvement implements AgentResolvementStrategy<ImdbMetadataResult> {
     private static final int MAX_TRIES = 3;

@@ -26,7 +26,8 @@ public class SqliteDatabaseProvider implements AutoCloseable  {
 
     @Override
     public void close() throws Exception {
-        connection.close();
+        if(!connection.isClosed())
+            connection.close();
     }
 
 }

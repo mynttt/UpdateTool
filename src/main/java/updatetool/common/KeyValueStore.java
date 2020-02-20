@@ -1,4 +1,4 @@
-package updatetool.imdb;
+package updatetool.common;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -8,7 +8,6 @@ import java.util.HashMap;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import updatetool.common.Utility;
 
 public class KeyValueStore {
     private final HashMap<String, String> map = new HashMap<>();
