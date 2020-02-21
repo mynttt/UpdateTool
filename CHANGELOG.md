@@ -1,3 +1,6 @@
+## 1.3.2:
+  - removed TMDB notnull assertion as API can return null in rare cases
+
 ## 1.3.1:
   - Database sections have been made critical
   - This means that the database is only open once in the beginning per tool iteration and shortly while doing an update (only if necessary)
