@@ -51,7 +51,6 @@ public class TmdbToImdbResolvement implements AgentResolvementStrategy<ImdbMetad
                 if(response.statusCode() == 200) {
                     result = gson.fromJson(response.body(), TMDBResponse.class);
                     Objects.requireNonNull(result, "TMDB API returned null response object. API broken or changed?");
-                    Objects.requireNonNull(result.imdb_id, "TMDB API returned null imdb_id. No imdbid or API changed?");
                     break;
                 }
                 Logger.warn("TMBD API returned a reply with status code != 200. Trying again... {}/{}", i+1, MAX_TRIES);
@@ -70,7 +69,7 @@ public class TmdbToImdbResolvement implements AgentResolvementStrategy<ImdbMetad
             return false;
         }
 
-        if(result.imdb_id.isBlank()) {
+        if(result.imdb_id == null || result.imdb_id.isBlank()) {
             Logger.warn("TMDB item {} with id {} does not have an IMDB id associated.", result.title, tmdbId);
             return false;
         }
