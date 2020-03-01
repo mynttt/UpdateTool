@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -27,8 +30,9 @@ import updatetool.exceptions.ImdbDatasetAcquireException;
 import updatetool.imdb.ImdbPipeline.ImdbPipelineConfiguration;
 
 public class ImdbDockerImplementation implements Implementation {
+    private static final Set<Long> IGNORE_LIBRARIES = new HashSet<>();
+    
     public int RUN_EVERY_N_HOUR = 12;
-
     private String apikeyTmdb;
     
     //Format: <USERNAME>;<USERKEY>;<APIKEY> for ENV
@@ -40,6 +44,7 @@ public class ImdbDockerImplementation implements Implementation {
         apikeyTmdb = System.getenv("TMDB_API_KEY");
         String tvdbAuth = System.getenv("TVDB_AUTH_STRING");
         String data = System.getenv("PLEX_DATA_DIR");
+        String ignore = System.getenv("IGNORE_LIBS");
 
         Objects.requireNonNull(data, "Environment variable PLEX_DATA_DIR is not set");
 
@@ -131,6 +136,17 @@ public class ImdbDockerImplementation implements Implementation {
 
         if(!state.isEmpty())
             Logger.info("Loaded " + state.size() + " unfinished job(s).\n");
+        
+        if(ignore != null && !ignore.isBlank()) {
+            String[] candidates = ignore.split(";");
+            for(var s : candidates) {
+                try {
+                    long i = Long.parseLong(s);
+                    IGNORE_LIBRARIES.add(i);
+                    Logger.info("Ignoring library with ID: {}", i);
+                } catch(NumberFormatException e) {}
+            }
+        }
 
         var dbLocation = plexdata.resolve("Plug-in Support/Databases/com.plexapp.plugins.library.db").toAbsolutePath().toString();
         var config = new ImdbPipelineConfiguration(apikeyTmdb, apiauthTvdb, plexdata.resolve("Metadata/Movies"), dbLocation);
@@ -166,6 +182,7 @@ public class ImdbDockerImplementation implements Implementation {
                 libraries = support.requestMovieLibraries();
                 if(config.resolveTvdb())
                     libraries.addAll(support.requestSeriesLibraries());
+                libraries.removeIf(l -> IGNORE_LIBRARIES.contains(l.id));
                 metadata = ImdbLibraryMetadata.fetchAll(libraries, new ImdbDatabaseSupport(connection), config); 
             } catch(Exception e) {
                 Logger.error(e.getClass().getSimpleName() + " exception encountered...");
@@ -175,6 +192,15 @@ public class ImdbDockerImplementation implements Implementation {
                 Logger.error("========================================");
                 Logger.error("The application will terminate now.");
                 System.exit(-1);
+            }
+            
+            var sorted = new ArrayList<>(IGNORE_LIBRARIES);
+            Collections.sort(sorted);
+            Logger.info("Library IDs on ignore list: {}", sorted);
+            
+            if(libraries.isEmpty()) {
+                Logger.info("No libraries found. Sleeping until next invocation...");
+                return;
             }
             
             try {

@@ -87,6 +87,28 @@ docker run -dit
 
 *On windows the \ syntax to make the command multiline will not work. You have to remove those and make the command a single line command!*
 
+## Other configuration values
+
+### Ignore libraries from being updated
+
+You can ignore libraries by setting the environment variable IGNORE_LIBS.
+
+IGNORE_LIBS takes a list of library ids as a semicolon seperated string. You can find the id of a plex library by opening it in plex and then looking at the URL in the browser.
+
+```
+Lets find the ID for the library 'Movies':
+1.) Select 'Movies' in the Plex web interface
+2.) Look at the URL in the browser, it should end like this: &context=content.library&source=1
+3.) source=1 tells us that the ID for 'Movies' is 1
+```
+
+**Examples:**
+
+Ignoring only the library with ID 1: IGNORE_LIBS="1"
+
+Ignoring the libraries with the IDs 1, 5, 8: IGNORE_LIBS="1;5;8"
+
+
 ## Docker on UnRaid in the docker tab without commands
 
 1.) You need the community application plugin.

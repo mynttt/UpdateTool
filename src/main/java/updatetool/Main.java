@@ -42,10 +42,14 @@ public class Main {
                 "Usage: this.jar imdb-docker [] | [{every_n_hour}] | [{every_n_hour} {cache_purge_in_days}]",
                 new String[] { "The following environment variables must be set and exported before launching this tool successfully!",
                              "PLEX_DATA_DIR: Used for the data directory of plex",
+                             "The following environment variables are optional and enhance the tool in certain ways.",
                              "(Optional) TMDB_API_KEY: Used to convert TMDB matched items to IMDB items. The fallback will only be available if this is set.",
                              "(Optional) TVDB_AUTH_STRING: Used to auth with the TVDB API. Must be entered as a ';' seperated string of username, userid, apikey",
-                             "Example: username;DAWIDK9CJKWFJAWKF;e33914feabd52e8192011b0ce6c8",
+                             "           Example: username;DAWIDK9CJKWFJAWKF;e33914feabd52e8192011b0ce6c8",
+                             "(Optional) IGNORE_LIBS: Ignore libraries from being touched by this tool by supplying a set of library ids as a semicolon ';' seperated string.",
+                             "           Example: Ignoring 1 => IGNORE_LIBS=1 | Ignoring 1, 2, 3 => IGNORE_LIBS=1;2;3",
                              "",
+                             "Parameters explained:",
                              "No parameters starts with the default of {every_n_hour} = 12, {cache_pruge_in_days} = 14 and {new_movie_cache_purge_threshold} = 12",
                              "{every_n_hour} : Invoke this every n hour on all IMDB supported libraries"});
 

@@ -1,3 +1,8 @@
+## 1.3.3
+  - added option to ignore libraries via the environment variable IGNORE_LIBS.
+  - libraries can be ignored by writing the library ids as a semicolon seperated string into the environment variable
+  - Example: Ignoring only #1 -> IGNORE_LIBS=1 | Ignoring #1, #3 and #8 -> IGNORE_LIBS=1;3;8
+
 ## 1.3.2:
   - removed TMDB notnull assertion as API can return null in rare cases
 
