@@ -91,7 +91,7 @@ docker run -dit
 
 ### Ignore libraries from being updated
 
-You can ignore libraries by setting the environment variable IGNORE_LIBS.
+You can ignore libraries by setting the environment variable **IGNORE_LIBS**.
 
 IGNORE_LIBS takes a list of library ids as a semicolon seperated string. You can find the id of a plex library by opening it in plex and then looking at the URL in the browser.
 
@@ -104,10 +104,17 @@ Lets find the ID for the library 'Movies':
 
 **Examples:**
 
-Ignoring only the library with ID 1: IGNORE_LIBS="1"
+Ignoring only the library with ID 1: 
 
-Ignoring the libraries with the IDs 1, 5, 8: IGNORE_LIBS="1;5;8"
+```
+IGNORE_LIBS="1"
+```
 
+Ignoring the libraries with the IDs 1, 5, 8: 
+
+```
+IGNORE_LIBS="1;5;8"
+```
 
 ## Docker on UnRaid in the docker tab without commands
 
