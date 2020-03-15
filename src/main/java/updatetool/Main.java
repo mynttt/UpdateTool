@@ -13,6 +13,7 @@ import updatetool.api.Implementation;
 import updatetool.common.AbstractApi;
 import updatetool.common.TmdbApi;
 import updatetool.common.TvdbApi;
+import updatetool.exceptions.ApiCallFailedException;
 import updatetool.imdb.ImdbDockerImplementation;
 
 public class Main {
@@ -168,7 +169,7 @@ public class Main {
         Logger.info("Testing TVDB API authorization: username={} | userkey={} | apikey={}", credentials[0], credentials[1], credentials[2]);
         try {
             new TvdbApi(credentials);
-        } catch(IllegalArgumentException e) {
+        } catch(ApiCallFailedException e) {
             Logger.error("API Test failed: " + e.getMessage());
             Logger.error("Keys available under: https://thetvdb.com/");
             System.exit(-1);

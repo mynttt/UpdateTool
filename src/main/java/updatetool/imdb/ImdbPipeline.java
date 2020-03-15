@@ -26,6 +26,7 @@ import updatetool.common.SqliteDatabaseProvider;
 import updatetool.common.TmdbApi;
 import updatetool.common.TvdbApi;
 import updatetool.common.Utility;
+import updatetool.exceptions.ApiCallFailedException;
 import updatetool.exceptions.DatabaseLockedException;
 import updatetool.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
 import updatetool.imdb.ImdbRatingDatasetFactory.ImdbRatingDataset;
@@ -73,7 +74,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         }
     }
     
-    public ImdbPipeline(ImdbLibraryMetadata metadata, ExecutorService service, Map<String, KeyValueStore> caches, ImdbPipelineConfiguration configuration, ImdbRatingDataset dataset) {
+    public ImdbPipeline(ImdbLibraryMetadata metadata, ExecutorService service, Map<String, KeyValueStore> caches, ImdbPipelineConfiguration configuration, ImdbRatingDataset dataset) throws ApiCallFailedException {
         this.service = service;
         this.metadata = metadata;
         this.configuration = configuration;

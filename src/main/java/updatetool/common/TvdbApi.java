@@ -6,21 +6,23 @@ import java.net.URISyntaxException;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Map;
+import org.tinylog.Logger;
 import com.google.gson.Gson;
+import updatetool.exceptions.ApiCallFailedException;
 
 public class TvdbApi extends AbstractApi {
     private static final String BASE_URL = "https://api.thetvdb.com";
     private final String authToken;
     private final Gson gson = new Gson();
 
-    public TvdbApi(String[] credentials) throws IllegalArgumentException {
+    public TvdbApi(String[] credentials) throws ApiCallFailedException {
         super();
         authToken = "Bearer " + auth(credentials);
     }
 
     private class Token { String token; };
     
-    private String auth(String[] credentials) {
+    private String auth(String[] credentials) throws ApiCallFailedException {
         try {
             var response = send(
                         postJson(BASE_URL + "/login", gson.toJson(Map.of(
@@ -29,8 +31,14 @@ public class TvdbApi extends AbstractApi {
                                 "apikey", credentials[2])
                                 ))
                         );
-            if(response.statusCode() != 200)
-                throw new IllegalArgumentException("Code " + response.statusCode() + " | " + response.body());
+            if(response.statusCode() != 200) {
+                Logger.error("TVDB authorization failed with code {}", response.statusCode());
+                Logger.error("This could be due to the TVDB API having issues at the moment or your credentials being wrong.");
+                Logger.error("This is the received response:");
+                Logger.error(response.body());
+                Logger.error("===================================================");
+                throw new ApiCallFailedException("TVDB API authorization failed.");
+            }
             return new Gson().fromJson(response.body(), Token.class).token;
         } catch (IOException | InterruptedException e) {
             throw Utility.rethrow(e);

@@ -26,6 +26,7 @@ import updatetool.common.KeyValueStore;
 import updatetool.common.SqliteDatabaseProvider;
 import updatetool.common.State;
 import updatetool.common.Utility;
+import updatetool.exceptions.ApiCallFailedException;
 import updatetool.exceptions.ImdbDatasetAcquireException;
 import updatetool.imdb.ImdbPipeline.ImdbPipelineConfiguration;
 
@@ -234,6 +235,9 @@ public class ImdbDockerImplementation implements Implementation {
                 caches.values().forEach(KeyValueStore::dump);
                 Logger.info("Completed batch successfully. Waiting till next invocation...");
                 Logger.info("It is now safe to suspend execution if this tool should not run 24/7.");
+            } catch(ApiCallFailedException e) {
+                Logger.error("{} encountered with message: {}", e.getClass().getSimpleName(), e.getMessage());
+                Logger.info("Aborting queue due to API error. Will wait until next invocation.");
             } catch(ImdbDatasetAcquireException e) {
                 Logger.error("Failed to acquire IMDB dataset due to {}.", e.getCause().getClass().getSimpleName());
                 Logger.error("Please contact the maintainer of the application with the stacktrace below if you think this is unwanted behavior.");
