@@ -1,3 +1,6 @@
+## 1.3.4
+  - TVDB API error handling improved by skipping invocation in case the API is unreachable
+
 ## 1.3.3
   - added option to ignore libraries via the environment variable IGNORE_LIBS.
   - libraries can be ignored by writing the library ids as a semicolon seperated string into the environment variable
