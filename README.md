@@ -1,6 +1,6 @@
 # Rating update tool for IMDB ratings in Plex libraries
 
-A tool to update the IMDB ratings for Plex libraries that contain movies and series.
+A tool to update the IMDB ratings for Plex libraries that contain movies and series. It matches movie libraries using the IMDB, TMDB agents and series (TV shows) libraries via the TVDB, TMDB TV Show agents.
 
 ## Warning
 
@@ -20,7 +20,7 @@ This tool allows you to update the database that stores this data with the corre
 
 An advantage is that it works outside Plex by manipulating the local Plex database. Thus, no metadata refresh operations have to be done within Plex. It is faster and will not lead into the unforeseen consequences that one sometimes experiences with a Plex metadata refresh (missing or changed posters if not using a custom poster).
 
-This tool currently works on movies/series that use the Plex IMDB agent as source of ratings. For the movies it will match items that use the imdb/tmdb agent. For series, it will use the tvdb to resolve the tvdb <=> imdb relationship (which can fail if the tvdb has no imdb id matched to the item). In my library with 1800 movies it transformed entries for 698 items and 1000+ entries for series. In case that even tho you use the IMDB agent you still have items that are TMDB matched you can run it with an TMDB API key and it will match an IMDB rating to the TMDB item (if TMDB provides an IMDB id).
+This tool currently works on movies/series that use the Plex IMDB agent as source of ratings. For the movies it will match items that use the imdb/tmdb agent. For series, it will match libraries using either the TMDB or TVDB agent to resolve the TVDB/TMDB <=> imdb relationships (which can fail if TMDB/TVDB have no imdb ids matched to the item). In my library with 1800 movies it transformed entries for 698 items and 1000+ entries for series. In case that even tho you use the IMDB agent you still have items that are TMDB matched you can run it with an TMDB API key and it will match an IMDB rating to the TMDB item (if TMDB provides an IMDB id).
 
 Before (Not IMDB matched)            |  After Match
 :-------------------------:|:-------------------------:
@@ -134,7 +134,7 @@ IGNORE_LIBS="1;5;8"
 
 ![](img/unraidv3.PNG)
 
-*TMDB and TVDB are optional settings that are not required for base movie imdb operations! TMDB unlocks matching for movies that have a TMBD match for whatever reason and TVDB allows to update series as well!*
+*TMDB and TVDB are optional settings that are not required for base movie imdb operations! TMDB unlocks matching for movies that have a TMBD match for whatever reason, TMDB matched series libraries and TVDB allows to update series as well!*
 
 6.) You can now start the container. If it has errors it will stop. The log in the config folder shows you what it does or why it crashed if that happens.
 
@@ -154,7 +154,9 @@ Provides a watchdog that once started will run every N hours over all IMDB suppo
 
 - cache-tmdb2imdb.json - If TMDB fallback is enabled this file will contain the resolved TMDB <=> IMDB mappings.
 - cache-tvdb2imdb.json - TVDB to IMDB mapping.
+- cache-cache-tmdbseries2imdb.json - TMDB TV Shows to IMDB mapping.
 - cache-tvdbBlacklist.json - Items that TVDB provides no IMDB id for or that fail being looked up. The blacklist is reset every 14 days.
+- cache-tmdbseriesBlacklist.json - Items that TMDB TV Shows provides no IMDB id for or that fail being looked up. The blacklist is reset every 14 days. 
 - state-imdb.json - Set of jobs that have not finished
 - xml-error-{uuid}-{library}.log - List of files that could not be updated by the XML transform step (not important tbh, plex reads from the DB)
 - updatetool.{increment}.log - Log file

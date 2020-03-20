@@ -2,7 +2,6 @@ package updatetool.imdb.resolvement;
 
 import java.net.http.HttpResponse;
 import java.util.function.Supplier;
-import java.util.regex.Pattern;
 import org.tinylog.Logger;
 import com.google.gson.Gson;
 import updatetool.api.AgentResolvementStrategy;
@@ -13,9 +12,6 @@ import updatetool.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
 import updatetool.imdb.ImdbUtility;
 
 public class TvdbToImdbResolvement implements AgentResolvementStrategy<ImdbMetadataResult> {
-    private static final Pattern EPISODE = Pattern.compile("[0-9]+\\/[0-9]+\\/[0-9]+");
-    private static final Pattern SEASON = Pattern.compile("[0-9]+\\/[0-9]+");
-    private static final Pattern SERIES = Pattern.compile("[0-9]+");
     private static final int MAX_TRIES = 3;
     
     private final Gson gson;
@@ -59,7 +55,7 @@ public class TvdbToImdbResolvement implements AgentResolvementStrategy<ImdbMetad
     
     @Override
     public boolean resolve(ImdbMetadataResult toResolve) {
-        String tvdbId = ImdbUtility.extractId(ImdbUtility.TVDB, toResolve.guid);
+        String tvdbId = ImdbUtility.extractId(ImdbUtility.TVDB_TMDB_SERIES_MATCHING, toResolve.guid);
         if(tvdbId == null) {
             Logger.error("Item: {} is detected as TVDB but has no id. (guid={})", toResolve.title, toResolve.guid);
             return false;
@@ -75,11 +71,11 @@ public class TvdbToImdbResolvement implements AgentResolvementStrategy<ImdbMetad
     }
     
     private int categorize(String tvdbId) {
-        if(EPISODE.matcher(tvdbId).find())
+        if(ImdbUtility.TVDB_TMDB_EPISODE.matcher(tvdbId).find())
             return 2;
-        if(SEASON.matcher(tvdbId).find())
+        if(ImdbUtility.TVDB_TMDB_SEASON.matcher(tvdbId).find())
             return 1;
-        if(SERIES.matcher(tvdbId).find())
+        if(ImdbUtility.TVDB_TMDB_SERIES.matcher(tvdbId).find())
             return 0;
         throw new IllegalArgumentException("This should never happen! Input was: " + tvdbId);
     }
@@ -107,7 +103,7 @@ public class TvdbToImdbResolvement implements AgentResolvementStrategy<ImdbMetad
         var data = gson.fromJson(response.message, Unmarshal.class).data;
         if(data == null || data.imdbId == null || data.imdbId.isBlank()) {
             Logger.warn("TVDB item {} with id {} does not have an IMDB id associated.", toResolve.title, tvdbId);
-            blacklist.cache(tvdbId, "x");
+            blacklist.cache(tvdbId, "");
             return false;
         }
         cache.cache(tvdbId, data.imdbId);
@@ -130,7 +126,7 @@ public class TvdbToImdbResolvement implements AgentResolvementStrategy<ImdbMetad
         var data = gson.fromJson(response.message, UnmarshalEpisode.class).data;
         if(data == null || data[0] == null || data[0].imdbId == null || data[0].imdbId.isBlank()) {
             Logger.warn("TVDB item {} with id {} does not have an IMDB id associated.", toResolve.title, tvdbId);
-            blacklist.cache(tvdbId, "x");
+            blacklist.cache(tvdbId, "");
             return false;
         }
         cache.cache(tvdbId, data[0].imdbId);
@@ -148,7 +144,7 @@ public class TvdbToImdbResolvement implements AgentResolvementStrategy<ImdbMetad
                 if(response.statusCode() == 200)
                     return new ApiResult(true, response.body());
                 if(response.statusCode() == 404) {
-                    blacklist.cache(tvdbId, "x");
+                    blacklist.cache(tvdbId, "");
                     return new ApiResult(false, response.body());
                 }
                 Logger.warn("TVDB API returned a reply with status code != 200. Trying again... {}/{}", i+1, MAX_TRIES);

@@ -53,6 +53,13 @@ public class ImdbDatabaseSupport {
             ImdbMetadataResult other = (ImdbMetadataResult) obj;
             return Objects.equals(id, other.id);
         }
+
+        @Override
+        public String toString() {
+            return "ImdbMetadataResult [imdbId=" + imdbId + ", guid=" + guid + ", title=" + title + ", hash=" + hash
+                    + ", id=" + id + ", libraryId=" + libraryId + ", extraData=" + extraData + ", rating=" + rating
+                    + "]";
+        }
     }
 
     public List<ImdbMetadataResult> requestEntries(long libraryId) {

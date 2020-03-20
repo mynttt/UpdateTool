@@ -1,3 +1,9 @@
+## 1.3.5
+  - TMDB matching for TV shows implemented, TV libraries that use the TMDB agent will now also get their ratings from IMDB as long as a TMDB API key is provided
+  - Previously reported wrong rating issue has been fixed with this. The cause of these wrong ratings were older items with a TMDB agent set after the library has been converted to TVDB
+  - Plex did not update the agent string for these items after the conversion
+  - UpdateTool tried to resolve these items via TVDB as it thought they would all have the TVDB agent
+
 ## 1.3.4
   - TVDB API error handling improved by skipping invocation in case the API is unreachable
 

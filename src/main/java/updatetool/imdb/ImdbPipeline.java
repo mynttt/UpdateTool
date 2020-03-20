@@ -3,9 +3,12 @@ package updatetool.imdb;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -20,6 +23,8 @@ import com.google.common.collect.Lists;
 import updatetool.api.AgentResolvementStrategy;
 import updatetool.api.ExportedRating;
 import updatetool.api.Pipeline;
+import updatetool.common.Capabilities;
+import updatetool.common.DatabaseSupport.LibraryType;
 import updatetool.common.ErrorReports;
 import updatetool.common.KeyValueStore;
 import updatetool.common.SqliteDatabaseProvider;
@@ -32,6 +37,7 @@ import updatetool.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
 import updatetool.imdb.ImdbRatingDatasetFactory.ImdbRatingDataset;
 import updatetool.imdb.resolvement.DefaultResolvement;
 import updatetool.imdb.resolvement.ImdbResolvement;
+import updatetool.imdb.resolvement.TmdbSeriesToImdbResolvement;
 import updatetool.imdb.resolvement.TmdbToImdbResolvement;
 import updatetool.imdb.resolvement.TvdbToImdbResolvement;
 
@@ -50,27 +56,34 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
     private final ExecutorService service;
     private final ImdbRatingDataset dataset;
     private final ImdbPipelineConfiguration configuration;
-    private final HashMap<String, AgentResolvementStrategy<ImdbMetadataResult>> resolve = new HashMap<>();
+    private final HashMap<String, AgentResolvementStrategy<ImdbMetadataResult>> resolveMovies = new HashMap<>(), resolveSeries = new HashMap<>();
+    private final EnumMap<LibraryType, HashMap<String, AgentResolvementStrategy<ImdbMetadataResult>>> resolvers = new EnumMap<>(LibraryType.class);
     public final AgentResolvementStrategy<ImdbMetadataResult> resolveDefault = new DefaultResolvement();
 
     public static class ImdbPipelineConfiguration {
+        private final EnumSet<Capabilities> capabilities;
         public final String tmdbApiKey, dbLocation;
         public final String[] apiauthTvdb;
         public final Path metadataRoot;
         
-        public ImdbPipelineConfiguration(String tmdbApiKey, String[] apiauthTvdb, Path metadataRoot, String dbLocation) {
+        public ImdbPipelineConfiguration(String tmdbApiKey, String[] apiauthTvdb, Path metadataRoot, String dbLocation, EnumSet<Capabilities> capabilities) {
             this.tmdbApiKey = tmdbApiKey;
             this.apiauthTvdb = apiauthTvdb;
             this.metadataRoot = metadataRoot;
             this.dbLocation = dbLocation;
+            this.capabilities =  capabilities;
         }
 
-        public boolean resolveTmdbConflicts() {
+        public boolean resolveTmdb() {
             return tmdbApiKey != null;
         }
         
         public boolean resolveTvdb() {
             return apiauthTvdb != null;
+        }
+        
+        public boolean supports(Capabilities c) {
+            return capabilities.contains(c);
         }
     }
     
@@ -79,15 +92,23 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         this.metadata = metadata;
         this.configuration = configuration;
         this.dataset = dataset;
-        resolve.put("IMDB", new ImdbResolvement());
-        resolve.put("TMDB", configuration.resolveTmdbConflicts() ? new TmdbToImdbResolvement(caches.get("tmdb"), new TmdbApi(configuration.tmdbApiKey)) : resolveDefault);
-        resolve.put("TVDB", configuration.resolveTvdb() ? new TvdbToImdbResolvement(caches.get("tvdb"), caches.get("tvdb-blacklist"), new TvdbApi(configuration.apiauthTvdb)) : resolveDefault);
+        resolveMovies.put("IMDB", new ImdbResolvement());
+        resolveMovies.put("TMDB", configuration.resolveTmdb() ? new TmdbToImdbResolvement(caches.get("tmdb"), new TmdbApi(configuration.tmdbApiKey)) : resolveDefault);
+        
+        resolveSeries.put("TVDB", configuration.resolveTvdb() ? new TvdbToImdbResolvement(caches.get("tvdb"), caches.get("tvdb-blacklist"), new TvdbApi(configuration.apiauthTvdb)) : resolveDefault);
+        resolveSeries.put("TMDB", configuration.resolveTmdb() ? new TmdbSeriesToImdbResolvement(caches.get("tmdb-series"), caches.get("tmdb-series-blacklist"), new TmdbApi(configuration.tmdbApiKey)) : resolveDefault);
+        resolveSeries.put("IMDB", new ImdbResolvement());
+        
+        resolvers.put(LibraryType.MOVIE, resolveMovies);
+        resolvers.put(LibraryType.SERIES, resolveSeries);
     }
 
     @Override
     public void analyseDatabase(ImdbJob job) throws Exception {
         Logger.info("Resolving IMDB identifiers for items. Only warnings and errors will show up...");
         Logger.info("Items that show up here will not be processed by further stages of the pipeline.");
+        HashMap<String, AgentResolvementStrategy<ImdbMetadataResult>> resolve = resolvers.get(job.libraryType);
+        Objects.requireNonNullElse(resolve, "No resolver registered for library type: " + job.libraryType);
         int skipped = 0;
         var items = metadata.request(job.uuid);
         for(var it = items.iterator(); it.hasNext(); ) {

@@ -41,4 +41,20 @@ public class TmdbApi extends AbstractApi {
         return "https://www.themoviedb.org";
     }
 
+    public HttpResponse<String> seriesImdbId(String seriesId) {
+        try {
+            return send(get(String.format("https://api.themoviedb.org/3/tv/%s/external_ids?api_key=%s", seriesId, apiKey)));
+        } catch (IOException | InterruptedException e) {
+            throw Utility.rethrow(e);
+        }
+    }
+
+    public HttpResponse<String> episodeImdbId(String[] parts) {
+        try {
+            return send(get(String.format("https://api.themoviedb.org/3/tv/%s/season/%s/episode/%s/external_ids?api_key=%s", parts[0], parts[1], parts[2], apiKey)));
+        } catch (IOException | InterruptedException e) {
+            throw Utility.rethrow(e);
+        }
+    }
+
 }

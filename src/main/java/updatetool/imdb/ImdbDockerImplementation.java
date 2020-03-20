@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,7 @@ import org.tinylog.configuration.Configuration;
 import updatetool.Main;
 import updatetool.api.Implementation;
 import updatetool.api.JobReport.StatusCode;
+import updatetool.common.Capabilities;
 import updatetool.common.DatabaseSupport;
 import updatetool.common.DatabaseSupport.Library;
 import updatetool.common.KeyValueStore;
@@ -46,6 +48,8 @@ public class ImdbDockerImplementation implements Implementation {
         String tvdbAuth = System.getenv("TVDB_AUTH_STRING");
         String data = System.getenv("PLEX_DATA_DIR");
         String ignore = System.getenv("IGNORE_LIBS");
+        
+        EnumSet<Capabilities> capabilities = EnumSet.allOf(Capabilities.class);
 
         Objects.requireNonNull(data, "Environment variable PLEX_DATA_DIR is not set");
 
@@ -74,6 +78,7 @@ public class ImdbDockerImplementation implements Implementation {
 
         if(apikeyTmdb == null || apikeyTmdb.isBlank()) {
             Logger.info("No TMDB API key detected. Will not attempt to do an TMDB <=> IMDB ID conversion to update TMDB matched items (unless already matched previously).");
+            capabilities.remove(Capabilities.TMDB);
         } else {
             Main.testApiTmdb(apikeyTmdb);
             Logger.info("TMDB API key enabled TMDB <=> IMDB matching. Will fetch IMDB ratings for non matched IMDB items.");
@@ -81,6 +86,7 @@ public class ImdbDockerImplementation implements Implementation {
         
         if(tvdbAuth == null || tvdbAuth.isBlank()) {
             Logger.info("No TVDB API authorization string detected. Will not attempt to update IMDB ratings for TV Series with the TVDB agent.");
+            capabilities.remove(Capabilities.TVDB);
         } else {
             String[] info = tvdbAuth.split(";");
             if(info.length == 3) {
@@ -102,6 +108,8 @@ public class ImdbDockerImplementation implements Implementation {
 
         var state = State.recoverImdb(Main.STATE_IMDB);
         var caches = Map.of("tmdb", KeyValueStore.of(Main.PWD.resolve("cache-tmdb2imdb.json")), 
+                            "tmdb-series", KeyValueStore.of(Main.PWD.resolve("cache-tmdbseries2imdb.json")),
+                            "tmdb-series-blacklist", KeyValueStore.of(Main.PWD.resolve("cache-tmdbseriesBlacklist.json")),
                             "tvdb", KeyValueStore.of(Main.PWD.resolve("cache-tvdb2imdb.json")),
                             "tvdb-blacklist", KeyValueStore.of(Main.PWD.resolve("cache-tvdbBlacklist.json")));
         
@@ -150,7 +158,7 @@ public class ImdbDockerImplementation implements Implementation {
         }
 
         var dbLocation = plexdata.resolve("Plug-in Support/Databases/com.plexapp.plugins.library.db").toAbsolutePath().toString();
-        var config = new ImdbPipelineConfiguration(apikeyTmdb, apiauthTvdb, plexdata.resolve("Metadata/Movies"), dbLocation);
+        var config = new ImdbPipelineConfiguration(apikeyTmdb, apiauthTvdb, plexdata.resolve("Metadata/Movies"), dbLocation, capabilities);
         var scheduler = Executors.newSingleThreadScheduledExecutor();
         Logger.info("Running first task...");
         scheduler.schedule(new ImdbBatchJob(config, plexdata, caches, state), 1, TimeUnit.SECONDS);
