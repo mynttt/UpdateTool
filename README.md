@@ -1,6 +1,8 @@
 # Rating update tool for IMDB ratings in Plex libraries
 
-A tool to update the IMDB ratings for Plex libraries that contain movies and series. It matches movie libraries using the IMDB, TMDB agents and series (TV shows) libraries via the TVDB, TMDB TV Show agents.
+A tool to update the IMDB ratings for Plex libraries that contain movies and series. 
+
+It matches movie libraries using the IMDB, TMDB agents and series (TV shows) libraries via the TVDB, TMDB TV Show agents.
 
 ## Warning
 
