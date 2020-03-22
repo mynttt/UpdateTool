@@ -21,11 +21,12 @@ public class ImdbDatabaseSupport {
 
     public static class ImdbMetadataResult {
       //Id will be resolved in the pipeline and not here
-        public String imdbId;
+        public String imdbId, extractedId;
         public final String guid, title, hash;
         public final Integer id, libraryId;
         public String extraData;
         public Double rating;
+        public boolean resolved;
 
         private ImdbMetadataResult(ResultSet rs) throws SQLException {
             id = rs.getInt(1);

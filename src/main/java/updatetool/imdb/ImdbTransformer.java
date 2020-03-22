@@ -18,7 +18,7 @@ public class ImdbTransformer {
         try {
             d = Double.parseDouble(imdb.exportRating());
         } catch(NumberFormatException | NullPointerException e) {
-            Logger.warn("Ignoring: " + meta.title + " with IMDB ID: " + meta.imdbId + " supplies no valid rating (class=" + imdb.getClass().getCanonicalName() + "): " + imdb.exportRating());
+            Logger.warn("Ignoring: '" + meta.title + "' with IMDB ID: " + meta.imdbId + " supplies no valid rating := '{}'", imdb.exportRating());
             return true;
         }
         return meta.rating != null

@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -38,7 +40,7 @@ import updatetool.imdb.ImdbRatingDatasetFactory.ImdbRatingDataset;
 import updatetool.imdb.resolvement.DefaultResolvement;
 import updatetool.imdb.resolvement.ImdbResolvement;
 import updatetool.imdb.resolvement.TmdbSeriesToImdbResolvement;
-import updatetool.imdb.resolvement.TmdbToImdbResolvement;
+import updatetool.imdb.resolvement.TmdbMovieToImdbResolvement;
 import updatetool.imdb.resolvement.TvdbToImdbResolvement;
 
 public class ImdbPipeline extends Pipeline<ImdbJob> {
@@ -93,7 +95,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         this.configuration = configuration;
         this.dataset = dataset;
         resolveMovies.put("IMDB", new ImdbResolvement());
-        resolveMovies.put("TMDB", configuration.resolveTmdb() ? new TmdbToImdbResolvement(caches.get("tmdb"), new TmdbApi(configuration.tmdbApiKey)) : resolveDefault);
+        resolveMovies.put("TMDB", configuration.resolveTmdb() ? new TmdbMovieToImdbResolvement(caches.get("tmdb"), new TmdbApi(configuration.tmdbApiKey)) : resolveDefault);
         
         resolveSeries.put("TVDB", configuration.resolveTvdb() ? new TvdbToImdbResolvement(caches.get("tvdb"), caches.get("tvdb-blacklist"), new TvdbApi(configuration.apiauthTvdb)) : resolveDefault);
         resolveSeries.put("TMDB", configuration.resolveTmdb() ? new TmdbSeriesToImdbResolvement(caches.get("tmdb-series"), caches.get("tmdb-series-blacklist"), new TmdbApi(configuration.tmdbApiKey)) : resolveDefault);
@@ -109,31 +111,29 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         Logger.info("Items that show up here will not be processed by further stages of the pipeline.");
         HashMap<String, AgentResolvementStrategy<ImdbMetadataResult>> resolve = resolvers.get(job.libraryType);
         Objects.requireNonNullElse(resolve, "No resolver registered for library type: " + job.libraryType);
-        int skipped = 0;
+        List<CompletableFuture<Void>> resolverTasks = new ArrayList<>();
+        ConcurrentLinkedDeque<ImdbMetadataResult> resolved = new ConcurrentLinkedDeque<>();
         var items = metadata.request(job.uuid);
-        for(var it = items.iterator(); it.hasNext(); ) {
-            var item = it.next();
+        for(var item : items) {
             var matcher = RESOLVEMENT.matcher(item.guid);
             if(matcher.find()) {
                 for(var entry : resolve.entrySet()) {
                     if(matcher.group(entry.getKey()) == null)
                         continue;
-                    var resolved = entry.getValue().resolve(item);
-                    if(!resolved) {
-                        it.remove();
-                        skipped++;
-                    }
+                    resolverTasks.add(CompletableFuture.supplyAsync(() -> entry.getValue().resolve(item), service)
+                            .thenAccept(b -> { if(b) resolved.add(item); }));
                     break;
                 }
             } else {
                 resolveDefault.resolve(item);
-                skipped++;
-                it.remove();
             }
         }
-        Logger.info("Filtered " + skipped + " invalid item(s).");
+        
+        resolverTasks.stream().forEach(CompletableFuture::join);
+        
+        Logger.info("Filtered " + (items.size()-resolve.size()) + " invalid item(s).");
         job.stage = PipelineStage.ANALYSED_DB;
-        job.items = items;
+        job.items = new ArrayList<>(resolved);
     }
 
     @Override

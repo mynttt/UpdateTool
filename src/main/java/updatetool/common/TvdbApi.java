@@ -5,9 +5,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
 import java.util.Map;
 import org.tinylog.Logger;
 import com.google.gson.Gson;
+import com.google.gson.internal.LinkedTreeMap;
 import updatetool.exceptions.ApiCallFailedException;
 
 public class TvdbApi extends AbstractApi {
@@ -15,6 +17,27 @@ public class TvdbApi extends AbstractApi {
     private final String authToken;
     private final Gson gson = new Gson();
 
+    public class UnmarshalTvdb {
+        public final String Error = null;
+        private final Object data = null;
+        
+        private boolean isSeries() {
+            return data instanceof LinkedTreeMap;
+        }
+        
+        private boolean isEpisode() {
+            return data instanceof ArrayList;
+        }
+        
+        @SuppressWarnings("rawtypes")
+        public String getImdbId() {
+            if(data == null) return null;
+            if(isSeries()) return (String) ((LinkedTreeMap) data).get("imdbId");
+            if(isEpisode()) return (String) ((LinkedTreeMap) ((ArrayList) data).get(0)).get("imdbId");
+            return null;
+        }
+    }
+    
     public TvdbApi(String[] credentials) throws ApiCallFailedException {
         super();
         authToken = "Bearer " + auth(credentials);

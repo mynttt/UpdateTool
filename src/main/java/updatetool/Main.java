@@ -7,6 +7,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import org.tinylog.Logger;
 import updatetool.api.Implementation;
@@ -19,6 +21,7 @@ import updatetool.imdb.ImdbDockerImplementation;
 public class Main {
     public static final Path PWD = Paths.get(".");
     public static final List<Implementations> IMPLEMENTATIONS = Arrays.asList(Implementations.values());
+    public static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(6);
 
     public static final Path STATE_IMDB = Main.PWD.resolve("state-imdb.json");
 

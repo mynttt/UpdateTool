@@ -6,17 +6,16 @@ import java.net.http.HttpResponse;
 public class TmdbApi extends AbstractApi {
     private final String apiKey;
 
-    public static class TMDBResponse {
-        public final String imdb_id, title;
-
-        public TMDBResponse(String imdb_id, String title) {
-            this.imdb_id = imdb_id;
-            this.title = title;
-        }
+    public static class UnmarshalMovie {
+        public final String imdb_id = null, title = null;
+    }
+    
+    public static class UnmarshalSeries {
+        public final String imdb_id = null, status_message = null;
+        public final int status_code = 0;
     }
 
     public TmdbApi(String apiKey) {
-        super();
         this.apiKey = apiKey;
     }
 

@@ -112,18 +112,6 @@ public class ImdbDockerImplementation implements Implementation {
                             "tmdb-series-blacklist", KeyValueStore.of(Main.PWD.resolve("cache-tmdbseriesBlacklist.json")),
                             "tvdb", KeyValueStore.of(Main.PWD.resolve("cache-tvdb2imdb.json")),
                             "tvdb-blacklist", KeyValueStore.of(Main.PWD.resolve("cache-tvdbBlacklist.json")));
-        
-        var tvdbBlacklist = caches.get("tvdb-blacklist");
-        String expire = tvdbBlacklist.lookup("__EXPIRE");
-        if(expire == null) {
-            tvdbBlacklist.cache("__EXPIRE", Long.toString(System.currentTimeMillis()+TimeUnit.DAYS.toMillis(14)));
-        } else {
-            long l = Long.parseLong(expire);
-            if(l <= System.currentTimeMillis()) {
-                tvdbBlacklist.reset();
-                tvdbBlacklist.cache("__EXPIRE", Long.toString(System.currentTimeMillis()+TimeUnit.DAYS.toMillis(14)));
-            }
-        }
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
@@ -161,9 +149,9 @@ public class ImdbDockerImplementation implements Implementation {
         var config = new ImdbPipelineConfiguration(apikeyTmdb, apiauthTvdb, plexdata.resolve("Metadata/Movies"), dbLocation, capabilities);
         var scheduler = Executors.newSingleThreadScheduledExecutor();
         Logger.info("Running first task...");
-        scheduler.schedule(new ImdbBatchJob(config, plexdata, caches, state), 1, TimeUnit.SECONDS);
+        scheduler.schedule(new ImdbBatchJob(Main.EXECUTOR, config, plexdata, caches, state), 1, TimeUnit.SECONDS);
         Logger.info("Scheduling next tasks to run @ every " + RUN_EVERY_N_HOUR + " hour(s)");
-        scheduler.scheduleAtFixedRate(new ImdbBatchJob(config, plexdata, caches, state), 1, RUN_EVERY_N_HOUR, TimeUnit.HOURS);
+        scheduler.scheduleAtFixedRate(new ImdbBatchJob(Main.EXECUTOR, config, plexdata, caches, state), 1, RUN_EVERY_N_HOUR, TimeUnit.HOURS);
     }
 
     private static class ImdbBatchJob implements Runnable {
@@ -172,8 +160,8 @@ public class ImdbDockerImplementation implements Implementation {
         private final Map<String, KeyValueStore> caches;
         private final Set<ImdbJob> state;
         
-        public ImdbBatchJob(ImdbPipelineConfiguration config, Path plexdata, Map<String, KeyValueStore> caches, Set<ImdbJob> state) {
-            service = Executors.newFixedThreadPool(6);
+        public ImdbBatchJob(ExecutorService service, ImdbPipelineConfiguration config, Path plexdata, Map<String, KeyValueStore> caches, Set<ImdbJob> state) {
+            this.service = service;
             this.config = config;
             this.caches = caches;
             this.state = state;
@@ -182,6 +170,9 @@ public class ImdbDockerImplementation implements Implementation {
         @Override
         public void run() {
             try { Main.rollingLogPurge(); } catch (IOException e) { Logger.error(e); }
+            
+            KeyValueStore.expiredCheck(14, caches.get("tvdb-blacklist"));
+            KeyValueStore.expiredCheck(14, caches.get("tmdb-series-blacklist"));
             
             List<Library> libraries = null;
             ImdbLibraryMetadata metadata = null;

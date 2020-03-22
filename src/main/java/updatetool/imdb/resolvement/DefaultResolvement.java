@@ -8,7 +8,7 @@ public class DefaultResolvement implements AgentResolvementStrategy<ImdbMetadata
 
     @Override
     public boolean resolve(ImdbMetadataResult toResolve) {
-        Logger.warn("Item: {} has no matching IMDB resolver and will be ignored. (guid={})", toResolve.title, toResolve.guid);
+        Logger.warn("Item: '{}' has no matching IMDB resolver and will be ignored. (guid={})", toResolve.title, toResolve.guid);
         return false;
     }
 

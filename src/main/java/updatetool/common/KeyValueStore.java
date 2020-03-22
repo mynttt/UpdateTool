@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
@@ -35,15 +36,28 @@ public class KeyValueStore {
         }
     }
     
-    public String lookup(String key) {
+    public synchronized String lookup(String key) {
         return map.get(key);
     }
 
-    public void cache(String key, String value) {
+    public synchronized void cache(String key, String value) {
         map.put(key, value);
     }
     
-    public void reset() {
+    public synchronized void reset() {
         map.clear();
+    }
+    
+    public static void expiredCheck(int days, KeyValueStore store) {
+        String expire = store.lookup("__EXPIRE");
+        if(expire == null) {
+            store.cache("__EXPIRE", Long.toString(System.currentTimeMillis()+TimeUnit.DAYS.toMillis(days)));
+        } else {
+            long l = Long.parseLong(expire);
+            if(l <= System.currentTimeMillis()) {
+                store.reset();
+                store.cache("__EXPIRE", Long.toString(System.currentTimeMillis()+TimeUnit.DAYS.toMillis(days)));
+            }
+        }
     }
 }
