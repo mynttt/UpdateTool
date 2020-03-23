@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import org.tinylog.Logger;
 import updatetool.api.Implementation;
 import updatetool.common.AbstractApi;
+import updatetool.common.Capabilities;
 import updatetool.common.TmdbApi;
 import updatetool.common.TvdbApi;
 import updatetool.exceptions.ApiCallFailedException;
@@ -52,6 +53,9 @@ public class Main {
                              "           Example: username;DAWIDK9CJKWFJAWKF;e33914feabd52e8192011b0ce6c8",
                              "(Optional) IGNORE_LIBS: Ignore libraries from being touched by this tool by supplying a set of library ids as a semicolon ';' seperated string.",
                              "           Example: Ignoring 1 => IGNORE_LIBS=1 | Ignoring 1, 2, 3 => IGNORE_LIBS=1;2;3",
+                             "(Optional) CAPABILITIES: Specify special settings for the tool. Must be entered as a ';' seperated string.",
+                             "           Currently available: " + Capabilities.getUserFlags(),
+                             "           Example: NO_TV;NO_MOVIE => renders this tool useless",
                              "",
                              "Parameters explained:",
                              "No parameters starts with the default of {every_n_hour} = 12, {cache_pruge_in_days} = 14 and {new_movie_cache_purge_threshold} = 12",

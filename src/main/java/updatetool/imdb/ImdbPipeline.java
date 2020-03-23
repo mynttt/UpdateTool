@@ -77,15 +77,11 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         }
 
         public boolean resolveTmdb() {
-            return tmdbApiKey != null;
+            return capabilities.contains(Capabilities.TMDB);
         }
         
         public boolean resolveTvdb() {
-            return apiauthTvdb != null;
-        }
-        
-        public boolean supports(Capabilities c) {
-            return capabilities.contains(c);
+            return capabilities.contains(Capabilities.TVDB);
         }
     }
     

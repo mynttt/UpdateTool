@@ -3,6 +3,7 @@ package updatetool.common;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 public class DatabaseSupport {
@@ -54,12 +55,12 @@ public class DatabaseSupport {
         }
     }
 
-    public List<Library> requestMovieLibraries() {
-        return requestLibrary("SELECT id, name, uuid, section_type FROM library_sections WHERE section_type = 1 AND agent = 'com.plexapp.agents.imdb'");
+    public List<Library> requestMovieLibraries(EnumSet<Capabilities> capabilities) {
+        return requestLibrary("SELECT id, name, uuid, section_type FROM library_sections WHERE section_type = 1 AND agent in (" + Capabilities.formatMovie(capabilities) + ")");
     }
     
-    public List<Library> requestSeriesLibraries() {
-        return requestLibrary("SELECT id, name, uuid, section_type FROM library_sections WHERE section_type = 2 AND agent IN ('com.plexapp.agents.thetvdb', 'com.plexapp.agents.themoviedb')");
+    public List<Library> requestSeriesLibraries(EnumSet<Capabilities> capabilities) {
+        return requestLibrary("SELECT id, name, uuid, section_type FROM library_sections WHERE section_type = 2 AND agent IN (" + Capabilities.formatSeries(capabilities) + ")");
     }
     
     private List<Library> requestLibrary(String sql) {

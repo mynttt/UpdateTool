@@ -4,7 +4,7 @@ A tool to update the IMDB ratings for Plex libraries that contain movies and ser
 
 It matches movie libraries using the IMDB, TMDB agents and series (TV shows) libraries via the TVDB, TMDB TV Show agents.
 
-## Warning
+## Warnings
 
 &#x1F534; **As of today (20.02.2020) there have been two reports of corrupted databases! Please use this tool with caution, the matter is being investigated as this tool uses transactions on DB related operations and the actual DB connection time is minimal. The corruptions probably have something to do with a bugged Unraid version. If this happens to you, open an issue here with both relevant Plex / Unraid logs! Make sure you have a database backup to restore if necessary (Plex should create them automatically!). Instructions on how to repair a corrupt database are [here](https://support.plex.tv/articles/201100678-repair-a-corrupt-database/). This tool has been used by quite a large userbase and it has not caused any corruption issues in the past which makes the matter quite mysterious. After checking on SQLites ["how to corrupt a database"](https://www.sqlite.org/howtocorrupt.html) it is not apparent which issues these two users faced. If you want to be 100% sure, stop Plex, run the tool, stop the tool, start Plex to prevent any concurrency (which SQLite should handle without issues and did so in the past).** &#x1F534;
 
@@ -22,19 +22,37 @@ This tool allows you to update the database that stores this data with the corre
 
 An advantage is that it works outside Plex by manipulating the local Plex database. Thus, no metadata refresh operations have to be done within Plex. It is faster and will not lead into the unforeseen consequences that one sometimes experiences with a Plex metadata refresh (missing or changed posters if not using a custom poster).
 
-This tool currently works on movies/series that use the Plex IMDB agent as source of ratings. For the movies it will match items that use the imdb/tmdb agent. For series, it will match libraries using either the TMDB or TVDB agent to resolve the TVDB/TMDB <=> imdb relationships (which can fail if TMDB/TVDB have no imdb ids matched to the item). In my library with 1800 movies it transformed entries for 698 items and 1000+ entries for series. In case that even tho you use the IMDB agent you still have items that are TMDB matched you can run it with an TMDB API key and it will match an IMDB rating to the TMDB item (if TMDB provides an IMDB id).
-
 Before (Not IMDB matched)            |  After Match
 :-------------------------:|:-------------------------:
 ![](img/star.PNG)  |  ![](img/imdb.PNG)
 
-*These are two different movies, that why the genres changed*
+*Above are two different movies, that why the genres changed*
+
+### This tool processes the following libraries:
+
+Type | Description | Agent
+:-------------------------:|:-------------------------:|:-------------------------:
+MOVIE | Plex Movie Agent with IMDB | com.plexapp.agents.imdb
+MOVIE | TMDB Movie Agent (if TMDB API key set) | com.plexapp.agents.themoviedb
+TV SHOW | TMDB Series Agent (if TMDB API key set) | com.plexapp.agents.themoviedb
+TV SHOW | TVDB Series Agent (if TVDB auth string set) |com.plexapp.agents.thetvdb
+
+In my library with 1800 movies it transformed entries for 698 items and 1000+ entries for series. If it is left running, every few days when a new IMDB data set is pulled a few ratings will update as well.
 
 # Docker
 
 Docker is on [dockerhub](https://hub.docker.com/r/mynttt/updatetool).
 
-To run your docker:
+## Environment Variables Guide
+
+Name | Description
+:-------------------------:|:-------------------------:|
+TMDB_API_KEY|Enables TMDB Movie/Series library processing
+TVDB_AUTH_STRING|Enables TVDB Series library processing
+IGNORE_LIBS|Ignore libraries with certain IDs ([more here](#Ignore-libraries-from-being-updated))
+CAPABILITIES|Custom flags for the tool ([more here](#supply-custom-capability-flags))
+
+## To run your docker:
 
 ```bash
 docker pull mynttt/updatetool
@@ -116,6 +134,33 @@ Ignoring the libraries with the IDs 1, 5, 8:
 
 ```
 IGNORE_LIBS="1;5;8"
+```
+
+### Supply custom capability flags
+
+You can apply custom flags to the tool via the **CAPABILITIES** environment variable.
+
+Currently the following flags exist:
+
+Flag | Description
+:-------------------------:|:-------------------------:|
+NO_TV |Ignore all TV Show libraries
+NO_MOVIE | Ignore all Movie libraries
+
+Multiple flags can be supplied as a semicolon separated string.
+
+**Examples:**
+
+Don't process TV libraries
+
+```
+CAPABILITIES="NO_TV"
+```
+
+Render the tool useless by skipping TV and Movie libraries
+
+```
+CAPABILITIES="NO_TV;NO_MOVIE";
 ```
 
 ## Docker on UnRaid in the docker tab without commands

@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -16,6 +17,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.tinylog.Logger;
 import org.tinylog.configuration.Configuration;
 import updatetool.Main;
@@ -48,8 +50,34 @@ public class ImdbDockerImplementation implements Implementation {
         String tvdbAuth = System.getenv("TVDB_AUTH_STRING");
         String data = System.getenv("PLEX_DATA_DIR");
         String ignore = System.getenv("IGNORE_LIBS");
+        String capabilitiesEnv = System.getenv("CAPABILITIES");
         
         EnumSet<Capabilities> capabilities = EnumSet.allOf(Capabilities.class);
+        final List<Capabilities> parsed = new ArrayList<>();
+
+        if(capabilitiesEnv != null && !capabilitiesEnv.isBlank()) {
+            try {
+                parsed.addAll(Arrays
+                        .stream(capabilitiesEnv.split(";"))
+                        .map(Capabilities::valueOf)
+                        .collect(Collectors.toList()));
+            } catch(IllegalArgumentException e) {
+                String[] msg = e.getMessage().split("\\.");
+                Logger.error("Invalid CAPABILITIES value: " + msg[msg.length-1]);
+                System.exit(-1);
+            }
+        }
+        
+        if(!parsed.isEmpty()) {
+            capabilities.removeAll(Capabilities
+                    .getUserFlags()
+                    .stream()
+                    .filter(f -> !parsed.contains(f))
+                    .collect(Collectors.toList())
+                    );
+        } else {
+            capabilities.removeAll(Capabilities.getUserFlags());
+        }
 
         Objects.requireNonNull(data, "Environment variable PLEX_DATA_DIR is not set");
 
@@ -77,15 +105,15 @@ public class ImdbDockerImplementation implements Implementation {
         }
 
         if(apikeyTmdb == null || apikeyTmdb.isBlank()) {
-            Logger.info("No TMDB API key detected. Will not attempt to do an TMDB <=> IMDB ID conversion to update TMDB matched items (unless already matched previously).");
+            Logger.info("No TMDB API key detected. Will not process TMDB backed Movie and TV Series libraries and TMDB orphans.");
             capabilities.remove(Capabilities.TMDB);
         } else {
             Main.testApiTmdb(apikeyTmdb);
-            Logger.info("TMDB API key enabled TMDB <=> IMDB matching. Will fetch IMDB ratings for non matched IMDB items.");
+            Logger.info("TMDB API key enabled TMDB <=> IMDB matching. Will process TMDB backed Movie and TV Series libraries and TMDB orphans.");
         }
         
         if(tvdbAuth == null || tvdbAuth.isBlank()) {
-            Logger.info("No TVDB API authorization string detected. Will not attempt to update IMDB ratings for TV Series with the TVDB agent.");
+            Logger.info("No TVDB API authorization string detected. Will process TVDB backed TV Series libraries.");
             capabilities.remove(Capabilities.TVDB);
         } else {
             String[] info = tvdbAuth.split(";");
@@ -145,13 +173,15 @@ public class ImdbDockerImplementation implements Implementation {
             }
         }
 
+        Logger.info("Capabilities: " + capabilities.toString());
+        
         var dbLocation = plexdata.resolve("Plug-in Support/Databases/com.plexapp.plugins.library.db").toAbsolutePath().toString();
         var config = new ImdbPipelineConfiguration(apikeyTmdb, apiauthTvdb, plexdata.resolve("Metadata/Movies"), dbLocation, capabilities);
         var scheduler = Executors.newSingleThreadScheduledExecutor();
         Logger.info("Running first task...");
-        scheduler.schedule(new ImdbBatchJob(Main.EXECUTOR, config, plexdata, caches, state), 1, TimeUnit.SECONDS);
+        scheduler.schedule(new ImdbBatchJob(Main.EXECUTOR, config, plexdata, caches, state, capabilities), 1, TimeUnit.SECONDS);
         Logger.info("Scheduling next tasks to run @ every " + RUN_EVERY_N_HOUR + " hour(s)");
-        scheduler.scheduleAtFixedRate(new ImdbBatchJob(Main.EXECUTOR, config, plexdata, caches, state), 1, RUN_EVERY_N_HOUR, TimeUnit.HOURS);
+        scheduler.scheduleAtFixedRate(new ImdbBatchJob(Main.EXECUTOR, config, plexdata, caches, state, capabilities), 1, RUN_EVERY_N_HOUR, TimeUnit.HOURS);
     }
 
     private static class ImdbBatchJob implements Runnable {
@@ -159,12 +189,14 @@ public class ImdbDockerImplementation implements Implementation {
         private final ExecutorService service;
         private final Map<String, KeyValueStore> caches;
         private final Set<ImdbJob> state;
+        private final EnumSet<Capabilities> capabilities;
         
-        public ImdbBatchJob(ExecutorService service, ImdbPipelineConfiguration config, Path plexdata, Map<String, KeyValueStore> caches, Set<ImdbJob> state) {
+        public ImdbBatchJob(ExecutorService service, ImdbPipelineConfiguration config, Path plexdata, Map<String, KeyValueStore> caches, Set<ImdbJob> state, EnumSet<Capabilities> capabilities) {
             this.service = service;
             this.config = config;
             this.caches = caches;
             this.state = state;
+            this.capabilities = capabilities;
         }
 
         @Override
@@ -174,14 +206,16 @@ public class ImdbDockerImplementation implements Implementation {
             KeyValueStore.expiredCheck(14, caches.get("tvdb-blacklist"));
             KeyValueStore.expiredCheck(14, caches.get("tmdb-series-blacklist"));
             
-            List<Library> libraries = null;
+            List<Library> libraries = new ArrayList<>();
             ImdbLibraryMetadata metadata = null;
             
             try(var connection = new SqliteDatabaseProvider(config.dbLocation)) {
                 var support = new DatabaseSupport(connection);
-                libraries = support.requestMovieLibraries();
-                if(config.resolveTvdb())
-                    libraries.addAll(support.requestSeriesLibraries());
+                if(!capabilities.contains(Capabilities.NO_MOVIE))
+                    libraries = support.requestMovieLibraries(capabilities);
+                if(!capabilities.contains(Capabilities.NO_TV) && 
+                        (capabilities.contains(Capabilities.TMDB) || capabilities.contains(Capabilities.TVDB)))
+                    libraries.addAll(support.requestSeriesLibraries(capabilities));
                 libraries.removeIf(l -> IGNORE_LIBRARIES.contains(l.id));
                 metadata = ImdbLibraryMetadata.fetchAll(libraries, new ImdbDatabaseSupport(connection), config); 
             } catch(Exception e) {
