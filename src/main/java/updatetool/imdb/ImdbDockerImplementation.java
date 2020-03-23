@@ -212,9 +212,8 @@ public class ImdbDockerImplementation implements Implementation {
             try(var connection = new SqliteDatabaseProvider(config.dbLocation)) {
                 var support = new DatabaseSupport(connection);
                 if(!capabilities.contains(Capabilities.NO_MOVIE))
-                    libraries = support.requestMovieLibraries(capabilities);
-                if(!capabilities.contains(Capabilities.NO_TV) && 
-                        (capabilities.contains(Capabilities.TMDB) || capabilities.contains(Capabilities.TVDB)))
+                    libraries.addAll(support.requestMovieLibraries(capabilities));
+                if(!capabilities.contains(Capabilities.NO_TV))
                     libraries.addAll(support.requestSeriesLibraries(capabilities));
                 libraries.removeIf(l -> IGNORE_LIBRARIES.contains(l.id));
                 metadata = ImdbLibraryMetadata.fetchAll(libraries, new ImdbDatabaseSupport(connection), config); 
