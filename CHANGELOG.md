@@ -1,12 +1,12 @@
 ## 1.3.6
-  - Asynchronous resolvement => faster HTTP processing with APIs
-  - If TMDB capability exists (TMDB API key set) the tool will also go after movie libraries with the TMDB agent (com.plexapp.agents.themoviedb)
-  - Previously only libraries with the com.plexapp.agents.imdb were processed, altough orphans with the TMDB agents were also resolved.
-  - This led to confusion and has no been changed.
-  - Ability to ignore TV and Movie libraries by setting capabilities in the new CAPABILITIES environment variable
-  - Currently the following CAPABILITIES exist: NO_TV, NO_MOVIE. Both ignore the corresponding libraries.
-  - CAPABILITIES are configured as a semicolon separated list i.e: CAPABILITIES=NO_TV;NO_MOVIE would render this tool useless.
-  - This is to allow user configuration for future features.
+- Asynchronous resolvement => faster HTTP processing with APIs
+- If TMDB capability exists (TMDB API key set) the tool will also go after movie libraries with the TMDB agent (com.plexapp.agents.themoviedb)
+- Previously only libraries with the com.plexapp.agents.imdb were processed, although orphans with the TMDB agents were also resolved.
+- This led to confusion and has wno been changed to prevent users wondering why a library is being ignored
+- Ability to ignore TV and Movie libraries by setting capabilities in the new CAPABILITIES environment variable
+- Currently the following CAPABILITIES exist: NO_TV, NO_MOVIE. Both ignore the corresponding libraries.
+- CAPABILITIES are configured as a semicolon separated list i.e: CAPABILITIES=NO_TV;NO_MOVIE would render this tool useless.
+- This is to allow user configuration for future features.
 
 ## 1.3.5
   - TMDB matching for TV shows implemented, TV libraries that use the TMDB agent will now also get their ratings from IMDB as long as a TMDB API key is provided
