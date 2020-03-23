@@ -41,7 +41,7 @@ In my library with 1800 movies it transformed entries for 698 items and 1000+ en
 
 # Docker
 
-Docker is on [dockerhub](https://hub.docker.com/r/mynttt/updatetool).
+Docker is on [dockerhub](https://hub.docker.com/r/mynttt/updatetool) | [UnRaid instructions](#docker-on-unraid-in-the-docker-tab-without-commands)
 
 ## Environment Variables Guide
 
