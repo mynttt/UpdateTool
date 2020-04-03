@@ -1,3 +1,8 @@
+## 1.3.7
+ - Deprecated environment variable TVDB_AUTH_STRING as TVDB API only requires the API Key
+ - TVDB_AUTH_STRING can still be used, the API Key will be extracted automatically
+ - New variable TVDB_API_KEY introduced which only takes the TVDB API Key
+
 ## 1.3.6
 - Asynchronous resolvement => faster HTTP processing with APIs
 - If TMDB capability exists (TMDB API key set) the tool will also go after movie libraries with the TMDB agent (com.plexapp.agents.themoviedb)

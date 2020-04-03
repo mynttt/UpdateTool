@@ -48,9 +48,16 @@ Docker is on [dockerhub](https://hub.docker.com/r/mynttt/updatetool) | [UnRaid i
 Name | Description
 :-------------------------:|:-------------------------:|
 TMDB_API_KEY|Enables TMDB Movie/Series library processing
-TVDB_AUTH_STRING|Enables TVDB Series library processing
+TVDB_API_KEY|Enables TVDB Series library processing
 IGNORE_LIBS|Ignore libraries with certain IDs ([more here](#Ignore-libraries-from-being-updated))
 CAPABILITIES|Custom flags for the tool ([more here](#supply-custom-capability-flags))
+
+Deprecated variables can still be used although their usage is discouraged.
+
+### Deprecated Environment Variables
+Name | Description | Deprecation
+:-------------------------:|:-------------------------:|:-------------------------:|
+TVDB_AUTH_STRING|Enables TVDB Series library processing|API Key is enough for this tool to work
 
 ## To run your docker:
 
@@ -76,7 +83,7 @@ docker run -dit -e RUN_EVERY_N_HOURS=12 \
 
 docker run -dit -e RUN_EVERY_N_HOURS=12 \
     -e TMDB_API_KEY=yourkey \
-    -e TVDB_AUTH_STRING="tvdbusername;tvdbuserid;tvdbapikey" \
+    -e TVDB_API_KEY=tvdbapikey \
     -v "/mnt/data/Plex Media Server":/plexdata \
     -v "/mnt/data/imdpupdaterconfig":/config \
     mynttt/updatetool
@@ -92,7 +99,7 @@ docker run -dit
     -e TMDB_API_KEY=yourkey \
      # Three items are required to auth with TVDB username, userkey, apikey
      # Supply these as semicolon seperated values. Example: username;DAWIDK9CJKWFJAWKF;e33914feabd52e8192011b0ce6c8
-    -e TVDB_AUTH_STRING="tvdbusername;tvdbuserkey;tvdbapikey" \
+    -e TVDB_API_KEY=tvdbapikey \
      # The plex data root (that contains Plug-ins, Metadata, ...
      # https://support.plex.tv/articles/202915258-where-is-the-plex-media-server-data-directory-located/
     -v "/mnt/data/Plex Media Server":/plexdata \
@@ -101,7 +108,7 @@ docker run -dit
     mynttt/updatetool
 ```
 
-[TVDB User Key](https://thetvdb.com/dashboard/account/editinfo) - [TVDB API Key](https://thetvdb.com/dashboard/account/apikey)
+[TVDB API Key](https://thetvdb.com/dashboard/account/apikey)
 
 *"/mnt/data/Plex Media Server" and "/mnt/data/imdpupdaterconfig" are just sample paths! Set your own paths there or it will probably not work!*
 

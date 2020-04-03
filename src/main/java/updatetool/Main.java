@@ -49,8 +49,7 @@ public class Main {
                              "PLEX_DATA_DIR: Used for the data directory of plex",
                              "The following environment variables are optional and enhance the tool in certain ways.",
                              "(Optional) TMDB_API_KEY: Used to convert TMDB matched items to IMDB items. The fallback will only be available if this is set.",
-                             "(Optional) TVDB_AUTH_STRING: Used to auth with the TVDB API. Must be entered as a ';' seperated string of username, userid, apikey",
-                             "           Example: username;DAWIDK9CJKWFJAWKF;e33914feabd52e8192011b0ce6c8",
+                             "(Optional) TVDB_API_KEY: Used to auth with the TVDB API.",
                              "(Optional) IGNORE_LIBS: Ignore libraries from being touched by this tool by supplying a set of library ids as a semicolon ';' seperated string.",
                              "           Example: Ignoring 1 => IGNORE_LIBS=1 | Ignoring 1, 2, 3 => IGNORE_LIBS=1;2;3",
                              "(Optional) CAPABILITIES: Specify special settings for the tool. Must be entered as a ';' seperated string.",
@@ -172,10 +171,10 @@ public class Main {
         genericApiTest(api);
     }
     
-    public static void testApiTvdb(String[] credentials) {
-        Logger.info("Testing TVDB API authorization: username={} | userkey={} | apikey={}", credentials[0], credentials[1], credentials[2]);
+    public static void testApiTvdb(String key) {
+        Logger.info("Testing TVDB API authorization: apikey={}", key);
         try {
-            new TvdbApi(credentials);
+            new TvdbApi(key);
         } catch(ApiCallFailedException e) {
             Logger.error("API Test failed: " + e.getMessage());
             Logger.error("Keys available under: https://thetvdb.com/");

@@ -64,13 +64,12 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
 
     public static class ImdbPipelineConfiguration {
         private final EnumSet<Capabilities> capabilities;
-        public final String tmdbApiKey, dbLocation;
-        public final String[] apiauthTvdb;
+        public final String tmdbApiKey, tvdbApiKey, dbLocation;
         public final Path metadataRoot;
         
-        public ImdbPipelineConfiguration(String tmdbApiKey, String[] apiauthTvdb, Path metadataRoot, String dbLocation, EnumSet<Capabilities> capabilities) {
+        public ImdbPipelineConfiguration(String tmdbApiKey, String tvdbApiKey, Path metadataRoot, String dbLocation, EnumSet<Capabilities> capabilities) {
             this.tmdbApiKey = tmdbApiKey;
-            this.apiauthTvdb = apiauthTvdb;
+            this.tvdbApiKey = tvdbApiKey;
             this.metadataRoot = metadataRoot;
             this.dbLocation = dbLocation;
             this.capabilities =  capabilities;
@@ -93,7 +92,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         resolveMovies.put("IMDB", new ImdbResolvement());
         resolveMovies.put("TMDB", configuration.resolveTmdb() ? new TmdbMovieToImdbResolvement(caches.get("tmdb"), new TmdbApi(configuration.tmdbApiKey)) : resolveDefault);
         
-        resolveSeries.put("TVDB", configuration.resolveTvdb() ? new TvdbToImdbResolvement(caches.get("tvdb"), caches.get("tvdb-blacklist"), new TvdbApi(configuration.apiauthTvdb)) : resolveDefault);
+        resolveSeries.put("TVDB", configuration.resolveTvdb() ? new TvdbToImdbResolvement(caches.get("tvdb"), caches.get("tvdb-blacklist"), new TvdbApi(configuration.tvdbApiKey)) : resolveDefault);
         resolveSeries.put("TMDB", configuration.resolveTmdb() ? new TmdbSeriesToImdbResolvement(caches.get("tmdb-series"), caches.get("tmdb-series-blacklist"), new TmdbApi(configuration.tmdbApiKey)) : resolveDefault);
         resolveSeries.put("IMDB", new ImdbResolvement());
         

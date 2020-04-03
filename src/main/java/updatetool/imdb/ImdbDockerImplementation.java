@@ -38,16 +38,14 @@ public class ImdbDockerImplementation implements Implementation {
     private static final Set<Long> IGNORE_LIBRARIES = new HashSet<>();
     
     public int RUN_EVERY_N_HOUR = 12;
-    private String apikeyTmdb;
-    
-    //Format: <USERNAME>;<USERKEY>;<APIKEY> for ENV
-    private String[] apiauthTvdb;
+    private String apikeyTmdb, apiauthTvdb;
     private Path plexdata;
 
     @Override
     public void invoke(String[] args) throws Exception {
         apikeyTmdb = System.getenv("TMDB_API_KEY");
-        String tvdbAuth = System.getenv("TVDB_AUTH_STRING");
+        String tvdbAuthLegacy = System.getenv("TVDB_AUTH_STRING");
+        String tvdbApiKey = System.getenv("TVDB_API_KEY");
         String data = System.getenv("PLEX_DATA_DIR");
         String ignore = System.getenv("IGNORE_LIBS");
         String capabilitiesEnv = System.getenv("CAPABILITIES");
@@ -112,18 +110,23 @@ public class ImdbDockerImplementation implements Implementation {
             Logger.info("TMDB API key enabled TMDB <=> IMDB matching. Will process TMDB backed Movie and TV Series libraries and TMDB orphans.");
         }
         
-        if(tvdbAuth == null || tvdbAuth.isBlank()) {
-            Logger.info("No TVDB API authorization string detected. Will process TVDB backed TV Series libraries.");
-            capabilities.remove(Capabilities.TVDB);
-        } else {
-            String[] info = tvdbAuth.split(";");
+        if(tvdbAuthLegacy != null && !tvdbAuthLegacy.isBlank()) {
+            Logger.warn("Don't use legacy environment variable TVDB_AUTH_STRING. Use TVDB_API_KEY instead by only providing the TVDB API key.");
+            String[] info = tvdbAuthLegacy.split(";");
             if(info.length == 3) {
-                Main.testApiTvdb(info);
-                apiauthTvdb = info;
-                Logger.info("TVDB API authorization enabled IMDB rating update for TV Series with the TVDB agent.");
+                tvdbApiKey = info[2];
             } else {
                 Logger.error("Invalid TVDB API authorization string given. Must contain 3 items seperated by a ';'. Will ignore TV Series with the TVDB agent.");
             }
+        }
+        
+        if(tvdbApiKey == null || tvdbApiKey.isBlank()) {
+            Logger.info("No TVDB API authorization string detected. Will process TVDB backed TV Series libraries.");
+            capabilities.remove(Capabilities.TVDB);
+        } else {
+            Main.testApiTvdb(tvdbApiKey);
+            apiauthTvdb = tvdbApiKey;
+            Logger.info("TVDB API authorization enabled IMDB rating update for TV Series with the TVDB agent.");
         }
 
         if(args.length >= 2) {

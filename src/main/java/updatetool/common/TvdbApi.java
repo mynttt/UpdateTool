@@ -38,20 +38,18 @@ public class TvdbApi extends AbstractApi {
         }
     }
     
-    public TvdbApi(String[] credentials) throws ApiCallFailedException {
+    public TvdbApi(String key) throws ApiCallFailedException {
         super();
-        authToken = "Bearer " + auth(credentials);
+        authToken = "Bearer " + auth(key);
     }
 
     private class Token { String token; };
     
-    private String auth(String[] credentials) throws ApiCallFailedException {
+    private String auth(String key) throws ApiCallFailedException {
         try {
             var response = send(
                         postJson(BASE_URL + "/login", gson.toJson(Map.of(
-                                "username", credentials[0],
-                                "userkey", credentials[1],
-                                "apikey", credentials[2])
+                                "apikey", key)
                                 ))
                         );
             if(response.statusCode() != 200) {
