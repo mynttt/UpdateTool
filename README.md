@@ -59,7 +59,19 @@ Name | Description | Deprecation
 :-------------------------:|:-------------------------:|:-------------------------:|
 TVDB_AUTH_STRING|Enables TVDB Series library processing|API Key is enough for this tool to work
 
-## To run your docker:
+## Docker on UnRaid
+
+There is a template repository available now: https://github.com/mynttt/unraid-templates
+
+You can add that repository under `Template repositories:` in the UnRaid Docker section, hit save and thus will be able to add UpdateTool via the `Add Container` button.
+
+A configuration skeleton will be added and you will have to set up the `Plex Media Server` directory and optionally your TVDB / TMDB API Keys in case you want to use TMBD / TVDB resolvement.
+
+After completing the configuration steps, you can start the container. If it has errors, it will stop. The log in the config folder shows you what it does or why it crashed if that happens.
+
+*TMDB and TVDB are optional settings that are not required for base movie imdb operations! TMDB unlocks matching for movies that have a TMBD match for whatever reason, TMDB matched series libraries and TVDB allows to update series as well!*
+
+## To run your docker without UnRaid templates:
 
 ```bash
 docker pull mynttt/updatetool
@@ -169,29 +181,6 @@ Render the tool useless by skipping TV and Movie libraries
 ```
 CAPABILITIES="NO_TV;NO_MOVIE";
 ```
-
-## Docker on UnRaid in the docker tab without commands
-
-1.) You need the community application plugin.
-
-2.) Apps -> Settings -> Enable additional search results from dockerHub to "Yes"
-
-3.) Now you need to go to Apps and search for "mynttt".
-
-4.) It will either show the UpdateTool container or nothing and allow you to display Dockerhub search results. Display them and install.
-
-5.) Configure the paths and variables like this (with your own paths): 
-
-**If you want to use TMDB fallback you will also have to add the variable TMDB_API_KEY!**
-
-**If the /config folder does not exist yet in appdata unraid will create it! It is important to access logs easily!**
-
-![](img/unraidv3.PNG)
-
-*TMDB and TVDB are optional settings that are not required for base movie imdb operations! TMDB unlocks matching for movies that have a TMBD match for whatever reason, TMDB matched series libraries and TVDB allows to update series as well!*
-
-6.) You can now start the container. If it has errors it will stop. The log in the config folder shows you what it does or why it crashed if that happens.
-
 
 # Technical details
 
