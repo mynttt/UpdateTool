@@ -4,7 +4,9 @@ A tool to update the IMDB ratings for Plex libraries that contain movies and ser
 
 It matches movie libraries using the IMDB, TMDB agents and series (TV shows) libraries via the TVDB, TMDB TV Show agents.
 
-## Warnings
+<img src="https://raw.githubusercontent.com/mynttt/UpdateTool/master/img/icon.png" width="100" /><
+
+## Important
 
 &#x1F534; **As of today (20.02.2020) there have been two reports of corrupted databases! Please use this tool with caution, the matter is being investigated as this tool uses transactions on DB related operations and the actual DB connection time is minimal. The corruptions probably have something to do with a bugged Unraid version. If this happens to you, open an issue here with both relevant Plex / Unraid logs! Make sure you have a database backup to restore if necessary (Plex should create them automatically!). Instructions on how to repair a corrupt database are [here](https://support.plex.tv/articles/201100678-repair-a-corrupt-database/). This tool has been used by quite a large userbase and it has not caused any corruption issues in the past which makes the matter quite mysterious. After checking on SQLites ["how to corrupt a database"](https://www.sqlite.org/howtocorrupt.html) it is not apparent which issues these two users faced. If you want to be 100% sure, stop Plex, run the tool, stop the tool, start Plex to prevent any concurrency (which SQLite should handle without issues and did so in the past).** &#x1F534;
 
