@@ -1,3 +1,9 @@
+## 1.3.8
+- Database corruption error should be finally fixed now!
+- The rare error had something to do with inserting the current time into the changed_at field
+- This would cause index index_metadata_items_on_changed_at to corrupt
+- I could never reproduce this error, reddit user /u/techno_babble_ sent me logs from reindexing his database that allowed me to finally fix the error!
+
 ## 1.3.7
  - Deprecated environment variable TVDB_AUTH_STRING as TVDB API only requires the API Key
  - TVDB_AUTH_STRING can still be used, the API Key will be extracted automatically
