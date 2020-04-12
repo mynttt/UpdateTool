@@ -88,7 +88,7 @@ public class ImdbDatabaseSupport {
 
     public void requestBatchUpdateOf(List<ImdbMetadataResult> items) throws SQLiteException {
         boolean success = true;
-        try(var s = provider.connection.prepareStatement("UPDATE metadata_items SET rating = ?, extra_data = ?, updated_at = DateTime('now') WHERE id = ?")) {
+        try(var s = provider.connection.prepareStatement("UPDATE metadata_items SET rating = ?, extra_data = ? WHERE id = ?")) {
             for(var item : items) {
                 s.setDouble(1, item.rating);
                 s.setString(2, item.extraData);
