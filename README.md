@@ -4,7 +4,11 @@ A tool to update the IMDB ratings for Plex libraries that contain movies via the
 
 ## Important
 
-**Database corruption error appears to be fixed now. The issue was that updating the changed_at column could cause a corruption of the index_metadata_items_on_changed_at index. This appeared to be a rare edge case that I was never able to reproduce. If you happen to run into this issue with an older version you can fix your database by running:** `sqlite3 com.plexapp.plugins.library.db "reindex index_metadata_items_on_changed_at"`**. While this issue is fixed now and using this tool never caused issues for myself and a large part of the user base it shall still be noted that this tool should be used with caution and that I'm not responsible for any damages within your PMS database. The database interaction of this tool is minimal and within the milliseconds realm.**
+**Rare database corruption appears to be fixed now.**
+
+The issue was that updating the `changed_at` column could cause a corruption of the `index_metadata_items_on_changed_at` index. This appeared to be a rare edge case that I was never able to reproduce. I suspect it had something to do with the concrete sqlite3 version used. If you happen to run into this issue with an older version you can fix your database by running: `sqlite3 com.plexapp.plugins.library.db "reindex index_metadata_items_on_changed_at"`
+
+**While this issue is fixed now and using this tool is likely safe to use and never caused issues for myself and a large part of the user base it shall still be noted that this tool should be used with caution and that I'm not responsible for any damages within your PMS database. The database interaction of this tool is minimal and within the milliseconds realm and the queries are executed cleanly by using SQLite's transactions.**
 
 #### This tool could in theory break if either the Plex database schema changes or IMDB stops providing a public rating dataset! This would not be dangerous tho as it stops when something goes wrong. 
 
