@@ -2,8 +2,7 @@
 cd /usr/app
 ./bootstrap.sh
 cd /config
-PLEX_DATA_DIR="/c/Users/myntt/Dev/resources/Plex Media Server"
-#"/plexdata"
+PLEX_DATA_DIR="/plexdata"
 export PLEX_DATA_DIR
 RUN_EVERY_N_HOURS=${RUN_EVERY_N_HOURS:="12"}
 if [ -z "$JVM_MAX_HEAP" ]; then
