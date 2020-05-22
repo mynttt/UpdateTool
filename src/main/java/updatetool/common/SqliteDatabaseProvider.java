@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import org.sqlite.SQLiteConnection;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class SqliteDatabaseProvider implements AutoCloseable  {
     private static final int BUSY_TIMEOUT_MS = 10000;
@@ -19,6 +20,7 @@ public class SqliteDatabaseProvider implements AutoCloseable  {
         }
     }
 
+    @SuppressFBWarnings("OBL_UNSATISFIED_OBLIGATION_EXCEPTION_EDGE")
     public SelectHandle queryFor(String query) throws SQLException {
         var statement = connection.createStatement();
         return new SelectHandle(connection, statement, statement.executeQuery(query));

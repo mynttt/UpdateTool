@@ -61,7 +61,7 @@ public class TmdbMovieToImdbResolvement implements AgentResolvementStrategy<Imdb
             toResolve.imdbId = lookup;
             return true;
         }
-        runner.run(() -> api.queryForId(toResolve.extractedId), toResolve);
+        runner.run(() -> api.tmdbId2imdbId(toResolve.extractedId), toResolve);
         return toResolve.resolved;
     }
 }

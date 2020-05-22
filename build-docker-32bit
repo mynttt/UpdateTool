@@ -1,0 +1,3 @@
+#!/bin/bash
+#Needs experimental features enabled and qemu support / a builder set up with arm included!
+docker buildx build --platform linux/arm/v7,linux/386 --no-cache -t mynttt/updatetool:32bit -f updatetool-docker-32bit/Dockerfile . --push

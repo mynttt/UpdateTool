@@ -1,0 +1,25 @@
+meta {
+    id: imdb-docker;
+    desc: Watchdog mode implementation, will update IMDB ratings every n hours;
+    usage: "Usage: <this-jar> imdb-docker {} | {schedule=12}";
+    help: "  |
+             |The following environment variables must be set and exported before launching this tool successfully!
+             |  PLEX_DATA_DIR: Used for the data directory of plex
+             |
+             | The following environment variables are optional and enhance the tool in certain ways.
+             |
+             | (Optional) TMDB_API_KEY: Used to convert TMDB matched items to IMDB items. The fallback will only be available if this is set.
+             | (Optional) TVDB_API_KEY: Used to auth with the TVDB API.
+             | (Optional) IGNORE_LIBS: Ignore libraries from being touched by this tool by supplying a set of library ids as a semicolon ';' seperated string.
+             |            Example: Ignoring 1 => IGNORE_LIBS=1 | Ignoring 1, 2, 3 => IGNORE_LIBS=1;2;3
+             | (Optional) CAPABILITIES: Specify special settings for the tool. Must be entered as a ';' seperated string.
+             |            Currently available: [NO_TV, NO_MOVIE]
+             |            Example: NO_TV;NO_MOVIE => renders this tool useless
+             |
+             | Parameters:
+             |   - schedule = if present will schedule this task every n hour(s) : must be > 0 : default 12
+             |
+             |Other stuff:
+             |  Data folder: https://support.plex.tv/articles/202915258-where-is-the-plex-media-server-data-directory-located";
+    entry: updatetool.imdb.ImdbDockerImplementation;
+}
