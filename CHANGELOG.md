@@ -1,3 +1,9 @@
+## 1.3.9
+- Internal changes to support multiple future implementations
+- Added GC request call after a batch task completed so memory is freed after every invocation of a task
+- Allow specifying JVM max. heap in case that giant libraries crash with the 256M default heap size
+- JVM startup options modified so memory unused heap memory can be released
+
 ## 1.3.8
 - Database corruption error should be finally fixed now!
 - The rare error had something to do with inserting the current time into the changed_at field
