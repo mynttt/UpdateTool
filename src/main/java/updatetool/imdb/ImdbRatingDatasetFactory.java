@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
 import org.tinylog.Logger;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import updatetool.Main;
 import updatetool.api.ExportedRating;
 import updatetool.common.Utility;
@@ -105,6 +106,7 @@ public final class ImdbRatingDatasetFactory {
         Logger.info("Extraction completed.");
     }
     
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE")
     private static void readData(ImdbRatingDataset target) {
         Logger.info("Reading data...");
         try(var reader = Files.newBufferedReader(Main.PWD.resolve(RATING_SET))) {

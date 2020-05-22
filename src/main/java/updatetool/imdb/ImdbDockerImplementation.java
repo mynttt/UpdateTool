@@ -14,12 +14,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.tinylog.Logger;
-import org.tinylog.configuration.Configuration;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import updatetool.Main;
 import updatetool.api.Implementation;
 import updatetool.api.JobReport.StatusCode;
@@ -34,15 +31,22 @@ import updatetool.exceptions.ApiCallFailedException;
 import updatetool.exceptions.ImdbDatasetAcquireException;
 import updatetool.imdb.ImdbPipeline.ImdbPipelineConfiguration;
 
-public class ImdbDockerImplementation implements Implementation {
+public class ImdbDockerImplementation extends Implementation {
+    private static final Path STATE_IMDB = Main.PWD.resolve("state-imdb.json");
     private static final Set<Long> IGNORE_LIBRARIES = new HashSet<>();
     
-    public int RUN_EVERY_N_HOUR = 12;
+    private int runEveryNhour = 12;
     private String apikeyTmdb, apiauthTvdb;
     private Path plexdata;
+    private Runnable job;
 
+    public ImdbDockerImplementation(String id, String desc, String usage, String help) {
+        super(id, desc, usage, help);
+    }
+    
     @Override
-    public void invoke(String[] args) throws Exception {
+    @SuppressFBWarnings("DM_EXIT")
+    public void bootstrap(Map<String, String> args) throws Exception {
         apikeyTmdb = System.getenv("TMDB_API_KEY");
         String tvdbAuthLegacy = System.getenv("TVDB_AUTH_STRING");
         String tvdbApiKey = System.getenv("TVDB_API_KEY");
@@ -78,27 +82,10 @@ public class ImdbDockerImplementation implements Implementation {
         }
 
         Objects.requireNonNull(data, "Environment variable PLEX_DATA_DIR is not set");
-
-        var levels = List.of("trace", "debug", "info", "error", "warn");
-        String logging = System.getenv("LOG_LEVEL");
-
-        if(logging != null) {
-            logging = logging.toLowerCase();
-            if(levels.contains(logging.toLowerCase())) {
-                Configuration.set("writer.level", logging);
-                Configuration.set("writer2.level", logging);
-                System.out.println("Logging level changed to: " + logging);
-            } else {
-                Logger.warn("Ignoring custom log level. Logging level {} not in allowed levels: {}", logging, levels);
-            }
-        }
-
-        Logger.info("Running version: {}", Main.version());
-
         plexdata = Path.of(data);
 
         if(!Files.exists(plexdata) && !Files.isDirectory(plexdata)) {
-            System.err.println("Directory: " + plexdata.toAbsolutePath().toString() + " does not exist.");
+            Logger.error("Directory: " + plexdata.toAbsolutePath().toString() + " does not exist.");
             System.exit(-1);
         }
 
@@ -129,15 +116,12 @@ public class ImdbDockerImplementation implements Implementation {
             Logger.info("TVDB API authorization enabled IMDB rating update for TV Series with the TVDB agent.");
         }
 
-        if(args.length >= 2) {
-            RUN_EVERY_N_HOUR = parseCommandInt(args[1], i -> i > 0, "Invalid parameter for: RUN_EVERY_N_HOUR (must be number and > 0)");
-        }
+        runEveryNhour = Utility.parseHourIntOrFallback(args.get("schedule"), runEveryNhour, id + " {schedule}");
 
         Logger.info("Starting IMDB Watchdog");
         Logger.info("Plex data dir: " + plexdata.toAbsolutePath().toString());
-        Logger.info("Invoke every " + RUN_EVERY_N_HOUR + " hour(s)");
 
-        var state = State.recoverImdb(Main.STATE_IMDB);
+        var state = State.recoverImdb(STATE_IMDB);
         var caches = Map.of("tmdb", KeyValueStore.of(Main.PWD.resolve("cache-tmdb2imdb.json")), 
                             "tmdb-series", KeyValueStore.of(Main.PWD.resolve("cache-tmdbseries2imdb.json")),
                             "tmdb-series-blacklist", KeyValueStore.of(Main.PWD.resolve("cache-tmdbseriesBlacklist.json")),
@@ -155,7 +139,7 @@ public class ImdbDockerImplementation implements Implementation {
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
-                State.dump(Main.STATE_IMDB, state);
+                State.dump(STATE_IMDB, state);
             } catch (IOException e) {
                 Logger.error("Failed to save state.");
                 Logger.error(e);
@@ -180,11 +164,7 @@ public class ImdbDockerImplementation implements Implementation {
         
         var dbLocation = plexdata.resolve("Plug-in Support/Databases/com.plexapp.plugins.library.db").toAbsolutePath().toString();
         var config = new ImdbPipelineConfiguration(apikeyTmdb, apiauthTvdb, plexdata.resolve("Metadata/Movies"), dbLocation, capabilities);
-        var scheduler = Executors.newSingleThreadScheduledExecutor();
-        Logger.info("Running first task...");
-        scheduler.schedule(new ImdbBatchJob(Main.EXECUTOR, config, plexdata, caches, state, capabilities), 1, TimeUnit.SECONDS);
-        Logger.info("Scheduling next tasks to run @ every " + RUN_EVERY_N_HOUR + " hour(s)");
-        scheduler.scheduleAtFixedRate(new ImdbBatchJob(Main.EXECUTOR, config, plexdata, caches, state, capabilities), 1, RUN_EVERY_N_HOUR, TimeUnit.HOURS);
+        job = new ImdbBatchJob(Main.EXECUTOR, config, plexdata, caches, state, capabilities);
     }
 
     private static class ImdbBatchJob implements Runnable {
@@ -203,9 +183,8 @@ public class ImdbDockerImplementation implements Implementation {
         }
 
         @Override
+        @SuppressFBWarnings("DM_EXIT")
         public void run() {
-            try { Main.rollingLogPurge(); } catch (IOException e) { Logger.error(e); }
-            
             KeyValueStore.expiredCheck(14, caches.get("tvdb-blacklist"));
             KeyValueStore.expiredCheck(14, caches.get("tmdb-series-blacklist"));
             
@@ -260,7 +239,6 @@ public class ImdbDockerImplementation implements Implementation {
                         Logger.error(result.userDefinedMessage);
                         Logger.error("Original message: {}", result.exception.getMessage());
                         Logger.info("Aborting queue due to failing to fetch data from a called API. Will wait until next invocation.");
-                        Logger.info("It is now safe to suspend execution if this tool should not run 24/7.");
                         return;
                     }
                     if(result.code == StatusCode.ERROR) {
@@ -268,8 +246,7 @@ public class ImdbDockerImplementation implements Implementation {
                     }
                 }
                 caches.values().forEach(KeyValueStore::dump);
-                Logger.info("Completed batch successfully. Waiting till next invocation...");
-                Logger.info("It is now safe to suspend execution if this tool should not run 24/7.");
+                Logger.info("Completed batch successfully.");
             } catch(ApiCallFailedException e) {
                 Logger.error("{} encountered with message: {}", e.getClass().getSimpleName(), e.getMessage());
                 Logger.info("Aborting queue due to API error. Will wait until next invocation.");
@@ -294,19 +271,13 @@ public class ImdbDockerImplementation implements Implementation {
 
     }
 
-    private static int parseCommandInt(String input, Function<Integer, Boolean> validation, String error) {
-        int i = 0;
-        try {
-            i = Integer.parseInt(input);
-        } catch( NumberFormatException e) {
-            System.err.println(error);
-            System.exit(-1);
-        }
-        if(!validation.apply(i)) {
-            System.err.println(error);
-            System.exit(-1);
-        }
-        return i;
+    @Override
+    public Runnable entryPoint() {
+        return job;
     }
 
+    @Override
+    public int scheduleEveryHours() {
+        return runEveryNhour;
+    }
 }

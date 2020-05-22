@@ -30,7 +30,7 @@ public class DatabaseSupport {
         }
     }
     
-    public class Library {
+    public static class Library {
         public final LibraryType type;
         public final long id;
         public final int items;
