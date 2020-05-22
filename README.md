@@ -217,10 +217,11 @@ In docker mode the tool will read the environment variable PLEX_DATA_DIR and opt
 
 It can then be invoked with:
 - no args (every 12h)
-- one arg (every n hour(s))
+- the schedule arg (every n hour(s))
 
 ```
-java -jar UpdateTool-xxx.jar imdb-docker [] | [{every_n_hour}]
+java -jar UpdateTool-xxx.jar imdb-docker {}
+java -jar UpdateTool-xxx.jar imdb-docker {schedule=12}
 ```
 
 Example:
@@ -234,9 +235,9 @@ export PLEX_DATA_DIR
 set PLEX_DATA_DIR=C:\User\Data\Plex Media Server
 
 # Default start
-java -jar UpdateTool-xxx.jar imdb-docker
+java -jar UpdateTool-xxx.jar imdb-docker {}
 # Run every 5 hours
-java -jar UpdateTool-xxx.jar imdb-docker 5
+java -jar UpdateTool-xxx.jar imdb-docker {schedule=5}
 ```
 
 # Other stuff
