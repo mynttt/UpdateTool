@@ -1,3 +1,6 @@
+## 1.3.9b
+- startup edge case on some systems fixed
+
 ## 1.3.9
 - Internal changes to support multiple future implementations
 - Added GC request call after a batch task completed so memory is freed after every invocation of a task
