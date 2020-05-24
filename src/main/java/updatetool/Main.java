@@ -245,8 +245,7 @@ class Scheduler {
 
     public void go() {
         Logger.info("Scheduler is loading tasks... Blocking until completely set-up and ready to go.");
-        var blocker = new Lock();
-        service.submit(blocker);
+        List<Runnable> tasks = new ArrayList<>();
         Logger.info("Scheduling tasks...");
         jobs.forEach((k, v) -> {
             int run = interval.get(k);
@@ -255,34 +254,12 @@ class Scheduler {
         });
         
         runAtStartup.forEach(k -> {
-            service.submit(jobs.get(k));
+            tasks.add(jobs.get(k));
             Logger.info("Queued task {} for immediate execution.", k);
         });
-        Logger.info("Unblocking scheduler...");
-        blocker.unblock();
+        
         Logger.info("Running supplied tasks immediately NOW!");
-    }
-}
-
-class Lock implements Runnable {
-
-    @Override
-    @SuppressFBWarnings({"UW_UNCOND_WAIT", "WA_NOT_IN_LOOP"})
-    public void run() {
-        synchronized (this) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-    
-    @SuppressFBWarnings("NN_NAKED_NOTIFY")
-    public void unblock() {
-        synchronized (this) {
-            notify();
-        }
+        tasks.forEach(service::submit);
     }
 }
 
