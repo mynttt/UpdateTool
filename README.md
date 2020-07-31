@@ -4,6 +4,8 @@ A tool to update the IMDB ratings for Plex libraries that contain movies via the
 
 ## Important
 
+**This tool does not work with the newly released Plex Movie Agent. Libraries that use this agent will be ignored and not modified. Refer [this issue](https://github.com/mynttt/UpdateTool/issues/28) for more information.**
+
 **Rare database corruption appears to be fixed now.**
 
 The issue was that updating the `changed_at` column could cause a corruption of the `index_metadata_items_on_changed_at` index. This appeared to be a rare edge case that I was never able to reproduce. I suspect it had something to do with the concrete sqlite3 version used. If you happen to run into this issue with an older version you can fix your database by running: `sqlite3 com.plexapp.plugins.library.db "reindex index_metadata_items_on_changed_at"`
