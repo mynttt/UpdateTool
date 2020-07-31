@@ -4,7 +4,7 @@ A tool to update the IMDB ratings for Plex libraries that contain movies via the
 
 ## Important
 
-**This tool does not work with the newly released Plex Movie Agent. Libraries that use this agent will be ignored and not modified. Refer [this issue](https://github.com/mynttt/UpdateTool/issues/28) for more information.**
+**This tool does not work with the newly released Plex Movie Agent. Libraries that use this agent will be ignored and not modified. Refer to [this issue](https://github.com/mynttt/UpdateTool/issues/28) for more information.**
 
 **Rare database corruption appears to be fixed now.**
 
