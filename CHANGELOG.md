@@ -1,3 +1,6 @@
+## 1.4.0
+- support for new plex movie agent (will only work on libraries that have the IMDB setting set and the external ids downloaded from plex metadata servers after refreshing the library again)
+
 ## 1.3.9b
 - startup edge case on some systems fixed
 
