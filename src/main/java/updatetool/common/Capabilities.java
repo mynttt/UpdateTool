@@ -15,7 +15,10 @@ public enum Capabilities {
     
     @SuppressWarnings("serial")
     public static String formatMovie(EnumSet<Capabilities> capabilities) {
-        List<String> agents = new ArrayList<>() {{ add("'com.plexapp.agents.imdb'"); }};
+        List<String> agents = new ArrayList<>() {{ 
+            add("'com.plexapp.agents.imdb'");
+            add("'tv.plex.agents.movie'");
+        }};
         
         if(capabilities.contains(Capabilities.TMDB))
             agents.add("'com.plexapp.agents.themoviedb'");

@@ -9,14 +9,21 @@ import java.util.List;
 import java.util.Objects;
 import org.sqlite.SQLiteException;
 import org.tinylog.Logger;
+import updatetool.common.KeyValueStore;
 import updatetool.common.SqliteDatabaseProvider;
 import updatetool.common.Utility;
 
 public class ImdbDatabaseSupport {
     private final SqliteDatabaseProvider provider;
+    private final KeyValueStore newAgentMapping;
 
     public ImdbDatabaseSupport(SqliteDatabaseProvider provider) {
+        this(provider, null);
+    }
+    
+    public ImdbDatabaseSupport(SqliteDatabaseProvider provider, KeyValueStore newAgentMapping) {
         this.provider = provider;
+        this.newAgentMapping = newAgentMapping;
     }
 
     public static class ImdbMetadataResult {
@@ -25,7 +32,7 @@ public class ImdbDatabaseSupport {
         public final String guid, title, hash;
         public final Integer id, libraryId;
         public String extraData;
-        public Double rating;
+        public Double rating, audienceRating;
         public boolean resolved;
 
         private ImdbMetadataResult(ResultSet rs) throws SQLException {
@@ -36,6 +43,7 @@ public class ImdbDatabaseSupport {
             extraData = rs.getString(5);
             hash = rs.getString(6);
             rating = (Double) rs.getObject(7);
+            audienceRating = (Double) rs.getObject(8);
         }
 
         @Override
@@ -57,40 +65,81 @@ public class ImdbDatabaseSupport {
 
         @Override
         public String toString() {
-            return "ImdbMetadataResult [imdbId=" + imdbId + ", guid=" + guid + ", title=" + title + ", hash=" + hash
-                    + ", id=" + id + ", libraryId=" + libraryId + ", extraData=" + extraData + ", rating=" + rating
+            return "ImdbMetadataResult [imdbId=" + imdbId + ", extractedId=" + extractedId + ", guid=" + guid
+                    + ", title=" + title + ", hash=" + hash + ", id=" + id + ", libraryId=" + libraryId + ", extraData="
+                    + extraData + ", rating=" + rating + ", audienceRating=" + audienceRating + ", resolved=" + resolved
                     + "]";
         }
     }
 
     public List<ImdbMetadataResult> requestEntries(long libraryId) {
-        return requestMetadata("SELECT id, library_section_id, guid, title, extra_data, hash, rating from metadata_items WHERE media_item_count = 1 AND library_section_id = " + libraryId);
+        return requestMetadata("SELECT id, library_section_id, guid, title, extra_data, hash, rating, audience_rating from metadata_items WHERE media_item_count = 1 AND library_section_id = " + libraryId);
     }
 
     public List<ImdbMetadataResult> requestTvSeriesRoot(long libraryId) {
-        return requestMetadata("SELECT id, library_section_id, guid, title, extra_data, hash, rating from metadata_items WHERE media_item_count = 0 AND parent_id IS NULL AND library_section_id = " + libraryId);
+        return requestMetadata("SELECT id, library_section_id, guid, title, extra_data, hash, rating, audience_rating from metadata_items WHERE media_item_count = 0 AND parent_id IS NULL AND library_section_id = " + libraryId);
     }
     
     public List<ImdbMetadataResult> requestTvSeasonRoot(long libraryId) {
-        return requestMetadata("SELECT id, library_section_id, guid, title, extra_data, hash, rating from metadata_items WHERE media_item_count = 0 AND parent_id NOT NULL AND library_section_id = " + libraryId);
+        return requestMetadata("SELECT id, library_section_id, guid, title, extra_data, hash, rating, audience_rating from metadata_items WHERE media_item_count = 0 AND parent_id NOT NULL AND library_section_id = " + libraryId);
     }
     
     private List<ImdbMetadataResult> requestMetadata(String query) {
+        
+        // 
+        
         try(var handle = provider.queryFor(query)){
             List<ImdbMetadataResult> list = new ArrayList<>();
-            while(handle.result().next())
-                list.add(new ImdbMetadataResult(handle.result()));
+            while(handle.result().next()) {
+                var m = new ImdbMetadataResult(handle.result());
+                updateNewAgentMetadataMapping(m);
+                list.add(m);
+            }
             return list;
         } catch (SQLException e) {
             throw Utility.rethrow(e);
         }
     }
 
+    private void updateNewAgentMetadataMapping(ImdbMetadataResult m) throws SQLException {
+        if(newAgentMapping == null)
+            return;
+        
+        if(!m.guid.startsWith("plex://movie/"))
+            return;
+        
+        String v = newAgentMapping.lookup(m.guid);
+        if(v != null && v.startsWith("imdb://"))
+            return;
+        
+        String result = null;
+        try(var handle = provider.queryFor("SELECT t.tag FROM taggings tg LEFT JOIN tags t ON tg.tag_id = t.id AND t.tag_type = 314 WHERE tg.metadata_item_id = " + m.id + " AND t.tag NOT NULL")) {
+            while(handle.result().next()) {
+                String id = handle.result().getString(1);
+                if(result == null || !result.startsWith("imdb://"))
+                    result = id;
+            }
+        }
+        
+        if(result != null) {
+            newAgentMapping.cache(m.guid, result);
+            Logger.info("Associated and cached {} with new movie agent guid {} ({}).", result, m.guid, m.title);
+        } else {
+            Logger.warn("No external metadata provider id associated with this guid {} ({}). This item will not be processed any further.", m.guid, m.title);
+        }
+    }
+
     public void requestBatchUpdateOf(List<ImdbMetadataResult> items) throws SQLiteException {
+        if(items.size() == 0)
+            return;
+        
+        boolean isNewAgent = items.get(0).guid.startsWith("plex://movie/");
+        
         boolean success = true;
-        try(var s = provider.connection.prepareStatement("UPDATE metadata_items SET rating = ?, extra_data = ? WHERE id = ?")) {
+        try(var s = provider.connection.prepareStatement(isNewAgent ? "UPDATE metadata_items SET audience_rating = ?, extra_data = ?, rating = NULL WHERE id = ?" 
+                : "UPDATE metadata_items SET rating = ?, extra_data = ? WHERE id = ?")) {
             for(var item : items) {
-                s.setDouble(1, item.rating);
+                s.setDouble(1, isNewAgent ? item.audienceRating : item.rating);
                 s.setString(2, item.extraData);
                 s.setInt(3, item.id);
                 s.addBatch();

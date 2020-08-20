@@ -126,7 +126,8 @@ public class ImdbDockerImplementation extends Implementation {
                             "tmdb-series", KeyValueStore.of(Main.PWD.resolve("cache-tmdbseries2imdb.json")),
                             "tmdb-series-blacklist", KeyValueStore.of(Main.PWD.resolve("cache-tmdbseriesBlacklist.json")),
                             "tvdb", KeyValueStore.of(Main.PWD.resolve("cache-tvdb2imdb.json")),
-                            "tvdb-blacklist", KeyValueStore.of(Main.PWD.resolve("cache-tvdbBlacklist.json")));
+                            "tvdb-blacklist", KeyValueStore.of(Main.PWD.resolve("cache-tvdbBlacklist.json")),
+                            "new-movie-agent-mapping", KeyValueStore.of(Main.PWD.resolve("new-movie-agent-mapping.json")));
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
@@ -198,7 +199,7 @@ public class ImdbDockerImplementation extends Implementation {
                 if(!capabilities.contains(Capabilities.NO_TV))
                     libraries.addAll(support.requestSeriesLibraries(capabilities));
                 libraries.removeIf(l -> IGNORE_LIBRARIES.contains(l.id));
-                metadata = ImdbLibraryMetadata.fetchAll(libraries, new ImdbDatabaseSupport(connection), config); 
+                metadata = ImdbLibraryMetadata.fetchAll(libraries, new ImdbDatabaseSupport(connection, caches.get("new-movie-agent-mapping")), config); 
             } catch(Exception e) {
                 Logger.error(e.getClass().getSimpleName() + " exception encountered...");
                 Logger.error("Please contact the maintainer of the application with the stacktrace below if you think this is unwanted behavior.");

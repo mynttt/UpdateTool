@@ -39,6 +39,7 @@ import updatetool.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
 import updatetool.imdb.ImdbRatingDatasetFactory.ImdbRatingDataset;
 import updatetool.imdb.resolvement.DefaultResolvement;
 import updatetool.imdb.resolvement.ImdbResolvement;
+import updatetool.imdb.resolvement.NewPlexMovieAgentToImdbResolvement;
 import updatetool.imdb.resolvement.TmdbSeriesToImdbResolvement;
 import updatetool.imdb.resolvement.TmdbMovieToImdbResolvement;
 import updatetool.imdb.resolvement.TvdbToImdbResolvement;
@@ -47,6 +48,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
     private static final Pattern RESOLVEMENT = Pattern.compile(
                 "(?<IMDB>agents.imdb:\\/\\/tt)"
                 + "|(?<TMDB>agents.themoviedb:\\/\\/)"
+                + "|(?<NPMA>plex:\\/\\/movie\\/)"
                 + "|(?<TVDB>agents.thetvdb:\\/\\/)"
             );
 
@@ -91,6 +93,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         this.dataset = dataset;
         resolveMovies.put("IMDB", new ImdbResolvement());
         resolveMovies.put("TMDB", configuration.resolveTmdb() ? new TmdbMovieToImdbResolvement(caches.get("tmdb"), new TmdbApi(configuration.tmdbApiKey)) : resolveDefault);
+        resolveMovies.put("NPMA", new NewPlexMovieAgentToImdbResolvement(caches.get("new-movie-agent-mapping"), resolveMovies.get("TMDB") instanceof TmdbMovieToImdbResolvement ? (TmdbMovieToImdbResolvement) resolveMovies.get("TMDB") : null));
         
         resolveSeries.put("TVDB", configuration.resolveTvdb() ? new TvdbToImdbResolvement(caches.get("tvdb"), caches.get("tvdb-blacklist"), new TvdbApi(configuration.tvdbApiKey)) : resolveDefault);
         resolveSeries.put("TMDB", configuration.resolveTmdb() ? new TmdbSeriesToImdbResolvement(caches.get("tmdb-series"), caches.get("tmdb-series-blacklist"), new TmdbApi(configuration.tmdbApiKey)) : resolveDefault);
@@ -126,7 +129,10 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         
         resolverTasks.stream().forEach(CompletableFuture::join);
         
-        Logger.info("Filtered " + (items.size()-resolve.size()) + " invalid item(s).");
+        int resolvedSize = resolved.size();
+        int itemsSize = items.size();
+        
+        Logger.info("Filtered " + (itemsSize-resolvedSize) + " invalid item(s).");
         job.stage = PipelineStage.ANALYSED_DB;
         job.items = new ArrayList<>(resolved);
     }
