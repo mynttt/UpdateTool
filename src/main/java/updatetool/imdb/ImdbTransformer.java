@@ -30,7 +30,7 @@ public class ImdbTransformer {
             d = Double.parseDouble(imdb.exportRating());
         } catch(NumberFormatException | NullPointerException e) {
             Logger.warn("Ignoring: '" + meta.title + "' with IMDB ID: " + meta.imdbId + " supplies no valid rating := '{}'", imdb.exportRating());
-            return true;
+            return false;
         }
         
         boolean isNewMovieAgent = meta.guid.startsWith("plex://movie/");
