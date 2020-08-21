@@ -4,7 +4,7 @@ A tool to update the IMDB ratings for Plex libraries that contain movies via the
 
 ## Important
 
-**This tool does not work with the newly released Plex Movie Agent. Libraries that use this agent will be ignored and not modified. Refer to [this issue](https://github.com/mynttt/UpdateTool/issues/28) for more information.**
+~~**This tool does not work with the newly released Plex Movie Agent. Libraries that use this agent will be ignored and not modified. Refer to [this issue](https://github.com/mynttt/UpdateTool/issues/28) for more information.**~~ - **Works now with [Beta 1.20.1](https://forums.plex.tv/t/native-plex-agents-allow-access-to-external-provider-ids-for-media-eg-imdb-tmdb-tvdb/619090/129)!**
 
 **Rare database corruption appears to be fixed now.**
 
@@ -38,6 +38,7 @@ Type | Description | Agent
 :-------------------------:|:-------------------------:|:-------------------------:
 MOVIE | Plex Movie Agent with IMDB | com.plexapp.agents.imdb
 MOVIE | TMDB Movie Agent (if TMDB API key set) | com.plexapp.agents.themoviedb
+MOVIE | New Plex Movie Agent (if IMDB as ratings source set, currently only in Beta 1.20.1) | tv.plex.agents.movie
 TV SHOW | TMDB Series Agent (if TMDB API key set) | com.plexapp.agents.themoviedb
 TV SHOW | TVDB Series Agent (if TVDB auth string set) |com.plexapp.agents.thetvdb
 
