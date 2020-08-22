@@ -36,7 +36,11 @@ public class NewPlexMovieAgentToImdbResolvement implements AgentResolvementStrat
                 return false;
             }
             
-            return fallback.resolve(toResolve);
+            String oldGuid = toResolve.guid;
+            toResolve.guid = candidate;
+            boolean success = fallback.resolve(toResolve);
+            toResolve.guid = oldGuid;
+            return success;
         } else {
             Logger.warn("Unhandled external id ({}). Please contact the author of the tool.", candidate);
             return false;
