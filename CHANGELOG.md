@@ -1,3 +1,6 @@
+## 1.4.2
+- tmdb resolve bug fixed
+
 ## 1.4.1
 - handle edge cases regarding imdb badges
 
