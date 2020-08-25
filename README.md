@@ -126,6 +126,8 @@ docker run -dit
     mynttt/updatetool
 ```
 
+[Where is the data folder of the Plex Media Server located on my system?](https://support.plex.tv/articles/202915258-where-is-the-plex-media-server-data-directory-located/)
+
 [TVDB API Key](https://thetvdb.com/dashboard/account/apikey)
 
 *"/mnt/data/Plex Media Server" and "/mnt/data/imdpupdaterconfig" are just sample paths! Set your own paths there or it will probably not work!*
@@ -199,19 +201,6 @@ Provides a watchdog that once started will run every N hours over all IMDB suppo
 
 - Java >= 11
 
-# Created files in PWD
-
-- cache-tmdb2imdb.json - If TMDB fallback is enabled this file will contain the resolved TMDB <=> IMDB mappings.
-- cache-tvdb2imdb.json - TVDB to IMDB mapping.
-- cache-cache-tmdbseries2imdb.json - TMDB TV Shows to IMDB mapping.
-- cache-tvdbBlacklist.json - Items that TVDB provides no IMDB id for or that fail being looked up. The blacklist is reset every 14 days.
-- cache-tmdbseriesBlacklist.json - Items that TMDB TV Shows provides no IMDB id for or that fail being looked up. The blacklist is reset every 14 days. 
-- state-imdb.json - Set of jobs that have not finished
-- xml-error-{uuid}-{library}.log - List of files that could not be updated by the XML transform step (not important tbh, plex reads from the DB)
-- updatetool.{increment}.log - Log file
-- rating_set.tsv - latest IMDB rating set
-- ratingSetLastUpdate - UNIX timestamp of last rating set update
-
 # Usage
 
 ### Docker mode:
@@ -241,13 +230,4 @@ set PLEX_DATA_DIR=C:\User\Data\Plex Media Server
 java -jar UpdateTool-xxx.jar imdb-docker {}
 # Run every 5 hours
 java -jar UpdateTool-xxx.jar imdb-docker {schedule=5}
-```
-
-# Other stuff
-
-[Where is the data folder of the Plex Media Server located on my system?](https://support.plex.tv/articles/202915258-where-is-the-plex-media-server-data-directory-located/)
-
-You can either build the tool yourself using the command below in the root folder or get it [here](https://github.com/mynttt/UpdateTool/releases/latest) as an already packaged .jar file.
-```bash
-gradle build
 ```
