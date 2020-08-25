@@ -231,3 +231,11 @@ java -jar UpdateTool-xxx.jar imdb-docker {}
 # Run every 5 hours
 java -jar UpdateTool-xxx.jar imdb-docker {schedule=5}
 ```
+
+### GUI
+
+There is also a GUI to assist users that feel uncomfortable with the CLI way of interacting with the tool. It supports Windows, MacOS and Linux and only requires the Java11+ runtime and can be downloaded [here](https://github.com/mynttt/UpdateTool/releases/tag/g1.0.0).
+
+![](https://raw.githubusercontent.com/mynttt/UpdateTool/master/img/gui.PNG)
+
+To use the GUI just double click on the jar file. The GUI will automatically download and update the used version of UpdateTool. You are only required to set the path to the Plex Media Server data folder and submit a path to your java executable. If you want to enable TMDB/TVDB resolvement simply tick the boxes and supply the API keys via the text fields. To start and stop the tool use the respective buttons.
