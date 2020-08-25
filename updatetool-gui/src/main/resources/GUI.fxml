@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefHeight="650.0" prefWidth="1000.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="updatetool.gui.App">
+   <center>
+      <TextArea fx:id="log" editable="false" styleClass="mono" BorderPane.alignment="CENTER" />
+   </center>
+   <bottom>
+      <HBox prefWidth="803.0" BorderPane.alignment="CENTER">
+         <children>
+            <Label text="Status:" />
+            <Label fx:id="status" text="__STATUS__">
+               <HBox.margin>
+                  <Insets left="5.0" />
+               </HBox.margin>
+            </Label>
+            <Separator orientation="VERTICAL" style="-fx-background-color: black;">
+               <HBox.margin>
+                  <Insets left="5.0" right="5.0" />
+               </HBox.margin>
+            </Separator>
+            <Label text="Version:">
+               <HBox.margin>
+                  <Insets />
+               </HBox.margin>
+            </Label>
+            <Label fx:id="version" text="__VERSION__">
+               <HBox.margin>
+                  <Insets left="5.0" />
+               </HBox.margin>
+            </Label>
+         </children>
+      </HBox>
+   </bottom>
+   <top>
+      <VBox BorderPane.alignment="CENTER">
+         <children>
+            <HBox>
+               <children>
+                  <Button mnemonicParsing="false" onAction="#openData" text="Open UpdateTool data dir" />
+                  <TextField fx:id="plexFolder" promptText="Plex Data Folder location" HBox.hgrow="ALWAYS" />
+               </children>
+            </HBox>
+            <HBox>
+               <children>
+                  <CheckBox fx:id="useTmdb" mnemonicParsing="false" text="Use TMDB API">
+                     <HBox.margin>
+                        <Insets top="3.0" />
+                     </HBox.margin>
+                  </CheckBox>
+                  <TextField fx:id="tmdbKey" promptText="TMDB API Key" HBox.hgrow="ALWAYS" />
+               </children>
+            </HBox>
+            <HBox>
+               <children>
+                  <CheckBox fx:id="useTvdb" mnemonicParsing="false" text="Use TVDB API">
+                     <HBox.margin>
+                        <Insets right="3.0" top="4.0" />
+                     </HBox.margin>
+                  </CheckBox>
+                  <TextField fx:id="tvdbKey" promptText="TVDB API Key" HBox.hgrow="ALWAYS" />
+               </children>
+            </HBox>
+            <HBox>
+               <children>
+                  <CheckBox fx:id="ignoreMovies" mnemonicParsing="false" text="Ignore All Movie Libraries">
+                     <HBox.margin>
+                        <Insets top="4.0" />
+                     </HBox.margin>
+                  </CheckBox>
+                  <CheckBox fx:id="ignoreTv" mnemonicParsing="false" text="Ignore All TV Show Libraries">
+                     <HBox.margin>
+                        <Insets left="5.0" top="4.0" />
+                     </HBox.margin>
+                  </CheckBox>
+                  <Separator maxWidth="5.0" orientation="VERTICAL">
+                     <HBox.margin>
+                        <Insets left="4.0" />
+                     </HBox.margin>
+                  </Separator>
+                  <Label text="Ignore with IDs:">
+                     <HBox.margin>
+                        <Insets top="5.0" />
+                     </HBox.margin>
+                  </Label>
+                  <TextField fx:id="ignoreLibs" promptText="Ignore libraries with IDs (seperate by comma)" HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets left="2.0" />
+                     </HBox.margin>
+                  </TextField>
+               </children>
+            </HBox>
+            <HBox>
+               <children>
+                  <TextField fx:id="javabinary" promptText="Path to java 11+ binary" HBox.hgrow="ALWAYS" />
+                  <Label text="Run every N hour(s)">
+                     <HBox.margin>
+                        <Insets top="4.0" />
+                     </HBox.margin>
+                  </Label>
+                  <TextField fx:id="hours" promptText="hours &gt; 0" />
+                  <Button fx:id="start" mnemonicParsing="false" onAction="#start" text="Start" />
+                  <Button fx:id="stop" mnemonicParsing="false" onAction="#stopTool" text="Stop" />
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+   </top>
+</BorderPane>
