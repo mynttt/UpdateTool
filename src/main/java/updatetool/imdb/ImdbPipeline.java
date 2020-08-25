@@ -147,7 +147,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
     @Override
     public void transformMetadata(ImdbJob job) throws Exception {
         var map = new HashMap<ImdbMetadataResult, ExportedRating>();
-        job.items.forEach(i -> map.put(i, dataset.getRatingFor(i.imdbId)));
+        job.items.forEach(i -> map.put(i, dataset.getRatingFor(ImdbTransformer.clean(i.imdbId))));
         var noUpdate = map.entrySet().stream().filter(Predicate.not(ImdbTransformer::needsUpdate)).collect(Collectors.toSet());
         if(!noUpdate.isEmpty()) {
             Logger.info(noUpdate.size() + " item(s) need no update.");

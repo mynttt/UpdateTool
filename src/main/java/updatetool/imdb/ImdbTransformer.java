@@ -77,4 +77,12 @@ public class ImdbTransformer {
         
         meta.extraData = extra.toURI();
     }
+
+    // Cleaning required because of interesting data from TVDB
+    public static String clean(String imdbId) {
+        if(imdbId == null)
+            return null;
+        String numbers = ImdbUtility.extractId(ImdbUtility.NUMERIC, imdbId);
+        return "tt"+numbers;
+    }
 }

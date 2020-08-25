@@ -1,3 +1,6 @@
+## 1.4.3
+- IMDB id cleaning to minimize the amount of non matches after having an id resolved
+
 ## 1.4.2
 - tmdb resolve bug fixed
 

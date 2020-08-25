@@ -37,7 +37,7 @@ public final class ImdbRatingDatasetFactory {
         private HashMap<String, String> data = new HashMap<>();
 
         public ExportedRating getRatingFor(String imdbId) {
-            final String rating = data.get(imdbId);
+            String rating = data.get(imdbId);
             return () -> rating;
         }
     }
