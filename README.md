@@ -6,15 +6,11 @@ A tool to update the IMDB ratings for Plex libraries that contain movies via the
 
 ~~**This tool does not work with the newly released Plex Movie Agent. Libraries that use this agent will be ignored and not modified. Refer to [this issue](https://github.com/mynttt/UpdateTool/issues/28) for more information.**~~ - **Works now with [Beta 1.20.1](https://forums.plex.tv/t/native-plex-agents-allow-access-to-external-provider-ids-for-media-eg-imdb-tmdb-tvdb/619090/129)!**
 
-**Rare database corruption appears to be fixed now.**
-
-The issue was that updating the `changed_at` column could cause a corruption of the `index_metadata_items_on_changed_at` index. This appeared to be a rare edge case that I was never able to reproduce. I suspect it had something to do with the concrete sqlite3 version used. If you happen to run into this issue with an older version you can fix your database by running: `sqlite3 com.plexapp.plugins.library.db "reindex index_metadata_items_on_changed_at"`
-
-**While this issue is fixed now and using this tool is likely safe to use and never caused issues for myself and a large part of the user base it shall still be noted that this tool should be used with caution and that I'm not responsible for any damages within your PMS database. The database interaction of this tool is minimal and within the milliseconds realm and the queries are executed cleanly by using SQLite's transactions.**
+**While the DB issues are fixed now and using this tool is likely safe to use and never caused issues for myself and a large part of the user base it shall still be noted that this tool should be used with caution and that I'm not responsible for any damages within your PMS database. The database interaction of this tool is minimal and within the milliseconds realm and the queries are executed cleanly by using SQLite's transactions.**
 
 #### This tool could in theory break if either the Plex database schema changes or IMDB stops providing a public rating dataset! This would not be dangerous tho as it stops when something goes wrong. 
 
-#### If you want to run this on Windows without docker look [here](https://github.com/mynttt/UpdateTool/wiki/Installation-on-Windows)!
+#### If you want to run this on Windows without docker look [here](https://github.com/mynttt/UpdateTool/wiki/Installation-on-Windows)! There is also a GUI for the tool that is discussed [here](#GUI).
 
 #### TV Show updates are done by aired season / aired episode. If you use DVD order for some reason please create an issue and I will implement a flag for you to switch the tool between. Plex uses aired season / aired episode by default tho!
 
@@ -126,6 +122,8 @@ docker run -dit
     mynttt/updatetool
 ```
 
+[Where is the data folder of the Plex Media Server located on my system?](https://support.plex.tv/articles/202915258-where-is-the-plex-media-server-data-directory-located/)
+
 [TVDB API Key](https://thetvdb.com/dashboard/account/apikey)
 
 *"/mnt/data/Plex Media Server" and "/mnt/data/imdpupdaterconfig" are just sample paths! Set your own paths there or it will probably not work!*
@@ -199,19 +197,6 @@ Provides a watchdog that once started will run every N hours over all IMDB suppo
 
 - Java >= 11
 
-# Created files in PWD
-
-- cache-tmdb2imdb.json - If TMDB fallback is enabled this file will contain the resolved TMDB <=> IMDB mappings.
-- cache-tvdb2imdb.json - TVDB to IMDB mapping.
-- cache-cache-tmdbseries2imdb.json - TMDB TV Shows to IMDB mapping.
-- cache-tvdbBlacklist.json - Items that TVDB provides no IMDB id for or that fail being looked up. The blacklist is reset every 14 days.
-- cache-tmdbseriesBlacklist.json - Items that TMDB TV Shows provides no IMDB id for or that fail being looked up. The blacklist is reset every 14 days. 
-- state-imdb.json - Set of jobs that have not finished
-- xml-error-{uuid}-{library}.log - List of files that could not be updated by the XML transform step (not important tbh, plex reads from the DB)
-- updatetool.{increment}.log - Log file
-- rating_set.tsv - latest IMDB rating set
-- ratingSetLastUpdate - UNIX timestamp of last rating set update
-
 # Usage
 
 ### Docker mode:
@@ -243,11 +228,10 @@ java -jar UpdateTool-xxx.jar imdb-docker {}
 java -jar UpdateTool-xxx.jar imdb-docker {schedule=5}
 ```
 
-# Other stuff
+### GUI
 
-[Where is the data folder of the Plex Media Server located on my system?](https://support.plex.tv/articles/202915258-where-is-the-plex-media-server-data-directory-located/)
+There is also a GUI to assist users that feel uncomfortable with the CLI way of interacting with the tool. It supports Windows, MacOS and Linux and only [requires the Java 11+ runtime](https://adoptopenjdk.net/?variant=openjdk11&jvmVariant=hotspot) and can be downloaded [here](https://github.com/mynttt/UpdateTool/releases/tag/g1.0.0).
 
-You can either build the tool yourself using the command below in the root folder or get it [here](https://github.com/mynttt/UpdateTool/releases/latest) as an already packaged .jar file.
-```bash
-gradle build
-```
+![](https://raw.githubusercontent.com/mynttt/UpdateTool/master/img/gui.PNG)
+
+To use the GUI just double click on the jar file. The GUI will automatically download and update the used version of UpdateTool. You are only required to set the path to the Plex Media Server data folder and submit a path to your java executable. If you want to enable TMDB/TVDB resolvement simply tick the boxes and supply the API keys via the text fields. To start and stop the tool use the respective buttons.
