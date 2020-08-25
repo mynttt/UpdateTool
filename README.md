@@ -6,15 +6,11 @@ A tool to update the IMDB ratings for Plex libraries that contain movies via the
 
 ~~**This tool does not work with the newly released Plex Movie Agent. Libraries that use this agent will be ignored and not modified. Refer to [this issue](https://github.com/mynttt/UpdateTool/issues/28) for more information.**~~ - **Works now with [Beta 1.20.1](https://forums.plex.tv/t/native-plex-agents-allow-access-to-external-provider-ids-for-media-eg-imdb-tmdb-tvdb/619090/129)!**
 
-**Rare database corruption appears to be fixed now.**
-
-The issue was that updating the `changed_at` column could cause a corruption of the `index_metadata_items_on_changed_at` index. This appeared to be a rare edge case that I was never able to reproduce. I suspect it had something to do with the concrete sqlite3 version used. If you happen to run into this issue with an older version you can fix your database by running: `sqlite3 com.plexapp.plugins.library.db "reindex index_metadata_items_on_changed_at"`
-
 **While this issue is fixed now and using this tool is likely safe to use and never caused issues for myself and a large part of the user base it shall still be noted that this tool should be used with caution and that I'm not responsible for any damages within your PMS database. The database interaction of this tool is minimal and within the milliseconds realm and the queries are executed cleanly by using SQLite's transactions.**
 
 #### This tool could in theory break if either the Plex database schema changes or IMDB stops providing a public rating dataset! This would not be dangerous tho as it stops when something goes wrong. 
 
-#### If you want to run this on Windows without docker look [here](https://github.com/mynttt/UpdateTool/wiki/Installation-on-Windows)!
+#### If you want to run this on Windows without docker look [here](https://github.com/mynttt/UpdateTool/wiki/Installation-on-Windows)! There is also a GUI for the tool that is discussed [here](#GUI)
 
 #### TV Show updates are done by aired season / aired episode. If you use DVD order for some reason please create an issue and I will implement a flag for you to switch the tool between. Plex uses aired season / aired episode by default tho!
 
