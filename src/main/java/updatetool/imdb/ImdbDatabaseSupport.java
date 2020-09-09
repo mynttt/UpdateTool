@@ -139,7 +139,15 @@ public class ImdbDatabaseSupport {
         try(var s = provider.connection.prepareStatement(isNewAgent ? "UPDATE metadata_items SET audience_rating = ?, extra_data = ?, rating = NULL WHERE id = ?" 
                 : "UPDATE metadata_items SET rating = ?, extra_data = ? WHERE id = ?")) {
             for(var item : items) {
-                s.setDouble(1, isNewAgent ? item.audienceRating : item.rating);
+                Double d = isNewAgent ? item.audienceRating : item.rating;
+                
+                //TODO: hotfix, investigate further only happened to one person over the entire tool lifetime
+                if(d == null) {
+                    Logger.error("Null value encountered. Should not be possible. Skipping entry to not crash tool. Contact maintainer with this dump: " + Objects.toString(item));
+                    continue;
+                }
+                
+                s.setDouble(1, d);
                 s.setString(2, item.extraData);
                 s.setInt(3, item.id);
                 s.addBatch();
