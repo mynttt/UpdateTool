@@ -1,3 +1,6 @@
+## 1.4.3b
+- Hotfix for previously unfaced NPE. Added mitigation + logging to futher debug if it happens again with that user.
+
 ## 1.4.3
 - IMDB id cleaning to minimize the amount of non matches after having an id resolved
 
