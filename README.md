@@ -169,6 +169,7 @@ Flag | Description
 :-------------------------:|:-------------------------:|
 NO_TV |Ignore all TV Show libraries
 NO_MOVIE | Ignore all Movie libraries
+VERBOSE_XML_ERROR_LOG | Enable verbose XML error output logging
 
 Multiple flags can be supplied as a semicolon separated string.
 

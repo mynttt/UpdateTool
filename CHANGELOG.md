@@ -1,3 +1,6 @@
+## 1.4.4
+- Disabled XML error logging for non existing metadata XML files as these errors are not important. To re-enable these errors set the capability flag VERBOSE_XML_ERROR_LOG.
+
 ## 1.4.3b
 - Hotfix for previously unfaced NPE. Added mitigation + logging to futher debug if it happens again with that user.
 

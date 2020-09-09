@@ -218,7 +218,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         }
         for(var c : cleanup)
             job.items.removeAll(c);
-        if(nofile.size()>0) {
+        if(nofile.size() > 0 && configuration.capabilities.contains(Capabilities.VERBOSE_XML_ERROR_LOG)) {
             String errorFile = "xml-error-" + job.uuid + "-" + job.library + ".log";
             Logger.warn(nofile.size() + " XML file(s) have failed to be updated due to them not being present on the file system.");
             Logger.warn("This is not an issue as they're not important for Plex as it reads the ratings from the database.");
