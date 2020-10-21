@@ -42,8 +42,12 @@ class ImdbXmlWorker implements Callable<Void> {
             Path contents = metadataRoot.resolve(item.hash.charAt(0)+"/"+item.hash.substring(1)+".bundle/Contents");
             Path imdb = contents.resolve("com.plexapp.agents.imdb/Info.xml");
             Path combined = contents.resolve("_combined/Info.xml");
-            transformXML(item, imdb, builder);
-            transformXML(item, combined, builder);
+            try {
+                transformXML(item, imdb, builder);
+                transformXML(item, combined, builder);
+            } catch(Exception e) {
+                Logger.info("Uncaught exception @ XML Worker: Continuing... ({})", e.getClass().getSimpleName());
+            }
             int c = counter.incrementAndGet();
             if(c % 100 == 0)
                 Logger.info("Transforming [{}/{}]...", c, n);
