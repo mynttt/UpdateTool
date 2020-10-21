@@ -1,3 +1,6 @@
+## 1.4.5
+- Fixed crash on malformed XML
+
 ## 1.4.4
 - Disabled XML error logging for non existing metadata XML files as these errors are not important. To re-enable these errors set the capability flag VERBOSE_XML_ERROR_LOG.
 
