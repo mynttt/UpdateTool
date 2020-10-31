@@ -4,6 +4,8 @@ A tool to update the IMDB ratings for Plex libraries that contain movies via the
 
 ## Important
 
+**TVDB lookup only works with free legacy keys. TVDB is going paywall now. Support for the new API is only given if one month of TVDB access is donated.**
+
 ~~**This tool does not work with the newly released Plex Movie Agent. Libraries that use this agent will be ignored and not modified. Refer to [this issue](https://github.com/mynttt/UpdateTool/issues/28) for more information.**~~ - **Works now with [Beta 1.20.1](https://forums.plex.tv/t/native-plex-agents-allow-access-to-external-provider-ids-for-media-eg-imdb-tmdb-tvdb/619090/129)!**
 
 **While the DB issues are fixed now and using this tool is likely safe to use and never caused issues for myself and a large part of the user base it shall still be noted that this tool should be used with caution and that I'm not responsible for any damages within your PMS database. The database interaction of this tool is minimal and within the milliseconds realm and the queries are executed cleanly by using SQLite's transactions.**
