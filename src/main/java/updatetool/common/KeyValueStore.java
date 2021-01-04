@@ -1,6 +1,5 @@
 package updatetool.common;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -8,7 +7,7 @@ import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class KeyValueStore {
     private final HashMap<String, String> map = new HashMap<>();
@@ -18,13 +17,14 @@ public class KeyValueStore {
         this.p = p;
     }
     
+    @SuppressFBWarnings("REC_CATCH_EXCEPTION")
     @SuppressWarnings("serial")
     public static KeyValueStore of(Path p) {
         var cache = new KeyValueStore(p);
         try {
             HashMap<String, String> m = new Gson().fromJson(Files.readString(p, StandardCharsets.UTF_8), new TypeToken<HashMap<String, String>>() {}.getType());
             cache.map.putAll(m);
-        } catch(JsonSyntaxException | IOException e) {}
+        } catch(Exception e) {}
         return cache;
     }
 
