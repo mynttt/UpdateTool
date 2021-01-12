@@ -1,3 +1,6 @@
+## 1.4.7
+- Updated SQLite3 dependency so ARM is supported on mac
+
 ## 1.4.6
 - Fixed rare NPE
 
