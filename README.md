@@ -2,6 +2,14 @@
 
 A tool to update the IMDB ratings for Plex libraries that contain movies via the IMDB, TMDB and TVDB agents.
 
+![GitHub](https://img.shields.io/github/license/mynttt/updatetool)
+![GitHub issues](https://img.shields.io/github/issues/mynttt/updatetool)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/mynttt/updatetool)
+![GitHub top language](https://img.shields.io/github/languages/top/mynttt/updatetool)
+![Docker Image Size (tag)](https://img.shields.io/docker/image-size/mynttt/updatetool/latest)
+![Docker Pulls](https://img.shields.io/docker/pulls/mynttt/updatetool)
+<span class="badge-paypal"><a href="https://paypal.me/mynttt" title="Donate to this project using Paypal"><img src="https://img.shields.io/badge/paypal-donate-yellow.svg" alt="PayPal donate button" /></a></span>
+
 ## Important
 
 **TVDB lookup only works with legacy keys right now. TVDB is going paywall now. Support for the new API (v4) is given once they release documentation of their new API.**
