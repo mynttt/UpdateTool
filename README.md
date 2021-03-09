@@ -12,9 +12,9 @@ A tool to update the IMDB ratings for Plex libraries that contain movies via the
 
 ## Important
 
-**TVDB lookup only works with legacy keys right now. TVDB is going paywall now. Support for the new API (v4) is given once they release documentation of their new API.**
+**TVDB lookup only works with legacy keys right now. TVDB is going paywall now. Support for the new API (v4) is given probably in the span of the next weeks (time written: 9th March 2021)**
 
-~~**This tool does not work with the newly released Plex Movie Agent. Libraries that use this agent will be ignored and not modified. Refer to [this issue](https://github.com/mynttt/UpdateTool/issues/28) for more information.**~~ - **Works now with [Beta 1.20.1](https://forums.plex.tv/t/native-plex-agents-allow-access-to-external-provider-ids-for-media-eg-imdb-tmdb-tvdb/619090/129)!**
+**This tool works with the new Plex TV Show agent. The support is limited however and fallbacks for TVDB/TMDB will come as soon as the new v4 API is implemented. This feature is a opt-in so please read more here [more here](#opt-in-for-libraries-using-the-new-tv-show-agent)!**
 
 **While the DB issues are fixed now and using this tool is likely safe to use and never caused issues for myself and a large part of the user base it shall still be noted that this tool should be used with caution and that I'm not responsible for any damages within your PMS database. The database interaction of this tool is minimal and within the milliseconds realm and the queries are executed cleanly by using SQLite's transactions.**
 
@@ -61,7 +61,7 @@ Name | Description
 :-------------------------:|:-------------------------:|
 TMDB_API_KEY|Enables TMDB Movie/Series library processing
 TVDB_API_KEY|Enables TVDB Series library processing
-UNLOCK_FOR_NEW_TV_AGENT|Opt-in for libraries using the new TV Show agent. All libraries that are opted-in this way will have their ratings changed to IMDB ratings by this tool ([more here](#))
+UNLOCK_FOR_NEW_TV_AGENT|Opt-in for libraries using the new TV Show agent. All libraries that are opted-in this way will have their ratings changed to IMDB ratings by this tool ([more here](#opt-in-for-libraries-using-the-new-tv-show-agent))
 IGNORE_LIBS|Ignore libraries with certain IDs ([more here](#Ignore-libraries-from-being-updated))
 CAPABILITIES|Custom flags for the tool ([more here](#supply-custom-capability-flags))
 JVM_MAX_HEAP|Specify max. heap allocatable by the JVM (default 256m). Can be useful if you have a really large library (40000+ items) and you run in memory related crashes. Must be specified in bytes (i.e. 256m, 1g, 2g, 512m)
