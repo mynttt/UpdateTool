@@ -1,3 +1,9 @@
+## 1.5.0
+- First support for new TV Show Agent (right now only items that have the IMDB ID embedded within the Plex database will be changed -> support for TVDB/TMDB only resolvable items will come soon as for the TVDB resolvable items an update to the new v4 API has to be implemented first).
+- This feature is opt-in which means you'll have to add the library IDs to the environment variable `UNLOCK_FOR_NEW_TV_AGENT`. Refer to more information to the main README.
+- The opt-in occurs because with Plex it is only possible to switch between TVDB/TMDB but not IMDB. This is a security feature to not wreck the libraries of users that don't want IMDB ratings for their new agent TV Show libraries.
+- Updated UpdateTool GUI to reflect changes.
+
 ## 1.4.7
 - Updated SQLite3 dependency so ARM is supported on mac
 

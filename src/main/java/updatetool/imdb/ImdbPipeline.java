@@ -41,6 +41,7 @@ import updatetool.imdb.ImdbRatingDatasetFactory.ImdbRatingDataset;
 import updatetool.imdb.resolvement.DefaultResolvement;
 import updatetool.imdb.resolvement.ImdbResolvement;
 import updatetool.imdb.resolvement.NewPlexMovieAgentToImdbResolvement;
+import updatetool.imdb.resolvement.NewPlexTvShowAgentToImdbResolvement;
 import updatetool.imdb.resolvement.TmdbSeriesToImdbResolvement;
 import updatetool.imdb.resolvement.TmdbMovieToImdbResolvement;
 import updatetool.imdb.resolvement.TvdbToImdbResolvement;
@@ -50,6 +51,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
                 "(?<IMDB>agents.imdb:\\/\\/tt)"
                 + "|(?<TMDB>agents.themoviedb:\\/\\/)"
                 + "|(?<NPMA>plex:\\/\\/movie\\/)"
+                + "|(?<NPSA>plex:\\/\\/(episode|season|show)\\/)"
                 + "|(?<TVDB>agents.thetvdb:\\/\\/)"
             );
 
@@ -94,11 +96,12 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         this.dataset = dataset;
         resolveMovies.put("IMDB", new ImdbResolvement());
         resolveMovies.put("TMDB", configuration.resolveTmdb() ? new TmdbMovieToImdbResolvement(caches.get("tmdb"), new TmdbApi(configuration.tmdbApiKey)) : resolveDefault);
-        resolveMovies.put("NPMA", new NewPlexMovieAgentToImdbResolvement(caches.get("new-movie-agent-mapping"), resolveMovies.get("TMDB") instanceof TmdbMovieToImdbResolvement ? (TmdbMovieToImdbResolvement) resolveMovies.get("TMDB") : null));
+        resolveMovies.put("NPMA", new NewPlexMovieAgentToImdbResolvement(caches.get("new-agent-mapping"), resolveMovies.get("TMDB") instanceof TmdbMovieToImdbResolvement ? (TmdbMovieToImdbResolvement) resolveMovies.get("TMDB") : null));
         
         resolveSeries.put("TVDB", configuration.resolveTvdb() ? new TvdbToImdbResolvement(caches.get("tvdb"), caches.get("tvdb-blacklist"), new TvdbApi(configuration.tvdbApiKey)) : resolveDefault);
         resolveSeries.put("TMDB", configuration.resolveTmdb() ? new TmdbSeriesToImdbResolvement(caches.get("tmdb-series"), caches.get("tmdb-series-blacklist"), new TmdbApi(configuration.tmdbApiKey)) : resolveDefault);
         resolveSeries.put("IMDB", new ImdbResolvement());
+        resolveSeries.put("NPSA", new NewPlexTvShowAgentToImdbResolvement(caches.get("new-agent-mapping")));
         
         resolvers.put(LibraryType.MOVIE, resolveMovies);
         resolvers.put(LibraryType.SERIES, resolveSeries);

@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.tinylog.Logger;
+import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import net.harawata.appdirs.AppDirsFactory;
@@ -64,6 +65,7 @@ public class Config implements Serializable {
         tmdbKey = new SimpleStringProperty(""); 
         tvdbKey = new SimpleStringProperty("");
         ignoreLibs = new SimpleStringProperty("");
+        tvShowOptIn = new SimpleStringProperty("");
         javabinary = new SimpleStringProperty("");
         hours = new SimpleStringProperty("12");
         useTmdb = new SimpleBooleanProperty();
@@ -75,6 +77,7 @@ public class Config implements Serializable {
         tmdbKey.addListener((o, oo, n) -> tmdbKeyV = n.trim());
         tvdbKey.addListener((o, oo, n) -> tvdbKeyV = n.trim());
         ignoreLibs.addListener((o, oo, n) -> ignoreLibsV = n.trim());
+        tvShowOptIn.addListener((o, oo, n) -> n.trim());
         javabinary.addListener((o, oo, n) -> javabinaryV = n.trim());
         useTmdb.addListener((o, oo, n) -> useTmdbV = n);
         useTvdb.addListener((o, oo, n) -> useTvdbV = n);
@@ -88,6 +91,7 @@ public class Config implements Serializable {
         tmdbKey.set(tmdbKeyV);
         tvdbKey.set(tvdbKeyV);
         ignoreLibs.set(ignoreLibsV);
+        tvShowOptIn.set(tvShowOptInV);
         javabinary.set(javabinaryV);
         useTmdb.set(useTmdbV);
         useTvdb.set(useTvdbV);
@@ -97,7 +101,7 @@ public class Config implements Serializable {
         return this;
     }
     
-    private transient SimpleStringProperty plexFolder, tmdbKey,tvdbKey, ignoreLibs, javabinary, hours;
+    private transient SimpleStringProperty plexFolder, tmdbKey,tvdbKey, ignoreLibs, javabinary, hours, tvShowOptIn;
     private transient SimpleBooleanProperty useTmdb,useTvdb,ignoreMovies, ignoreTv;
 
     private String 
@@ -105,6 +109,7 @@ public class Config implements Serializable {
         tmdbKeyV = "", 
         tvdbKeyV = "", 
         ignoreLibsV = "",
+        tvShowOptInV = "",
         hoursV = "12",
         javabinaryV = "";
 
@@ -152,5 +157,9 @@ public class Config implements Serializable {
 
     public SimpleStringProperty getHours() {
         return hours;
+    }
+
+    public Property<String> getTvShowOptIn() {
+        return tvShowOptIn;
     }
 }

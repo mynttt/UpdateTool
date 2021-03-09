@@ -44,7 +44,8 @@ Type | Description | Agent
 :-------------------------:|:-------------------------:|:-------------------------:
 MOVIE | Plex Movie Agent with IMDB | com.plexapp.agents.imdb
 MOVIE | TMDB Movie Agent (if TMDB API key set) | com.plexapp.agents.themoviedb
-MOVIE | New Plex Movie Agent (if IMDB as ratings source set, currently only in Beta 1.20.1) | tv.plex.agents.movie
+MOVIE | New Plex Movie Agent (if IMDB as ratings source set) | tv.plex.agents.movie
+TV SHOW | New Plex TV Show Agent (currently only for items that have the IMDB ID embedded in the Plex database and have been opted-in via a special environment variable) | tv.plex.agents.series
 TV SHOW | TMDB Series Agent (if TMDB API key set) | com.plexapp.agents.themoviedb
 TV SHOW | TVDB Series Agent (if TVDB auth string set) |com.plexapp.agents.thetvdb
 
@@ -60,6 +61,7 @@ Name | Description
 :-------------------------:|:-------------------------:|
 TMDB_API_KEY|Enables TMDB Movie/Series library processing
 TVDB_API_KEY|Enables TVDB Series library processing
+UNLOCK_FOR_NEW_TV_AGENT|Opt-in for libraries using the new TV Show agent. All libraries that are opted-in this way will have their ratings changed to IMDB ratings by this tool ([more here](#))
 IGNORE_LIBS|Ignore libraries with certain IDs ([more here](#Ignore-libraries-from-being-updated))
 CAPABILITIES|Custom flags for the tool ([more here](#supply-custom-capability-flags))
 JVM_MAX_HEAP|Specify max. heap allocatable by the JVM (default 256m). Can be useful if you have a really large library (40000+ items) and you run in memory related crashes. Must be specified in bytes (i.e. 256m, 1g, 2g, 512m)
@@ -141,6 +143,33 @@ docker run -dit
 *On windows the \ syntax to make the command multiline will not work. You have to remove those and make the command a single line command!*
 
 ## Other configuration values
+
+### Opt-in for libraries using the new TV Show agent
+
+Because the new agent only allows to choose between TVDB/TMDB ratings via the Plex UI libraries that shall be touched by UpdateTool have to be explicitly opted-in. This is a safety feature to not accidentally wreck libraries of users who wish to not have UpdateTool change their new TV Show agent libraries to IMDB ratings. Until you can set IMDB via the UI this will be the to-go way of having UpdateTool process these libraries.
+
+UNLOCK_FOR_NEW_TV_AGENT takes a list of library ids as a semicolon seperated string. You can find the id of a plex library by opening it in plex and then looking at the URL in the browser.
+
+```
+Lets find the ID for the new TV Show agent library 'New Agent TV Show':
+1.) Select 'New Agent TV Show' in the Plex web interface
+2.) Look at the URL in the browser, it should end like this: &context=content.library&source=1
+3.) source=1 tells us that the ID for 'New Agent TV Show' is 1
+```
+
+**Examples:**
+
+Opting-in only the new TV Show agent library with ID 1: 
+
+```
+UNLOCK_FOR_NEW_TV_AGENT="1"
+```
+
+Opting-in the new TV Show agent libraries with the IDs 1, 5, 8: 
+
+```
+UNLOCK_FOR_NEW_TV_AGENT="1;5;8"
+```
 
 ### Ignore libraries from being updated
 

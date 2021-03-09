@@ -33,7 +33,8 @@ import updatetool.imdb.ImdbPipeline.ImdbPipelineConfiguration;
 
 public class ImdbDockerImplementation extends Implementation {
     private static final Path STATE_IMDB = Main.PWD.resolve("state-imdb.json");
-    private static final Set<Long> IGNORE_LIBRARIES = new HashSet<>();
+    private static final Set<Long> IGNORE_LIBRARIES = new HashSet<>(),
+                                   UNLOCK_FOR_NEW_TV_AGENT = new HashSet<>();
     
     private int runEveryNhour = 12;
     private String apikeyTmdb, apiauthTvdb;
@@ -53,6 +54,7 @@ public class ImdbDockerImplementation extends Implementation {
         String data = System.getenv("PLEX_DATA_DIR");
         String ignore = System.getenv("IGNORE_LIBS");
         String capabilitiesEnv = System.getenv("CAPABILITIES");
+        String unlockForNewTvAgent = System.getenv("UNLOCK_FOR_NEW_TV_AGENT");
         
         EnumSet<Capabilities> capabilities = EnumSet.allOf(Capabilities.class);
         final List<Capabilities> parsed = new ArrayList<>();
@@ -127,7 +129,7 @@ public class ImdbDockerImplementation extends Implementation {
                             "tmdb-series-blacklist", KeyValueStore.of(Main.PWD.resolve("cache-tmdbseriesBlacklist.json")),
                             "tvdb", KeyValueStore.of(Main.PWD.resolve("cache-tvdb2imdb.json")),
                             "tvdb-blacklist", KeyValueStore.of(Main.PWD.resolve("cache-tvdbBlacklist.json")),
-                            "new-movie-agent-mapping", KeyValueStore.of(Main.PWD.resolve("new-movie-agent-mapping.json")));
+                            "new-agent-mapping", KeyValueStore.of(Main.PWD.resolve("new-agent-mapping.json")));
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
@@ -157,6 +159,17 @@ public class ImdbDockerImplementation extends Implementation {
                     long i = Long.parseLong(s);
                     IGNORE_LIBRARIES.add(i);
                     Logger.info("Ignoring library with ID: {}", i);
+                } catch(NumberFormatException e) {}
+            }
+        }
+        
+        if(unlockForNewTvAgent != null && !unlockForNewTvAgent.isBlank()) {
+            String[] candidates = unlockForNewTvAgent.split(";");
+            for(var s : candidates) {
+                try {
+                    long i = Long.parseLong(s);
+                    UNLOCK_FOR_NEW_TV_AGENT.add(i);
+                    Logger.info("Unlocking library for IMDB TV Show rating update for the new TV Show agent: {}", i);
                 } catch(NumberFormatException e) {}
             }
         }
@@ -199,7 +212,16 @@ public class ImdbDockerImplementation extends Implementation {
                 if(!capabilities.contains(Capabilities.NO_TV))
                     libraries.addAll(support.requestSeriesLibraries(capabilities));
                 libraries.removeIf(l -> IGNORE_LIBRARIES.contains(l.id));
-                metadata = ImdbLibraryMetadata.fetchAll(libraries, new ImdbDatabaseSupport(connection, caches.get("new-movie-agent-mapping")), config); 
+                libraries.removeIf(l -> {
+                    if(!l.agent.equals("tv.plex.agents.series"))
+                        return false;
+                    if(!UNLOCK_FOR_NEW_TV_AGENT.contains(l.id)) {
+                        Logger.info("New TV Show Agent Library with ID: {} will not be processed by UpdateTool. Please register with environment variable UNLOCK_FOR_NEW_TV_AGENT to unlock proceessing capabilities.", l.id);
+                        return true;
+                    }
+                    return false;
+                });
+                metadata = ImdbLibraryMetadata.fetchAll(libraries, new ImdbDatabaseSupport(connection, caches.get("new-agent-mapping")), config); 
             } catch(Exception e) {
                 Logger.error(e.getClass().getSimpleName() + " exception encountered...");
                 Logger.error("Please contact the maintainer of the application with the stacktrace below if you think this is unwanted behavior.");

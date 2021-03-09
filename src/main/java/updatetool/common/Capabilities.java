@@ -29,6 +29,7 @@ public enum Capabilities {
     public static String formatSeries(EnumSet<Capabilities> capabilities) {
         List<String> agents = new ArrayList<>();
         
+        agents.add("'tv.plex.agents.series'");
         if(capabilities.contains(Capabilities.TMDB))
             agents.add("'com.plexapp.agents.themoviedb'");
         if(capabilities.contains(Capabilities.TVDB))

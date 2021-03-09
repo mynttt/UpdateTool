@@ -84,10 +84,7 @@ public class ImdbDatabaseSupport {
         return requestMetadata("SELECT id, library_section_id, guid, title, extra_data, hash, rating, audience_rating from metadata_items WHERE media_item_count = 0 AND parent_id NOT NULL AND library_section_id = " + libraryId);
     }
     
-    private List<ImdbMetadataResult> requestMetadata(String query) {
-        
-        // 
-        
+    private List<ImdbMetadataResult> requestMetadata(String query) {        
         try(var handle = provider.queryFor(query)){
             List<ImdbMetadataResult> list = new ArrayList<>();
             while(handle.result().next()) {
@@ -105,7 +102,7 @@ public class ImdbDatabaseSupport {
         if(newAgentMapping == null)
             return;
         
-        if(!m.guid.startsWith("plex://movie/"))
+        if(!ImdbTransformer.isNewAgent(m))
             return;
         
         String v = newAgentMapping.lookup(m.guid);
@@ -133,8 +130,29 @@ public class ImdbDatabaseSupport {
         if(items.size() == 0)
             return;
         
-        boolean isNewAgent = items.get(0).guid.startsWith("plex://movie/");
+        List<ImdbMetadataResult> newAgent = new ArrayList<>(),
+                                 oldAgent = new ArrayList<>();
         
+        items.forEach(i -> {
+            if(ImdbTransformer.isNewAgent(i)) {
+                newAgent.add(i);
+            } else {
+                oldAgent.add(i);
+            }
+        });
+        
+        if(!newAgent.isEmpty()) {
+            Logger.info("Running batch update for {} items with new plex agent.", newAgent.size());
+            internalBatchUpdate(newAgent, true);
+        }
+        
+        if(!oldAgent.isEmpty()) {
+            internalBatchUpdate(oldAgent, false);
+            Logger.info("Running batch update for {} items with old plex agent.", oldAgent.size());
+        }
+    }
+    
+    private void internalBatchUpdate(List<ImdbMetadataResult> items, boolean isNewAgent) {
         boolean success = true;
         try(var s = provider.connection.prepareStatement(isNewAgent ? "UPDATE metadata_items SET audience_rating = ?, extra_data = ?, rating = NULL WHERE id = ?" 
                 : "UPDATE metadata_items SET rating = ?, extra_data = ? WHERE id = ?")) {

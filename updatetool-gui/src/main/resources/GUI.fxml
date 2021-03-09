@@ -102,6 +102,16 @@
             </HBox>
             <HBox>
                <children>
+                  <Label text="Opt-in for libraries using the new TV Show agent with IDs:">
+                     <HBox.margin>
+                        <Insets top="4.0" />
+                     </HBox.margin>
+                  </Label>
+                  <TextField fx:id="tvshowoptin" promptText="Opt-in new TV Show agent libraries with IDs (seperate by comma)" HBox.hgrow="ALWAYS" />
+               </children>
+            </HBox>
+            <HBox>
+               <children>
                   <TextField fx:id="javabinary" promptText="Path to java 11+ binary" HBox.hgrow="ALWAYS" />
                   <Label text="Run every N hour(s)">
                      <HBox.margin>

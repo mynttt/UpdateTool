@@ -15,11 +15,12 @@ public class ImdbTransformer {
     private static final Pair<String, String> 
         NEW_TMDB = Pair.of("at:audienceRatingImage", "themoviedb://image.rating"),
         NEW_IMDB = Pair.of("at:audienceRatingImage", "imdb://image.rating"),
+        NEW_TVDB = Pair.of("at:audienceRatingImage", "thetvdb://image.rating"),
         ROTTEN_A = Pair.of("at:audienceRatingImage", "rottentomatoes://image.rating.upright"),
         ROTTEN_R = Pair.of("at:ratingImage", "rottentomatoes://image.rating.ripe"),
         OLD_IMDB = Pair.of("at:ratingImage", "imdb://image.rating");
     
-    private static final List<Pair<String, String>> STRIP = List.of(NEW_TMDB, ROTTEN_A, ROTTEN_R);
+    private static final List<Pair<String, String>> STRIP = List.of(NEW_TMDB, ROTTEN_A, ROTTEN_R, NEW_TVDB);
     
     public static boolean needsUpdate(Map.Entry<ImdbMetadataResult, ExportedRating> check) {
         var meta = check.getKey();
@@ -33,14 +34,14 @@ public class ImdbTransformer {
             return false;
         }
         
-        boolean isNewMovieAgent = meta.guid.startsWith("plex://movie/");
-        Double actualRating = isNewMovieAgent ? meta.audienceRating : meta.rating;
+        boolean isNewAgent = isNewAgent(meta);
+        Double actualRating = isNewAgent ? meta.audienceRating : meta.rating;
         
         ExtraData e = ExtraData.of(meta.extraData);
         
         return actualRating == null
                 || !areEqualDouble(actualRating, d, 3)
-                || !e.contains(isNewMovieAgent ? NEW_IMDB : OLD_IMDB)
+                || !e.contains(isNewAgent ? NEW_IMDB : OLD_IMDB)
                 || e.containsAny(STRIP);
     }
 
@@ -49,13 +50,13 @@ public class ImdbTransformer {
         var imdb = target.getValue();
         double d = Double.parseDouble(imdb.exportRating());
         
-        boolean isNewMovieAgent = meta.guid.startsWith("plex://movie/");
-        Double actualRating = isNewMovieAgent ? meta.audienceRating : meta.rating;
+        boolean isNewAgent = isNewAgent(meta);
+        Double actualRating = isNewAgent ? meta.audienceRating : meta.rating;
         
         if(actualRating == null || !areEqualDouble(actualRating, d, 3)) {
             Logger.info("Adjust rating: " + doubleToOneDecimalString(actualRating) + " -> " + d + " for " + meta.title);
             
-            if(isNewMovieAgent) {
+            if(isNewAgent) {
                 meta.audienceRating = d;
             } else {
                 meta.rating = d;
@@ -65,11 +66,11 @@ public class ImdbTransformer {
         ExtraData extra = ExtraData.of(meta.extraData);
         
         if(extra.containsAny(STRIP)) {
-            Logger.info("(Remove) Stripping useless badge data (RT, TMDB) for: {}", meta.title);
+            Logger.info("(Remove) Stripping useless badge data (RT, TMDB, TVDB) for: {}", meta.title);
             STRIP.forEach(p -> extra.deleteKey(p.getKey()));
         }
         
-        var targetBadge = isNewMovieAgent ? NEW_IMDB : OLD_IMDB;
+        var targetBadge = isNewAgent ? NEW_IMDB : OLD_IMDB;
         if(!extra.contains(targetBadge)) {
             Logger.info("(Set) Set IMDB Badge for: {}", meta.title);
             extra.prepend(targetBadge.getKey(), targetBadge.getValue());
@@ -84,5 +85,12 @@ public class ImdbTransformer {
             return null;
         String numbers = ImdbUtility.extractId(ImdbUtility.NUMERIC, imdbId);
         return "tt"+numbers;
+    }
+    
+    public static boolean isNewAgent(ImdbMetadataResult meta) {
+        return meta.guid.startsWith("plex://movie/") || 
+               meta.guid.startsWith("plex://season/") || 
+               meta.guid.startsWith("plex://episode/") || 
+               meta.guid.startsWith("plex://show/");
     }
 }

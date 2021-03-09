@@ -82,7 +82,7 @@ public class App extends Application {
         }));
     }
     
-    @FXML TextField plexFolder, tmdbKey, tvdbKey, ignoreLibs, javabinary, hours;
+    @FXML TextField plexFolder, tmdbKey, tvdbKey, ignoreLibs, javabinary, hours, tvshowoptin;
     @FXML CheckBox useTmdb, useTvdb, ignoreMovies, ignoreTv;
     @FXML TextArea log;
     @FXML Label version, status;
@@ -99,6 +99,7 @@ public class App extends Application {
         ignoreMovies.selectedProperty().bindBidirectional(INSTANCE.getIgnoreMovies());
         ignoreTv.selectedProperty().bindBidirectional(INSTANCE.getIgnoreTv());
         ignoreLibs.textProperty().bindBidirectional(INSTANCE.getIgnoreLibs());
+        tvshowoptin.textProperty().bindBidirectional(INSTANCE.getTvShowOptIn());
         javabinary.textProperty().bindBidirectional(INSTANCE.getJavabinary());
         plexFolder.textProperty().bindBidirectional(INSTANCE.getPlexFolder());
         hours.textProperty().bindBidirectional(INSTANCE.getHours());
@@ -198,7 +199,9 @@ public class App extends Application {
         if(useTvdb.isSelected())
             env.put("TVDB_API_KEY", tvdbKey.getText());
         if(!ignoreLibs.getText().isBlank())
-            env.put("IGNORE_LIBS", ignoreLibs.getText());
+            env.put("IGNORE_LIBS", ignoreLibs.getText().trim().replace(",", ";"));
+        if(!tvshowoptin.getText().isBlank())
+            env.put("UNLOCK_FOR_NEW_TV_AGENT", tvshowoptin.getText().trim().replace(",", ";"));
         
         List<String> c = new ArrayList<>();
         if(ignoreTv.isSelected())

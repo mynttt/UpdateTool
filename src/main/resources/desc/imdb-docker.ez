@@ -8,6 +8,8 @@ meta {
              |
              | The following environment variables are optional and enhance the tool in certain ways.
              |
+             | (Optional) UNLOCK_FOR_NEW_TV_AGENT: Used to specify the library IDs with the new TV Show agent which should be processed by UpdateTool 
+             |            This will potentially override all TMDB/TVDB ratings with IMDB ratings!
              | (Optional) TMDB_API_KEY: Used to convert TMDB matched items to IMDB items. The fallback will only be available if this is set.
              | (Optional) TVDB_API_KEY: Used to auth with the TVDB API.
              | (Optional) IGNORE_LIBS: Ignore libraries from being touched by this tool by supplying a set of library ids as a semicolon ';' seperated string.
