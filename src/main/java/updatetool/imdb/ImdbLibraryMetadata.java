@@ -15,7 +15,7 @@ public class ImdbLibraryMetadata {
     public static ImdbLibraryMetadata fetchAll(List<Library> libraries, ImdbDatabaseSupport db, ImdbPipelineConfiguration configuration) {
         var meta = new ImdbLibraryMetadata();
         for(var lib : libraries) {
-            var items = db.requestEntries(lib.id);
+            var items = db.requestEntries(lib.id, lib.type);
             if(configuration.resolveTvdb() && lib.type == LibraryType.SERIES) {
                 items.addAll(db.requestTvSeriesRoot(lib.id));
                 items.addAll(db.requestTvSeasonRoot(lib.id));

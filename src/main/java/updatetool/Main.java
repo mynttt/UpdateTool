@@ -30,11 +30,7 @@ import de.mynttt.ezconf.ConfigurationValidator.ValidationContext;
 import de.mynttt.ezconf.EzConf;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import updatetool.api.Implementation;
-import updatetool.common.AbstractApi;
-import updatetool.common.TmdbApi;
-import updatetool.common.TvdbApi;
 import updatetool.common.Utility;
-import updatetool.exceptions.ApiCallFailedException;
 
 public class Main {
     public static final Path PWD = Paths.get(".");
@@ -199,35 +195,6 @@ public class Main {
             for(var f : files)
                 Files.delete(f);
         }
-    }
-    
-    public static void testApiTmdb(String apikeyTmdb) throws Exception {
-        Logger.info("Testing TMDB API key: " + apikeyTmdb);
-        var api = new TmdbApi(apikeyTmdb);
-        genericApiTest(api);
-    }
-    
-    public static void testApiTvdb(String key) {
-        Logger.info("Testing TVDB API authorization: apikey={}", key);
-        try {
-            new TvdbApi(key);
-        } catch(ApiCallFailedException e) {
-            Logger.error("API Test failed: " + e.getMessage());
-            Logger.error("Keys available under: https://thetvdb.com/");
-            System.exit(-1);
-        }
-        Logger.info("Test passed. API Key is valid.");
-    }
-
-    private static void genericApiTest(AbstractApi api) throws Exception {
-        var response = api.testApi();
-        if(response.statusCode() != 200) {
-            Logger.error("API Test failed: Code " + response.statusCode());
-            Logger.error("Payload:" + response.body());
-            Logger.error("Key available under:" + api.keysWhere());
-            System.exit(-1);
-        }
-        Logger.info("Test passed. API Key is valid.");
     }
 }
 

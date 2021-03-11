@@ -28,11 +28,11 @@ import updatetool.api.ExportedRating;
 import updatetool.api.Pipeline;
 import updatetool.common.Capabilities;
 import updatetool.common.DatabaseSupport.LibraryType;
+import updatetool.common.externalapis.TmdbApiV3;
+import updatetool.common.externalapis.TvdbApiV3;
 import updatetool.common.ErrorReports;
 import updatetool.common.KeyValueStore;
 import updatetool.common.SqliteDatabaseProvider;
-import updatetool.common.TmdbApi;
-import updatetool.common.TvdbApi;
 import updatetool.common.Utility;
 import updatetool.exceptions.ApiCallFailedException;
 import updatetool.exceptions.DatabaseLockedException;
@@ -40,10 +40,8 @@ import updatetool.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
 import updatetool.imdb.ImdbRatingDatasetFactory.ImdbRatingDataset;
 import updatetool.imdb.resolvement.DefaultResolvement;
 import updatetool.imdb.resolvement.ImdbResolvement;
-import updatetool.imdb.resolvement.NewPlexMovieAgentToImdbResolvement;
-import updatetool.imdb.resolvement.NewPlexTvShowAgentToImdbResolvement;
-import updatetool.imdb.resolvement.TmdbSeriesToImdbResolvement;
-import updatetool.imdb.resolvement.TmdbMovieToImdbResolvement;
+import updatetool.imdb.resolvement.NewPlexAgentToImdbResolvement;
+import updatetool.imdb.resolvement.TmdbToImdbResolvement;
 import updatetool.imdb.resolvement.TvdbToImdbResolvement;
 
 public class ImdbPipeline extends Pipeline<ImdbJob> {
@@ -94,14 +92,22 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         this.metadata = metadata;
         this.configuration = configuration;
         this.dataset = dataset;
-        resolveMovies.put("IMDB", new ImdbResolvement());
-        resolveMovies.put("TMDB", configuration.resolveTmdb() ? new TmdbMovieToImdbResolvement(caches.get("tmdb"), new TmdbApi(configuration.tmdbApiKey)) : resolveDefault);
-        resolveMovies.put("NPMA", new NewPlexMovieAgentToImdbResolvement(caches.get("new-agent-mapping"), resolveMovies.get("TMDB") instanceof TmdbMovieToImdbResolvement ? (TmdbMovieToImdbResolvement) resolveMovies.get("TMDB") : null));
         
-        resolveSeries.put("TVDB", configuration.resolveTvdb() ? new TvdbToImdbResolvement(caches.get("tvdb"), caches.get("tvdb-blacklist"), new TvdbApi(configuration.tvdbApiKey)) : resolveDefault);
-        resolveSeries.put("TMDB", configuration.resolveTmdb() ? new TmdbSeriesToImdbResolvement(caches.get("tmdb-series"), caches.get("tmdb-series-blacklist"), new TmdbApi(configuration.tmdbApiKey)) : resolveDefault);
+        var tmdbResolver = configuration.resolveTmdb() ? new TmdbToImdbResolvement(new TmdbApiV3(configuration.tmdbApiKey,caches.get("tmdb-series"), caches.get("tmdb"), caches.get("tmdb-series-blacklist"), caches.get("tmdb-blacklist"))) : resolveDefault;
+        var tvdbResolver = configuration.resolveTvdb() ? new TvdbToImdbResolvement(new TvdbApiV3(configuration.tvdbApiKey, caches.get("tvdb-blacklist"), caches.get("tvdb"), caches.get("tvdb-movie"), caches.get("tvdb-movie-blacklist"))) : resolveDefault;
+        
+        TmdbToImdbResolvement r1 = tmdbResolver == resolveDefault ? null : (TmdbToImdbResolvement) tmdbResolver;
+        TvdbToImdbResolvement r2 = tvdbResolver == resolveDefault ? null : (TvdbToImdbResolvement) tvdbResolver;
+        var newAgentResolver = new NewPlexAgentToImdbResolvement(caches.get("new-agent-mapping"), r1, r2);
+        
+        resolveMovies.put("IMDB", new ImdbResolvement());
+        resolveMovies.put("TMDB", tmdbResolver);
+        resolveMovies.put("NPMA", newAgentResolver);
+        
+        resolveSeries.put("TVDB", tvdbResolver);
+        resolveSeries.put("TMDB", tmdbResolver);
         resolveSeries.put("IMDB", new ImdbResolvement());
-        resolveSeries.put("NPSA", new NewPlexTvShowAgentToImdbResolvement(caches.get("new-agent-mapping")));
+        resolveSeries.put("NPSA", newAgentResolver);
         
         resolvers.put(LibraryType.MOVIE, resolveMovies);
         resolvers.put(LibraryType.SERIES, resolveSeries);

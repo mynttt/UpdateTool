@@ -9,9 +9,11 @@ import java.util.List;
 import java.util.Objects;
 import org.sqlite.SQLiteException;
 import org.tinylog.Logger;
+import updatetool.Globals;
 import updatetool.common.KeyValueStore;
 import updatetool.common.SqliteDatabaseProvider;
 import updatetool.common.Utility;
+import updatetool.common.DatabaseSupport.LibraryType;
 
 public class ImdbDatabaseSupport {
     private final SqliteDatabaseProvider provider;
@@ -29,13 +31,17 @@ public class ImdbDatabaseSupport {
     public static class ImdbMetadataResult {
       //Id will be resolved in the pipeline and not here
         public String imdbId, extractedId;
-        public final String title, hash;
-        public final Integer id, libraryId;
+        public String title, hash;
+        public Integer id, libraryId;
         public String extraData, guid;
         public Double rating, audienceRating;
         public boolean resolved;
+        public LibraryType type;
         
-        private ImdbMetadataResult(ResultSet rs) throws SQLException {
+        public ImdbMetadataResult() {};
+        
+        private ImdbMetadataResult(ResultSet rs, LibraryType type) throws SQLException {
+            this.type = type;
             id = rs.getInt(1);
             libraryId = rs.getInt(2);
             guid = rs.getString(3);
@@ -65,30 +71,30 @@ public class ImdbDatabaseSupport {
 
         @Override
         public String toString() {
-            return "ImdbMetadataResult [imdbId=" + imdbId + ", extractedId=" + extractedId + ", guid=" + guid
-                    + ", title=" + title + ", hash=" + hash + ", id=" + id + ", libraryId=" + libraryId + ", extraData="
-                    + extraData + ", rating=" + rating + ", audienceRating=" + audienceRating + ", resolved=" + resolved
-                    + "]";
+            return "ImdbMetadataResult [imdbId=" + imdbId + ", extractedId=" + extractedId + ", title=" + title
+                    + ", hash=" + hash + ", id=" + id + ", libraryId=" + libraryId + ", extraData=" + extraData
+                    + ", guid=" + guid + ", rating=" + rating + ", audienceRating=" + audienceRating + ", resolved="
+                    + resolved + ", type=" + type + "]";
         }
     }
 
-    public List<ImdbMetadataResult> requestEntries(long libraryId) {
-        return requestMetadata("SELECT id, library_section_id, guid, title, extra_data, hash, rating, audience_rating from metadata_items WHERE media_item_count = 1 AND library_section_id = " + libraryId);
+    public List<ImdbMetadataResult> requestEntries(long libraryId, LibraryType type) {
+        return requestMetadata("SELECT id, library_section_id, guid, title, extra_data, hash, rating, audience_rating from metadata_items WHERE media_item_count = 1 AND library_section_id = " + libraryId, type);
     }
 
     public List<ImdbMetadataResult> requestTvSeriesRoot(long libraryId) {
-        return requestMetadata("SELECT id, library_section_id, guid, title, extra_data, hash, rating, audience_rating from metadata_items WHERE media_item_count = 0 AND parent_id IS NULL AND library_section_id = " + libraryId);
+        return requestMetadata("SELECT id, library_section_id, guid, title, extra_data, hash, rating, audience_rating from metadata_items WHERE media_item_count = 0 AND parent_id IS NULL AND library_section_id = " + libraryId, LibraryType.SERIES);
     }
     
     public List<ImdbMetadataResult> requestTvSeasonRoot(long libraryId) {
-        return requestMetadata("SELECT id, library_section_id, guid, title, extra_data, hash, rating, audience_rating from metadata_items WHERE media_item_count = 0 AND parent_id NOT NULL AND library_section_id = " + libraryId);
+        return requestMetadata("SELECT id, library_section_id, guid, title, extra_data, hash, rating, audience_rating from metadata_items WHERE media_item_count = 0 AND parent_id NOT NULL AND library_section_id = " + libraryId, LibraryType.SERIES);
     }
     
-    private List<ImdbMetadataResult> requestMetadata(String query) {        
+    private List<ImdbMetadataResult> requestMetadata(String query, LibraryType type) {        
         try(var handle = provider.queryFor(query)){
             List<ImdbMetadataResult> list = new ArrayList<>();
             while(handle.result().next()) {
-                var m = new ImdbMetadataResult(handle.result());
+                var m = new ImdbMetadataResult(handle.result(), type);
                 updateNewAgentMetadataMapping(m);
                 list.add(m);
             }
@@ -102,7 +108,7 @@ public class ImdbDatabaseSupport {
         if(newAgentMapping == null)
             return;
         
-        if(!ImdbTransformer.isNewAgent(m))
+        if(!Globals.isNewAgent(m))
             return;
         
         String v = newAgentMapping.lookup(m.guid);
@@ -134,7 +140,7 @@ public class ImdbDatabaseSupport {
                                  oldAgent = new ArrayList<>();
         
         items.forEach(i -> {
-            if(ImdbTransformer.isNewAgent(i)) {
+            if(Globals.isNewAgent(i)) {
                 newAgent.add(i);
             } else {
                 oldAgent.add(i);

@@ -1,4 +1,4 @@
-package updatetool.common;
+package updatetool.common.externalapis;
 
 import java.io.IOException;
 import java.net.URI;
@@ -10,8 +10,15 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
+import updatetool.common.Utility;
+import updatetool.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
 
 public abstract class AbstractApi {
+    
+    public enum ApiVersion {
+        TMDB_V3, TMDB_V4, TVDB_V3, TVDB_V4;
+    }
+    
     private final HttpClient client;
 
     public AbstractApi() {
@@ -20,10 +27,10 @@ public abstract class AbstractApi {
                 .connectTimeout(Duration.ofMillis(2000))
                 .build();
     }
-
-    public abstract HttpResponse<String> testApi() throws Exception;
-    public abstract String keysWhere();
-
+    
+    public abstract void resolveImdbIdForItem(ImdbMetadataResult result);
+    public abstract ApiVersion version();
+    
     protected final HttpRequest get(String url) {
         try {
             return HttpRequest.newBuilder(new URI(url))
@@ -48,5 +55,6 @@ public abstract class AbstractApi {
     protected HttpResponse<String> send(HttpRequest request) throws IOException, InterruptedException {
         return client.send(request, BodyHandlers.ofString());
     }
-
+    
+    
 }

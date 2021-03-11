@@ -1,3 +1,7 @@
+## 1.5.1
+- TVDB fallback for movies in the new Plex Movie Agent
+- Refactoring to support TVDB v4 in a future update
+
 ## 1.5.0
 - First support for new TV Show Agent (right now only items that have the IMDB ID embedded within the Plex database will be changed -> support for TVDB/TMDB only resolvable items will come soon as for the TVDB resolvable items an update to the new v4 API has to be implemented first).
 - This feature is opt-in which means you'll have to add the library IDs to the environment variable `UNLOCK_FOR_NEW_TV_AGENT`. Refer to more information to the main README.

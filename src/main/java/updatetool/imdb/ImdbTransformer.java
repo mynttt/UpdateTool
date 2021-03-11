@@ -1,26 +1,18 @@
 package updatetool.imdb;
 
+import static updatetool.Globals.NEW_IMDB;
+import static updatetool.Globals.OLD_IMDB;
+import static updatetool.Globals.STRIP;
+import static updatetool.Globals.isNewAgent;
 import static updatetool.common.Utility.areEqualDouble;
 import static updatetool.common.Utility.doubleToOneDecimalString;
-import java.util.List;
 import java.util.Map;
 import org.tinylog.Logger;
 import updatetool.api.ExportedRating;
 import updatetool.common.ExtraData;
-import updatetool.common.Pair;
 import updatetool.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
 
 public class ImdbTransformer {
-    
-    private static final Pair<String, String> 
-        NEW_TMDB = Pair.of("at:audienceRatingImage", "themoviedb://image.rating"),
-        NEW_IMDB = Pair.of("at:audienceRatingImage", "imdb://image.rating"),
-        NEW_TVDB = Pair.of("at:audienceRatingImage", "thetvdb://image.rating"),
-        ROTTEN_A = Pair.of("at:audienceRatingImage", "rottentomatoes://image.rating.upright"),
-        ROTTEN_R = Pair.of("at:ratingImage", "rottentomatoes://image.rating.ripe"),
-        OLD_IMDB = Pair.of("at:ratingImage", "imdb://image.rating");
-    
-    private static final List<Pair<String, String>> STRIP = List.of(NEW_TMDB, ROTTEN_A, ROTTEN_R, NEW_TVDB);
     
     public static boolean needsUpdate(Map.Entry<ImdbMetadataResult, ExportedRating> check) {
         var meta = check.getKey();
@@ -85,12 +77,5 @@ public class ImdbTransformer {
             return null;
         String numbers = ImdbUtility.extractId(ImdbUtility.NUMERIC, imdbId);
         return "tt"+numbers;
-    }
-    
-    public static boolean isNewAgent(ImdbMetadataResult meta) {
-        return meta.guid.startsWith("plex://movie/") || 
-               meta.guid.startsWith("plex://season/") || 
-               meta.guid.startsWith("plex://episode/") || 
-               meta.guid.startsWith("plex://show/");
     }
 }

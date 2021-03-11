@@ -27,6 +27,8 @@ import updatetool.common.KeyValueStore;
 import updatetool.common.SqliteDatabaseProvider;
 import updatetool.common.State;
 import updatetool.common.Utility;
+import updatetool.common.externalapis.TmdbApiV3;
+import updatetool.common.externalapis.TvdbApiV3;
 import updatetool.exceptions.ApiCallFailedException;
 import updatetool.exceptions.ImdbDatasetAcquireException;
 import updatetool.imdb.ImdbPipeline.ImdbPipelineConfiguration;
@@ -95,7 +97,8 @@ public class ImdbDockerImplementation extends Implementation {
             Logger.info("No TMDB API key detected. Will not process TMDB backed Movie and TV Series libraries and TMDB orphans.");
             capabilities.remove(Capabilities.TMDB);
         } else {
-            Main.testApiTmdb(apikeyTmdb);
+            //TODO: switch between v3/v4
+            new TmdbApiV3(apikeyTmdb, null, null, null, null);
             Logger.info("TMDB API key enabled TMDB <=> IMDB matching. Will process TMDB backed Movie and TV Series libraries and TMDB orphans.");
         }
         
@@ -113,7 +116,8 @@ public class ImdbDockerImplementation extends Implementation {
             Logger.info("No TVDB API authorization string detected. Will process TVDB backed TV Series libraries.");
             capabilities.remove(Capabilities.TVDB);
         } else {
-            Main.testApiTvdb(tvdbApiKey);
+            //TODO: switch between v3/v4
+            new TvdbApiV3(tvdbApiKey, null, null, null, null);
             apiauthTvdb = tvdbApiKey;
             Logger.info("TVDB API authorization enabled IMDB rating update for TV Series with the TVDB agent.");
         }
@@ -124,11 +128,14 @@ public class ImdbDockerImplementation extends Implementation {
         Logger.info("Plex data dir: " + plexdata.toAbsolutePath().toString());
 
         var state = State.recoverImdb(STATE_IMDB);
-        var caches = Map.of("tmdb", KeyValueStore.of(Main.PWD.resolve("cache-tmdb2imdb.json")), 
+        var caches = Map.of("tmdb", KeyValueStore.of(Main.PWD.resolve("cache-tmdb2imdb.json")),
+                            "tmdb-blacklist", KeyValueStore.of(Main.PWD.resolve("cache-tmdbBlacklist.json")),
                             "tmdb-series", KeyValueStore.of(Main.PWD.resolve("cache-tmdbseries2imdb.json")),
                             "tmdb-series-blacklist", KeyValueStore.of(Main.PWD.resolve("cache-tmdbseriesBlacklist.json")),
                             "tvdb", KeyValueStore.of(Main.PWD.resolve("cache-tvdb2imdb.json")),
                             "tvdb-blacklist", KeyValueStore.of(Main.PWD.resolve("cache-tvdbBlacklist.json")),
+                            "tvdb-movie", KeyValueStore.of(Main.PWD.resolve("cache-tvdbMovie.json")),
+                            "tvdb-movie-blacklist", KeyValueStore.of(Main.PWD.resolve("cache-tvdbMovieBlacklist.json")),
                             "new-agent-mapping", KeyValueStore.of(Main.PWD.resolve("new-agent-mapping.json")));
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -201,6 +208,8 @@ public class ImdbDockerImplementation extends Implementation {
         public void run() {
             KeyValueStore.expiredCheck(14, caches.get("tvdb-blacklist"));
             KeyValueStore.expiredCheck(14, caches.get("tmdb-series-blacklist"));
+            KeyValueStore.expiredCheck(14, caches.get("tmdb-blacklist"));
+            KeyValueStore.expiredCheck(14, caches.get("tvdb-movie-blacklist"));
             
             List<Library> libraries = new ArrayList<>();
             ImdbLibraryMetadata metadata = null;

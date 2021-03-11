@@ -7,7 +7,7 @@ import java.util.List;
 public enum Capabilities {
     TMDB, TVDB, NO_TV, NO_MOVIE, VERBOSE_XML_ERROR_LOG;
     
-    private static List<Capabilities> USER_FLAGS = List.of(NO_MOVIE, NO_TV);
+    private static final List<Capabilities> USER_FLAGS = List.of(NO_MOVIE, NO_TV);
 
     public static List<Capabilities> getUserFlags() {
         return USER_FLAGS;
