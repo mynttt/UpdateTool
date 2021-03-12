@@ -63,7 +63,7 @@ public class TvdbApiV3 extends AbstractApi implements TvdbApi {
     
     @SuppressFBWarnings("DM_EXIT")
     public TvdbApiV3(String key, KeyValueStore blacklist, KeyValueStore cache, KeyValueStore cacheMovie, KeyValueStore blacklistMovie) throws ApiCallFailedException {
-        Logger.info("Testing TVDB API (v3) authorization: apikey={}", key);
+        Logger.info("Testing TVDB API (v3) authorization apikey: {}", key);
         
         try {
             authToken = "Bearer " + auth(key);
@@ -110,7 +110,8 @@ public class TvdbApiV3 extends AbstractApi implements TvdbApi {
         Converter<String, String> converterMovie = resp -> null;
         
         Handler<String, String, ImdbMetadataResult> handlerMovie = (resp, res, payload) -> {
-            String error = CTX.parse(resp.body()).read("$.Error");
+            var doc = CTX.parse(resp.body());
+            String error = doc.read("$.Error");
             if(error != null) {
                 Logger.error("TVDB movie item (v3) {} with id {} reported error: {}", payload.title, payload.extractedId, error);
                 blacklistMovie.cache(payload.extractedId, "");
@@ -119,7 +120,7 @@ public class TvdbApiV3 extends AbstractApi implements TvdbApi {
             
             String imdbId;
             try {
-                imdbId = (String) ((JSONArray) CTX.parse(resp.body()).read("$..remoteids[?(@.source_id == 2)].id")).get(0);
+                imdbId = (String) ((JSONArray) doc.read("$..remoteids[?(@.source_id == 2)].id")).get(0);
             } catch(Exception e) {
                 return RunnerResult.ofSuccess(res);
             }

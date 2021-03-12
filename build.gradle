@@ -5,7 +5,7 @@ plugins {
     id 'com.github.spotbugs' version '2.0.1'
 }
 
-version = '1.5.1'
+version = '1.5.2'
 sourceCompatibility = '11'
 
 new File(projectDir, "VERSION").text = version;
@@ -29,6 +29,9 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.tinylog/tinylog-impl
     implementation group: 'org.tinylog', name: 'tinylog-impl', version: '2.0.1'
+    
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
+    implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30'
     
     // https://mvnrepository.com/artifact/de.mynttt/ezconf
     implementation group: 'de.mynttt', name: 'ezconf', version: '1.1.0'

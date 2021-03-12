@@ -37,6 +37,7 @@ public class ImdbDatabaseSupport {
         public Double rating, audienceRating;
         public boolean resolved;
         public LibraryType type;
+        public boolean hasEpisodeAgentFlag;
         
         public ImdbMetadataResult() {};
         
@@ -50,6 +51,7 @@ public class ImdbDatabaseSupport {
             hash = rs.getString(6);
             rating = (Double) rs.getObject(7);
             audienceRating = (Double) rs.getObject(8);
+            hasEpisodeAgentFlag = guid.startsWith("plex://episode");
         }
 
         @Override

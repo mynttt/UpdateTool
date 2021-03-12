@@ -1,6 +1,5 @@
 package updatetool.imdb;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
@@ -25,16 +24,16 @@ import updatetool.common.DatabaseSupport;
 import updatetool.common.DatabaseSupport.Library;
 import updatetool.common.KeyValueStore;
 import updatetool.common.SqliteDatabaseProvider;
-import updatetool.common.State;
 import updatetool.common.Utility;
+import updatetool.common.externalapis.AbstractApi.ApiVersion;
 import updatetool.common.externalapis.TmdbApiV3;
 import updatetool.common.externalapis.TvdbApiV3;
+import updatetool.common.externalapis.TvdbApiV4;
 import updatetool.exceptions.ApiCallFailedException;
 import updatetool.exceptions.ImdbDatasetAcquireException;
 import updatetool.imdb.ImdbPipeline.ImdbPipelineConfiguration;
 
 public class ImdbDockerImplementation extends Implementation {
-    private static final Path STATE_IMDB = Main.PWD.resolve("state-imdb.json");
     private static final Set<Long> IGNORE_LIBRARIES = new HashSet<>(),
                                    UNLOCK_FOR_NEW_TV_AGENT = new HashSet<>();
     
@@ -116,10 +115,14 @@ public class ImdbDockerImplementation extends Implementation {
             Logger.info("No TVDB API authorization string detected. Will process TVDB backed TV Series libraries.");
             capabilities.remove(Capabilities.TVDB);
         } else {
-            //TODO: switch between v3/v4
-            new TvdbApiV3(tvdbApiKey, null, null, null, null);
+            ApiVersion version;
+            if(tvdbApiKey.length() == 32) {
+                version = new TvdbApiV3(tvdbApiKey, null, null, null, null).version();
+            } else {
+                version = new TvdbApiV4(tvdbApiKey, null, null, null, null, null).version();
+            }
             apiauthTvdb = tvdbApiKey;
-            Logger.info("TVDB API authorization enabled IMDB rating update for TV Series with the TVDB agent.");
+            Logger.info("TVDB API ({}) authorization enabled IMDB rating update for TV Series with the TVDB agent.", version);
         }
 
         runEveryNhour = Utility.parseHourIntOrFallback(args.get("schedule"), runEveryNhour, id + " {schedule}");
@@ -127,7 +130,6 @@ public class ImdbDockerImplementation extends Implementation {
         Logger.info("Starting IMDB Watchdog");
         Logger.info("Plex data dir: " + plexdata.toAbsolutePath().toString());
 
-        var state = State.recoverImdb(STATE_IMDB);
         var caches = Map.of("tmdb", KeyValueStore.of(Main.PWD.resolve("cache-tmdb2imdb.json")),
                             "tmdb-blacklist", KeyValueStore.of(Main.PWD.resolve("cache-tmdbBlacklist.json")),
                             "tmdb-series", KeyValueStore.of(Main.PWD.resolve("cache-tmdbseries2imdb.json")),
@@ -136,7 +138,8 @@ public class ImdbDockerImplementation extends Implementation {
                             "tvdb-blacklist", KeyValueStore.of(Main.PWD.resolve("cache-tvdbBlacklist.json")),
                             "tvdb-movie", KeyValueStore.of(Main.PWD.resolve("cache-tvdbMovie.json")),
                             "tvdb-movie-blacklist", KeyValueStore.of(Main.PWD.resolve("cache-tvdbMovieBlacklist.json")),
-                            "new-agent-mapping", KeyValueStore.of(Main.PWD.resolve("new-agent-mapping.json")));
+                            "new-agent-mapping", KeyValueStore.of(Main.PWD.resolve("new-agent-mapping.json")),
+                            "tvdb-legacy-mapping", KeyValueStore.of(Main.PWD.resolve("tvdb-legacy-mapping.json")));
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
@@ -146,18 +149,6 @@ public class ImdbDockerImplementation extends Implementation {
                 Logger.error(e);
             }
         }));
-
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try {
-                State.dump(STATE_IMDB, state);
-            } catch (IOException e) {
-                Logger.error("Failed to save state.");
-                Logger.error(e);
-            }
-        }));
-
-        if(!state.isEmpty())
-            Logger.info("Loaded " + state.size() + " unfinished job(s).\n");
         
         if(ignore != null && !ignore.isBlank()) {
             String[] candidates = ignore.split(";");
@@ -185,21 +176,19 @@ public class ImdbDockerImplementation extends Implementation {
         
         var dbLocation = plexdata.resolve("Plug-in Support/Databases/com.plexapp.plugins.library.db").toAbsolutePath().toString();
         var config = new ImdbPipelineConfiguration(apikeyTmdb, apiauthTvdb, plexdata.resolve("Metadata/Movies"), dbLocation, capabilities);
-        job = new ImdbBatchJob(Main.EXECUTOR, config, plexdata, caches, state, capabilities);
+        job = new ImdbBatchJob(Main.EXECUTOR, config, plexdata, caches, capabilities);
     }
 
     private static class ImdbBatchJob implements Runnable {
         private final ImdbPipelineConfiguration config;
         private final ExecutorService service;
         private final Map<String, KeyValueStore> caches;
-        private final Set<ImdbJob> state;
         private final EnumSet<Capabilities> capabilities;
         
-        public ImdbBatchJob(ExecutorService service, ImdbPipelineConfiguration config, Path plexdata, Map<String, KeyValueStore> caches, Set<ImdbJob> state, EnumSet<Capabilities> capabilities) {
+        public ImdbBatchJob(ExecutorService service, ImdbPipelineConfiguration config, Path plexdata, Map<String, KeyValueStore> caches, EnumSet<Capabilities> capabilities) {
             this.service = service;
             this.config = config;
             this.caches = caches;
-            this.state = state;
             this.capabilities = capabilities;
         }
 
@@ -210,6 +199,7 @@ public class ImdbDockerImplementation extends Implementation {
             KeyValueStore.expiredCheck(14, caches.get("tmdb-series-blacklist"));
             KeyValueStore.expiredCheck(14, caches.get("tmdb-blacklist"));
             KeyValueStore.expiredCheck(14, caches.get("tvdb-movie-blacklist"));
+            KeyValueStore.expiredCheck(1, caches.get("tvdb-legacy-mapping"));
             
             List<Library> libraries = new ArrayList<>();
             ImdbLibraryMetadata metadata = null;
@@ -265,7 +255,6 @@ public class ImdbDockerImplementation extends Implementation {
                     Logger.info("Job returned " + result.code + " : " + result.userDefinedMessage);
                     if(result.code == StatusCode.PASS) {
                         Logger.info("Job finished successfully for [{}] {} with UUID {}", job.libraryType, job.library, job.uuid);
-                        state.remove(job);
                     }
                     if(result.code == StatusCode.API_ERROR) {
                         Logger.error(result.userDefinedMessage);

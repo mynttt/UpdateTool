@@ -30,6 +30,7 @@ import updatetool.common.Capabilities;
 import updatetool.common.DatabaseSupport.LibraryType;
 import updatetool.common.externalapis.TmdbApiV3;
 import updatetool.common.externalapis.TvdbApiV3;
+import updatetool.common.externalapis.TvdbApiV4;
 import updatetool.common.ErrorReports;
 import updatetool.common.KeyValueStore;
 import updatetool.common.SqliteDatabaseProvider;
@@ -69,6 +70,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         private final EnumSet<Capabilities> capabilities;
         public final String tmdbApiKey, tvdbApiKey, dbLocation;
         public final Path metadataRoot;
+        public final boolean isTvdbV4;
         
         public ImdbPipelineConfiguration(String tmdbApiKey, String tvdbApiKey, Path metadataRoot, String dbLocation, EnumSet<Capabilities> capabilities) {
             this.tmdbApiKey = tmdbApiKey;
@@ -76,6 +78,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
             this.metadataRoot = metadataRoot;
             this.dbLocation = dbLocation;
             this.capabilities =  capabilities;
+            this.isTvdbV4 = resolveTvdb() ? tvdbApiKey.length() != 32 : false;
         }
 
         public boolean resolveTmdb() {
@@ -94,7 +97,10 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         this.dataset = dataset;
         
         var tmdbResolver = configuration.resolveTmdb() ? new TmdbToImdbResolvement(new TmdbApiV3(configuration.tmdbApiKey,caches.get("tmdb-series"), caches.get("tmdb"), caches.get("tmdb-series-blacklist"), caches.get("tmdb-blacklist"))) : resolveDefault;
-        var tvdbResolver = configuration.resolveTvdb() ? new TvdbToImdbResolvement(new TvdbApiV3(configuration.tvdbApiKey, caches.get("tvdb-blacklist"), caches.get("tvdb"), caches.get("tvdb-movie"), caches.get("tvdb-movie-blacklist"))) : resolveDefault;
+        var tvdbResolver = configuration.resolveTvdb() ? new TvdbToImdbResolvement(configuration.isTvdbV4 
+                ? new TvdbApiV4(configuration.tvdbApiKey, caches.get("tvdb"), caches.get("tvdb-blacklist"), caches.get("tvdb-movie"), caches.get("tvdb-movie-blacklist"), caches.get("tvdb-legacy-mapping"))
+                : new TvdbApiV3(configuration.tvdbApiKey, caches.get("tvdb"), caches.get("tvdb-blacklist"), caches.get("tvdb-movie"), caches.get("tvdb-movie-blacklist"))) 
+                : resolveDefault;
         
         TmdbToImdbResolvement r1 = tmdbResolver == resolveDefault ? null : (TmdbToImdbResolvement) tmdbResolver;
         TvdbToImdbResolvement r2 = tvdbResolver == resolveDefault ? null : (TvdbToImdbResolvement) tvdbResolver;

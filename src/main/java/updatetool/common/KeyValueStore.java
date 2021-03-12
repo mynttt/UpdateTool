@@ -10,6 +10,11 @@ import com.google.gson.Gson;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class KeyValueStore {
+    @Override
+    public String toString() {
+        return "KeyValueStore [map=" + map + "]";
+    }
+
     private final HashMap<String, String> map = new HashMap<>();
     private final Path p;
     

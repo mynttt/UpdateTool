@@ -1,3 +1,7 @@
+## 1.5.2
+- TVDB v4 API is now supported. To use it just supply the PIN as the TVDB API key.
+- To keep using v3 just use your legacy API key.
+
 ## 1.5.1
 - TVDB fallback for movies in the new Plex Movie Agent
 - Refactoring to support TVDB v4 in a future update
