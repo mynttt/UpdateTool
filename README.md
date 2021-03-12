@@ -12,9 +12,9 @@ A tool to update the IMDB ratings for Plex libraries that contain movies via the
 
 ## Important
 
-**TVDB lookup only works with legacy keys right now. TVDB is going paywall now. Support for the new API (v4) is given probably in the span of the next weeks (time written: 9th March 2021)**
+**TVDB is now supported with both v3/v4 APIs. Just supply your legacy API key or v4 Pin and the tool will automatically choose the correct API!**
 
-**This tool works with the new Plex TV Show agent. The support is limited however and fallbacks for TVDB/TMDB will come as soon as the new v4 API is implemented. This feature is a opt-in so please read more here [more here](#opt-in-for-libraries-using-the-new-tv-show-agent)!**
+**This tool works with the new Plex TV Show agent. The fallback support however is limited and only supports TVDB v4 and not TMDB v3 right now. This feature is a opt-in so please read more here [more here](#opt-in-for-libraries-using-the-new-tv-show-agent)!**
 
 **While the DB issues are fixed now and using this tool is likely safe to use and never caused issues for myself and a large part of the user base it shall still be noted that this tool should be used with caution and that I'm not responsible for any damages within your PMS database. The database interaction of this tool is minimal and within the milliseconds realm and the queries are executed cleanly by using SQLite's transactions.**
 
@@ -60,7 +60,7 @@ Docker is on [dockerhub](https://hub.docker.com/r/mynttt/updatetool) | [UnRaid i
 Name | Description
 :-------------------------:|:-------------------------:|
 TMDB_API_KEY|Enables TMDB Movie/Series library processing
-TVDB_API_KEY|Enables TVDB Series library processing
+TVDB_API_KEY|Enables TVDB Series library processing using either the v3 legacy key or the v4 pin
 UNLOCK_FOR_NEW_TV_AGENT|Opt-in for libraries using the new TV Show agent. All libraries that are opted-in this way will have their ratings changed to IMDB ratings by this tool ([more here](#opt-in-for-libraries-using-the-new-tv-show-agent))
 IGNORE_LIBS|Ignore libraries with certain IDs ([more here](#Ignore-libraries-from-being-updated))
 CAPABILITIES|Custom flags for the tool ([more here](#supply-custom-capability-flags))
