@@ -57,6 +57,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
         preLogPurge();
         Class.forName("org.sqlite.JDBC");
+        Mitigations.executeMitigations();
         
         Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
             Logger.error("Uncaught " + e.getClass().getSimpleName() + " exception encountered...");

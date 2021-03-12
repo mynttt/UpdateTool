@@ -1,3 +1,6 @@
+## 1.5.3
+- One time mitigation added to combat cache name typo fix via cache reset
+
 ## 1.5.2
 - TVDB v4 API is now supported. To use it just supply the PIN as the TVDB API key.
 - To keep using v3 just use your legacy API key.
