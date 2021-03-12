@@ -41,7 +41,7 @@ public final class Mitigations {
         
         Arrays.stream(reset).map(String::strip).forEach(p -> {
             try {
-                Files.delete(Main.PWD.resolve(p));
+                Files.deleteIfExists(Main.PWD.resolve(p));
             } catch (IOException e) {
                 e.printStackTrace();
             }
