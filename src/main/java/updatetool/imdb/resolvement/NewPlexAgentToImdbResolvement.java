@@ -39,7 +39,6 @@ public class NewPlexAgentToImdbResolvement implements AgentResolvementStrategy<I
             return true;
         } else if(candidate.startsWith("tmdb")) {
             if(fallbackTmdb == null) {
-                Logger.warn("TMDB id associated with new plex {} agent guid but no TMDB resolvement enabled. Ignoring item: ({}, {}, {})", toResolve.type, candidate, toResolve.guid, toResolve.title);
                 return false;
             }
             
@@ -54,7 +53,6 @@ public class NewPlexAgentToImdbResolvement implements AgentResolvementStrategy<I
             return success;
         } else if(candidate.startsWith("tvdb")) {
             if(fallbackTvdb == null) {
-                Logger.warn("TVDB id associated with new plex {} agent guid but no TVDB resolvement enabled. Ignoring item: ({}, {}, {})", toResolve.type, candidate, toResolve.guid, toResolve.title);
                 return false;
             }
             

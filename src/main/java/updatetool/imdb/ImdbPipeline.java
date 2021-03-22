@@ -96,7 +96,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         this.configuration = configuration;
         this.dataset = dataset;
         
-        var tmdbResolver = configuration.resolveTmdb() ? new TmdbToImdbResolvement(new TmdbApiV3(configuration.tmdbApiKey,caches.get("tmdb-series"), caches.get("tmdb"), caches.get("tmdb-series-blacklist"), caches.get("tmdb-blacklist"))) : resolveDefault;
+        var tmdbResolver = configuration.resolveTmdb() ? new TmdbToImdbResolvement(new TmdbApiV3(configuration.tmdbApiKey, caches.get("tmdb-series"), caches.get("tmdb"), caches.get("tmdb-series-blacklist"), caches.get("tmdb-blacklist"))) : resolveDefault;
         var tvdbResolver = configuration.resolveTvdb() ? new TvdbToImdbResolvement(configuration.isTvdbV4 
                 ? new TvdbApiV4(configuration.tvdbApiKey, caches.get("tvdb"), caches.get("tvdb-blacklist"), caches.get("tvdb-movie"), caches.get("tvdb-movie-blacklist"), caches.get("tvdb-legacy-mapping"))
                 : new TvdbApiV3(configuration.tvdbApiKey, caches.get("tvdb"), caches.get("tvdb-blacklist"), caches.get("tvdb-movie"), caches.get("tvdb-movie-blacklist"))) 

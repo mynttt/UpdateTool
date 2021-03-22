@@ -62,7 +62,7 @@ public class TvdbApiV3 extends AbstractApi implements TvdbApi {
     private class Token { String token; };
     
     @SuppressFBWarnings("DM_EXIT")
-    public TvdbApiV3(String key, KeyValueStore blacklist, KeyValueStore cache, KeyValueStore cacheMovie, KeyValueStore blacklistMovie) throws ApiCallFailedException {
+    public TvdbApiV3(String key, KeyValueStore cache, KeyValueStore blacklist, KeyValueStore cacheMovie, KeyValueStore blacklistMovie) throws ApiCallFailedException {
         Logger.info("Testing TVDB API (v3) authorization apikey: {}", key);
         
         try {
@@ -79,7 +79,9 @@ public class TvdbApiV3 extends AbstractApi implements TvdbApi {
         this.blacklistMovie = blacklistMovie;
         this.cacheMovie = cacheMovie;
         
-        Converter<String, UnmarshalTvdb> converter = resp -> Objects.requireNonNull(gson.fromJson(resp.body(), UnmarshalTvdb.class));
+        Converter<String, UnmarshalTvdb> converter = resp -> {
+            return Objects.requireNonNull(gson.fromJson(resp.body(), UnmarshalTvdb.class));
+        };
         
         Handler<String, UnmarshalTvdb, ImdbMetadataResult> handler = (resp, res, payload) -> {
             if(res.Error != null) {

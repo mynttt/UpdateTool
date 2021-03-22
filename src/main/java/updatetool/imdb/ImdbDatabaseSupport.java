@@ -5,15 +5,18 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import org.sqlite.SQLiteException;
 import org.tinylog.Logger;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import updatetool.Globals;
+import updatetool.common.DatabaseSupport.LibraryType;
 import updatetool.common.KeyValueStore;
 import updatetool.common.SqliteDatabaseProvider;
 import updatetool.common.Utility;
-import updatetool.common.DatabaseSupport.LibraryType;
 
 public class ImdbDatabaseSupport {
     private final SqliteDatabaseProvider provider;
@@ -125,10 +128,11 @@ public class ImdbDatabaseSupport {
                     result = id;
             }
         }
-        
+                
         if(result != null) {
-            newAgentMapping.cache(m.guid, result);
-            Logger.info("Associated and cached {} with new movie agent guid {} ({}).", result, m.guid, m.title);
+            if(newAgentMapping.cache(m.guid, result)) {
+                Logger.info("Associated and cached {} with new movie agent guid {} ({}).", result, m.guid, m.title);
+            }
         } else {
             Logger.warn("No external metadata provider id associated with this guid {} ({}). This item will not be processed any further.", m.guid, m.title);
         }
@@ -160,44 +164,129 @@ public class ImdbDatabaseSupport {
         }
     }
     
+    private static final String ICU_MIG_1 = "fts4_metadata_titles_after_update_icu";
+    private static final String ICU_MIG_2 = "fts4_metadata_titles_before_update_icu";
+    private static final String ICU_MIG_1_SQL = "CREATE TRIGGER fts4_metadata_titles_after_update_icu AFTER UPDATE ON metadata_items BEGIN INSERT INTO fts4_metadata_titles_icu(docid, title, title_sort, original_title) VALUES(new.rowid, new.title, new.title_sort, new.original_title); END";
+    private static final String ICU_MIG_2_SQL = "CREATE TRIGGER fts4_metadata_titles_before_update_icu BEFORE UPDATE ON metadata_items BEGIN DELETE FROM fts4_metadata_titles_icu WHERE docid=old.rowid; END";
+    
+    @SuppressFBWarnings({"DM_EXIT", "REC_CATCH_EXCEPTION", "OBL_UNSATISFIED_OBLIGATION", "DE_MIGHT_IGNORE"})
     private void internalBatchUpdate(List<ImdbMetadataResult> items, boolean isNewAgent) {
         boolean success = true;
-        try(var s = provider.connection.prepareStatement(isNewAgent ? "UPDATE metadata_items SET audience_rating = ?, extra_data = ?, rating = NULL WHERE id = ?" 
-                : "UPDATE metadata_items SET rating = ?, extra_data = ? WHERE id = ?")) {
-            for(var item : items) {
-                Double d = isNewAgent ? item.audienceRating : item.rating;
-                
-                //TODO: hotfix, investigate further only happened to one person over the entire tool lifetime
-                if(d == null) {
-                    Logger.error("Null value encountered. Should not be possible. Skipping entry to not crash tool. Contact maintainer with this dump: " + Objects.toString(item));
-                    continue;
+        boolean mitigationIcuNeeded, mitigationIcuTriggersDisabled = false;
+        List<AutoCloseable> close = new ArrayList<>();
+        
+        try {
+            
+            // Mitigation
+            var mitigationIcu = provider.connection.createStatement();
+            close.add(mitigationIcu);
+            var rs = mitigationIcu.executeQuery("SELECT name, sql FROM sqlite_master WHERE type = 'trigger' AND name = '" + ICU_MIG_1 + "' OR name = '" + ICU_MIG_2 + "';");
+            Map<String, String> storedSql = new HashMap<>();
+            while(rs.next()) {
+                storedSql.put(rs.getString(1), rs.getString(2));
+            }
+            rs.close();
+            
+            int count = storedSql.size();
+            if(!(count == 2 || count == 0)) {
+                throw new UnsupportedOperationException("@@!!! INCONSISTENT TRIGGER COUNT STATE !!!@@ - Parameters for ICU SQLite3 Mitigation have changed! Contact the author of this tool immediatly and create a github issue here and include the output of '.schema metadata_items' on your SQLite3 PlexDB: https://github.com/mynttt/UpdateTool/issues");
+            }
+            
+            mitigationIcuNeeded = count == 2;
+            Logger.info("PlexDB ICU Mitigation enabled: {}", mitigationIcuNeeded);
+            
+            if(mitigationIcuNeeded) {
+                if(!Objects.equals(ICU_MIG_1_SQL, storedSql.get(ICU_MIG_1)) || !Objects.equals(ICU_MIG_2_SQL, storedSql.get(ICU_MIG_2))) {
+                    Logger.error("IS  : {}",storedSql.get(ICU_MIG_1));
+                    Logger.error("MUST: {}",ICU_MIG_1_SQL);
+                    Logger.error("IS  : {}",storedSql.get(ICU_MIG_2));
+                    Logger.error("MUST: {}",ICU_MIG_2_SQL);
+                    throw new UnsupportedOperationException("@@!!! INCONSISTENT TRIGGER STATE !!!@@ - Parameters for ICU SQLite3 Mitigation have changed! Contact the author of this tool immediatly and create a github issue here and include the output of '.schema metadata_items' on your SQLite3 PlexDB: https://github.com/mynttt/UpdateTool/issues");
                 }
                 
-                s.setDouble(1, d);
-                s.setString(2, item.extraData);
-                s.setInt(3, item.id);
-                s.addBatch();
+                var s1 = provider.connection.createStatement();
+                close.add(s1);
+                s1.executeUpdate("DROP TRIGGER fts4_metadata_titles_before_update_icu;");
+                var s2 = provider.connection.createStatement();
+                close.add(s2);
+                s2.executeUpdate("DROP TRIGGER fts4_metadata_titles_after_update_icu;");
+                mitigationIcuTriggersDisabled = true;
             }
-            int[] records = s.executeBatch();
-            for(int c : records) {
-                if (c == Statement.EXECUTE_FAILED) {
-                    Logger.error("Batch Update failed: " + c + " | All: " + Arrays.toString(records));
-                    success = false;
-                    break;
+            
+            try(var s = provider.connection.prepareStatement(isNewAgent ? "UPDATE metadata_items SET audience_rating = ?, extra_data = ?, rating = NULL WHERE id = ?" 
+                    : "UPDATE metadata_items SET rating = ?, extra_data = ? WHERE id = ?")) {
+                for(var item : items) {
+                    Double d = isNewAgent ? item.audienceRating : item.rating;
+                    
+                    //TODO: hotfix, investigate further only happened to one person over the entire tool lifetime
+                    if(d == null) {
+                        Logger.error("Null value encountered. Should not be possible. Skipping entry to not crash tool. Contact maintainer with this dump: " + Objects.toString(item));
+                        continue;
+                    }
+                    
+                    s.setDouble(1, d);
+                    s.setString(2, item.extraData);
+                    s.setInt(3, item.id);
+                    s.addBatch();
+                }
+                int[] records = s.executeBatch();
+                for(int c : records) {
+                    if (c == Statement.EXECUTE_FAILED) {
+                        Logger.error("Batch Update failed: " + c + " | All: " + Arrays.toString(records));
+                        success = false;
+                        break;
+                    }
+                }
+            } catch (SQLException e) {
+                success = false;
+                throw Utility.rethrow(e);
+            } finally {
+                try {
+                    if(success) {
+                        provider.connection.commit();
+                    } else {
+                        provider.connection.rollback();
+                    }
+                } catch(SQLException e) {
+                    throw Utility.rethrow(e);
                 }
             }
-        } catch (SQLException e) {
-            success = false;
+        } catch(Exception e) {
             throw Utility.rethrow(e);
         } finally {
-            try {
-                if(success) {
-                    provider.connection.commit();
-                } else {
-                    provider.connection.rollback();
+            for(AutoCloseable a : close) {
+                try {
+                    a.close();
+                } catch (Exception e) {}
+                close.clear();
+            }
+            
+            if(mitigationIcuTriggersDisabled) {
+                try {
+                    var s1 = provider.connection.createStatement();
+                    close.add(s1);
+                    s1.executeUpdate(ICU_MIG_1_SQL);
+                    var s2 = provider.connection.createStatement();
+                    close.add(s2);
+                    s2.executeUpdate(ICU_MIG_2_SQL);
+                } catch (SQLException ex) {
+                    Logger.error(ex);
+                    Logger.error("======================================");
+                    Logger.error("WARNING!!! COULD NOT RESTORE DISABLED TRIGGERS IN ICU MITIGATION!!!");
+                    Logger.error("RUN THE QUERIES BELOW ON YOUR PLEX DATABASE TO RESTORE TRIGGERS!");
+                    Logger.error("======================================");
+                    Logger.error(ICU_MIG_1_SQL);
+                    Logger.error(ICU_MIG_2_SQL);
+                    Logger.error("======================================");
+                    Logger.error("TOOL WILL EXIT NOW! DON'T USE BEVORE HAVING EXECUTED THESE COMMANDS!");
+                    System.exit(-1);
+                } finally {
+                    for(AutoCloseable a : close) {
+                        try {
+                            a.close();
+                        } catch (Exception e) {}
+                    }
                 }
-            } catch(SQLException e) {
-                throw Utility.rethrow(e);
             }
         }
     }

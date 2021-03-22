@@ -1,3 +1,11 @@
+## 1.5.4
+- Removed spammy messages in resolvement log
+- Better handling for mitigation system
+- Added mitigation for Plex ICU database change -> **USE ON YOUR OWN RISK UNTIL TESTED FIERCELY BY THE COMMUNITY!**
+- Mitigation works by removing two database triggers before updating the ratings and adding them immediatly after again to bypass an SQLite crash due to no ICU extension included in the sqlite-jdbc build
+- Bumped id error resolvement caching up to 30 days as most resolvement errors are 404s of dead shows anyways
+- Fixed spammy "cached new movie agent xxx id message" that should not appear once an id has been cached
+
 ## 1.5.3
 - One time mitigation added to combat cache name typo fix via cache reset
 

@@ -45,8 +45,18 @@ public class KeyValueStore {
         return map.get(key);
     }
 
-    public synchronized void cache(String key, String value) {
-        map.put(key, value);
+    public synchronized boolean cache(String key, String value) {
+        return map.put(key, value) == null;
+    }
+    
+    public synchronized boolean remove(String key) {
+        return map.remove(key) != null;
+    }
+    
+    public synchronized KeyValueStore withChangedPath(Path p) {
+        var kv = new KeyValueStore(p);
+        kv.map.putAll(this.map);
+        return kv;
     }
     
     public synchronized void reset() {

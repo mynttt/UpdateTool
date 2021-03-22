@@ -116,7 +116,8 @@ public class ImdbDockerImplementation extends Implementation {
             capabilities.remove(Capabilities.TVDB);
         } else {
             ApiVersion version;
-            if(tvdbApiKey.length() == 32) {
+            if(tvdbApiKey.length() >= 32) {
+                tvdbApiKey = tvdbApiKey.trim();
                 version = new TvdbApiV3(tvdbApiKey, null, null, null, null).version();
             } else {
                 version = new TvdbApiV4(tvdbApiKey, null, null, null, null, null).version();
@@ -195,11 +196,11 @@ public class ImdbDockerImplementation extends Implementation {
         @Override
         @SuppressFBWarnings("DM_EXIT")
         public void run() {
-            KeyValueStore.expiredCheck(14, caches.get("tvdb-blacklist"));
-            KeyValueStore.expiredCheck(14, caches.get("tmdb-series-blacklist"));
-            KeyValueStore.expiredCheck(14, caches.get("tmdb-blacklist"));
-            KeyValueStore.expiredCheck(14, caches.get("tvdb-movie-blacklist"));
-            KeyValueStore.expiredCheck(1, caches.get("tvdb-legacy-mapping"));
+            KeyValueStore.expiredCheck(30, caches.get("tvdb-blacklist"));
+            KeyValueStore.expiredCheck(30, caches.get("tmdb-series-blacklist"));
+            KeyValueStore.expiredCheck(30, caches.get("tmdb-blacklist"));
+            KeyValueStore.expiredCheck(30, caches.get("tvdb-movie-blacklist"));
+            KeyValueStore.expiredCheck(3, caches.get("tvdb-legacy-mapping"));
             
             List<Library> libraries = new ArrayList<>();
             ImdbLibraryMetadata metadata = null;

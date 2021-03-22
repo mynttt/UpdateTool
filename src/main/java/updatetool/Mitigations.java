@@ -8,12 +8,39 @@ import updatetool.common.KeyValueStore;
 
 public final class Mitigations {
     private static final KeyValueStore MITIGATIONS = KeyValueStore.of(Main.PWD.resolve("mitigations.json"));
+    private static final int VERSION = Integer.parseInt(Main.VERSION.replaceAll("(\\.|[A-Za-z]|\\-)", ""));
     
     private Mitigations() {};
     
     public static void executeMitigations() {
         executeTypoSwitchCacheResetMitigation();
+        executeCacheParameterWrongOrderMitigation();
         MITIGATIONS.dump();
+    }
+    
+    private static void executeCacheParameterWrongOrderMitigation() {
+        String KEY = "executeCacheParameterWrongOrderMitigation";
+        
+        if(MITIGATIONS.lookup(KEY) != null)
+            return;
+        
+        if(VERSION > 154) {
+            MITIGATIONS.cache(KEY, "");
+            return;
+        }
+        
+        Logger.info("One time mitigation executed: Switched caches in function parameter require conversion.");
+        Logger.info("This mitigation will only be executed once.");
+        
+        var actualBlacklist = KeyValueStore.of(Main.PWD.resolve("cache-tvdb2imdb.json"));
+        var actualCache = KeyValueStore.of(Main.PWD.resolve("cache-tvdbBlacklist.json"));
+        actualCache.remove("__EXPIRE");
+        
+        actualCache.withChangedPath(Main.PWD.resolve("cache-tvdb2imdb.json")).dump();
+        actualBlacklist.withChangedPath(Main.PWD.resolve("cache-tvdbBlacklist.json")).dump();
+        
+        Logger.info("Mitigation completed!");
+        MITIGATIONS.cache(KEY, "");
     }
     
     private static void executeTypoSwitchCacheResetMitigation() {
@@ -21,6 +48,11 @@ public final class Mitigations {
         
         if(MITIGATIONS.lookup(KEY) != null)
             return;
+        
+        if(VERSION > 151) {
+            MITIGATIONS.cache(KEY, "");
+            return;
+        }
         
         Logger.info("One time mitigation executed: Typo in cache names requires a full cache reset.");
         Logger.info("This mitigation will only be executed once.");
