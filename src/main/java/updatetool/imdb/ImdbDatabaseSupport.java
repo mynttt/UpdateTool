@@ -258,8 +258,8 @@ public class ImdbDatabaseSupport {
                 try {
                     a.close();
                 } catch (Exception e) {}
-                close.clear();
             }
+            close.clear();
             
             if(mitigationIcuTriggersDisabled) {
                 try {
