@@ -200,8 +200,12 @@ public class App extends Application {
             env.put("TVDB_API_KEY", tvdbKey.getText());
         if(!ignoreLibs.getText().isBlank())
             env.put("IGNORE_LIBS", ignoreLibs.getText().trim().replace(",", ";"));
-        if(!tvshowoptin.getText().isBlank())
-            env.put("UNLOCK_FOR_NEW_TV_AGENT", tvshowoptin.getText().trim().replace(",", ";"));
+        if(tvshowoptin.getText() != null) {
+            if(!tvshowoptin.getText().isBlank())
+                env.put("UNLOCK_FOR_NEW_TV_AGENT", tvshowoptin.getText().trim().replace(",", ";"));
+        } else {
+            tvshowoptin.setText("");
+        }
         
         List<String> c = new ArrayList<>();
         if(ignoreTv.isSelected())
