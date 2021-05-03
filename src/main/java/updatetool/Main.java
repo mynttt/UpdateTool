@@ -34,7 +34,7 @@ import updatetool.common.Utility;
 
 public class Main {
     public static final Path PWD = Paths.get(".");
-    public static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(5, new ThreadFactoryBuilder().setDaemon(true).build());
+    public static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(6, new ThreadFactoryBuilder().setDaemon(true).build());
     
     private static final Map<String, Implementation> IMPLEMENTATIONS = new HashMap<>();
     private static final Scheduler SCHEDULER = new Scheduler();

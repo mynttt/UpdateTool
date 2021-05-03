@@ -69,6 +69,11 @@ public class TvdbApiV4 extends AbstractApi implements TvdbApi {
             try {
                 imdbId = (String) ((JSONArray) doc.read("$..remoteIds[?(@.type == 2)].id")).get(0);
             } catch(Exception e) {
+                if(payload.type == LibraryType.MOVIE) {
+                    blacklistMovie.cache(payload.extractedId, "");
+                } else {
+                    blacklist.cache(payload.extractedId, "");
+                }
                 return RunnerResult.ofSuccess(res);
             }
             
@@ -234,14 +239,28 @@ public class TvdbApiV4 extends AbstractApi implements TvdbApi {
         result.extractedId = ImdbUtility.extractId(ImdbUtility.TVDB_TMDB_SERIES_MATCHING, result.guid);
         
         if(result.extractedId == null) {
-            Logger.error("Item: {} is detected as TVDB (v3) but has no id. (guid={})", result.title, result.guid);
+            Logger.error("Item: {} is detected as TVDB (v3/v4) but has no id. (guid={})", result.title, result.guid);
             return;
         }
         
+        String[] parts = result.extractedId.split("/");
+
+        // Detect legacy seasons
+        if(parts.length == 2)
+            return;
+        
         var cache = result.type == LibraryType.MOVIE ? cacheMovie : this.cache;
         var lookup = cache.lookup(result.extractedId);
+        
         if(lookup != null) {
             result.imdbId = lookup;
+            result.resolved = true;
+            return;
+        }
+        
+        var legacyLookup = legacyMapping.lookup(result.extractedId);
+        if(legacyLookup != null) {
+            result.imdbId = legacyLookup;
             result.resolved = true;
             return;
         }
@@ -250,8 +269,6 @@ public class TvdbApiV4 extends AbstractApi implements TvdbApi {
         if(blacklist.lookup(result.extractedId) != null) {
             return;
         }
-        
-        String[] parts = result.extractedId.split("/");
         
         // v3 series episode lookup
         if(parts.length == 3) {

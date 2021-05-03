@@ -241,9 +241,9 @@ public class ImdbDockerImplementation extends Implementation {
                 return;
             }
             
-            try {
+            try(var scraper = new ImdbScraper()) {
                 var jobs = new ArrayDeque<ImdbJob>();
-                var pipeline = new ImdbPipeline(metadata, service, caches, config, ImdbRatingDatasetFactory.requestSet());
+                var pipeline = new ImdbPipeline(metadata, service, caches, config, ImdbRatingDatasetFactory.requestSet(), scraper);
                 var runner = new ImdbJobRunner();
                 for(var lib : libraries) {
                     jobs.add(new ImdbJob(lib));

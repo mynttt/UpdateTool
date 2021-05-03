@@ -159,8 +159,8 @@ public class ImdbDatabaseSupport {
         }
         
         if(!oldAgent.isEmpty()) {
-            internalBatchUpdate(oldAgent, false);
             Logger.info("Running batch update for {} items with old plex agent.", oldAgent.size());
+            internalBatchUpdate(oldAgent, false);
         }
     }
     

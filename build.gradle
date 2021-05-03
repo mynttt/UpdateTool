@@ -5,7 +5,7 @@ plugins {
     id 'com.github.spotbugs' version '2.0.1'
 }
 
-version = '1.5.4'
+version = '1.5.5'
 sourceCompatibility = '11'
 
 new File(projectDir, "VERSION").text = version;
@@ -35,6 +35,9 @@ dependencies {
     
     // https://mvnrepository.com/artifact/de.mynttt/ezconf
     implementation group: 'de.mynttt', name: 'ezconf', version: '1.1.0'
+    
+    // https://mvnrepository.com/artifact/org.jsoup/jsoup
+    implementation group: 'org.jsoup', name: 'jsoup', version: '1.13.1'
 
     compileOnly group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: '3.1.12'
     

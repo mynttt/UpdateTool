@@ -28,13 +28,13 @@ import updatetool.api.ExportedRating;
 import updatetool.api.Pipeline;
 import updatetool.common.Capabilities;
 import updatetool.common.DatabaseSupport.LibraryType;
-import updatetool.common.externalapis.TmdbApiV3;
-import updatetool.common.externalapis.TvdbApiV3;
-import updatetool.common.externalapis.TvdbApiV4;
 import updatetool.common.ErrorReports;
 import updatetool.common.KeyValueStore;
 import updatetool.common.SqliteDatabaseProvider;
 import updatetool.common.Utility;
+import updatetool.common.externalapis.TmdbApiV3;
+import updatetool.common.externalapis.TvdbApiV3;
+import updatetool.common.externalapis.TvdbApiV4;
 import updatetool.exceptions.ApiCallFailedException;
 import updatetool.exceptions.DatabaseLockedException;
 import updatetool.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
@@ -58,6 +58,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
     private static final int RETRY_N_SECONDS_IF_DB_LOCKED = 20;
     private static final int ABORT_DB_LOCK_WAITING_AFTER_N_RETRIES = 500;
 
+    private final ImdbScraper scraper;
     private final ImdbLibraryMetadata metadata;
     private final ExecutorService service;
     private final ImdbRatingDataset dataset;
@@ -90,11 +91,12 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         }
     }
     
-    public ImdbPipeline(ImdbLibraryMetadata metadata, ExecutorService service, Map<String, KeyValueStore> caches, ImdbPipelineConfiguration configuration, ImdbRatingDataset dataset) throws ApiCallFailedException {
+    public ImdbPipeline(ImdbLibraryMetadata metadata, ExecutorService service, Map<String, KeyValueStore> caches, ImdbPipelineConfiguration configuration, ImdbRatingDataset dataset, ImdbScraper scraper) throws ApiCallFailedException {
         this.service = service;
         this.metadata = metadata;
         this.configuration = configuration;
         this.dataset = dataset;
+        this.scraper = scraper;
         
         var tmdbResolver = configuration.resolveTmdb() ? new TmdbToImdbResolvement(new TmdbApiV3(configuration.tmdbApiKey, caches.get("tmdb-series"), caches.get("tmdb"), caches.get("tmdb-series-blacklist"), caches.get("tmdb-blacklist"))) : resolveDefault;
         var tvdbResolver = configuration.resolveTvdb() ? new TvdbToImdbResolvement(configuration.isTvdbV4 
@@ -162,8 +164,12 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
     @Override
     public void transformMetadata(ImdbJob job) throws Exception {
         var map = new HashMap<ImdbMetadataResult, ExportedRating>();
-        job.items.forEach(i -> map.put(i, dataset.getRatingFor(ImdbTransformer.clean(i.imdbId))));
+        job.items.forEach(i -> map.put(i, dataset.getRatingFor(ImdbTransformer.clean(i.imdbId), scraper)));
+        
+        // Threading not possible because of IMDB rate limit
+        map.values().forEach(ExportedRating::ensureAvailability);
         var noUpdate = map.entrySet().stream().filter(Predicate.not(ImdbTransformer::needsUpdate)).collect(Collectors.toSet());
+        
         if(!noUpdate.isEmpty()) {
             Logger.info(noUpdate.size() + " item(s) need no update.");
             for(var item : noUpdate) {

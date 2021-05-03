@@ -16,6 +16,7 @@ import updatetool.common.Utility;
 import updatetool.exceptions.ImdbDatasetAcquireException;
 
 public final class ImdbRatingDatasetFactory {
+    public static final String SCRAPE_FAILED = "SCRAPE_FAILED";
     
     private static URL urlExceptionHack() {
         try {
@@ -33,12 +34,46 @@ public final class ImdbRatingDatasetFactory {
 
     private ImdbRatingDatasetFactory() {}
     
+    public static class ScreenScrapedRating implements ExportedRating {
+        private String rating, imdbId;
+        private ImdbScraper scraper;
+        
+        public ScreenScrapedRating(String rating, String imdbId, ImdbScraper scraper) {
+            this.rating = rating;
+            this.imdbId = imdbId;
+            this.scraper = scraper;
+        }
+
+        @Override
+        public String exportRating() {
+            return rating;
+        }
+
+        @Override
+        public void ensureAvailability() {
+            if(rating == null) {
+                try {
+                    var scraped = scraper.scrapeFallback(imdbId);
+                    String scrapedRating = scraped == null ? SCRAPE_FAILED  : scraped;
+                    this.rating = scrapedRating;
+                } catch (Exception e) {
+                    Logger.error(e.getClass().getSimpleName() + " exception encountered @ Screen Scraping");
+                    Logger.error("Please contact the maintainer of the application with the stacktrace below if you think this is unwanted behavior.");
+                    Logger.error("========================================");
+                    Logger.error(e);
+                    Logger.error("========================================");
+                }
+            }
+        }
+        
+    }
+    
     public static class ImdbRatingDataset {
         private HashMap<String, String> data = new HashMap<>();
 
-        public ExportedRating getRatingFor(String imdbId) {
+        public ExportedRating getRatingFor(String imdbId, ImdbScraper scraper) {
             String rating = data.get(imdbId);
-            return () -> rating;
+            return new ScreenScrapedRating(rating, imdbId, scraper);
         }
     }
 

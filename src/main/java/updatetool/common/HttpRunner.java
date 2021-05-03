@@ -49,7 +49,7 @@ public class HttpRunner<B, R, P> {
             this.defaultHandler = defaultHandler == null 
                     ? (body, result, payload) 
                         -> {
-                            Logger.error("{} : Unhandled HTTP Error [response={}]", identifier, body);
+                            Logger.error("{} : Unhandled HTTP Error [response={} | payload={}]", identifier, body, body.body());
                             return RunnerResult.ofFailure(result);
                         }
                     : defaultHandler;
@@ -123,14 +123,14 @@ public class HttpRunner<B, R, P> {
                 ex = e;
                 Logger.warn("{} : HTTP request failed or pipeline processing error ({}). [{}/{}] => {}",
                         identifier, e.getClass().getSimpleName(), i+1, maxTries, e.getMessage());
-                Logger.warn("{} : Dumping HTTP response => {}", response);
+                Logger.warn("{} : Dumping HTTP response => {} | Payload: {}", response, response.body());
             }
         }
         
         if(ex != null)
             throw Utility.rethrow(ex);
         
-        Logger.error("{} : Failed to resolve in {} tries. No custom handlers specified.");
+        Logger.error("{} : Failed to resolve in {} tries. No custom handlers specified.", identifier, maxTries);
         return RunnerResult.ofFailure(response == null ? null : converter.convert(response));
     }
     
