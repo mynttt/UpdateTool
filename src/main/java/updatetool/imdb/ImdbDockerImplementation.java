@@ -116,7 +116,7 @@ public class ImdbDockerImplementation extends Implementation {
             capabilities.remove(Capabilities.TVDB);
         } else {
             ApiVersion version;
-            if(tvdbApiKey.length() >= 32) {
+            if(tvdbApiKey.length() == 16 || tvdbApiKey.length() >= 32) {
                 tvdbApiKey = tvdbApiKey.trim();
                 version = new TvdbApiV3(tvdbApiKey, null, null, null, null).version();
             } else {

@@ -1,3 +1,6 @@
+## 1.5.6
+- support for 16 char TVDB v3 keys
+
 ## 1.5.5
 - Added webscraper fuctionality with cache (7 days for existing items / 30 day ignore for not rated yet / permanent ignore for 404s) in case the IMDB rating set does not contain the rating for an entry to prevent `Ignoring: 'xyz' with IMDB ID: tt12345 supplies no valid rating := 'null'` situations
 
