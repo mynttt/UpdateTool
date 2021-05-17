@@ -1,3 +1,6 @@
+## 1.5.6b
+- bugfix regarding support for 16 char TVDB v3 keys
+
 ## 1.5.6
 - support for 16 char TVDB v3 keys
 

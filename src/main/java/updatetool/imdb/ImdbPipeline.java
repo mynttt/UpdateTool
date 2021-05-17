@@ -79,7 +79,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
             this.metadataRoot = metadataRoot;
             this.dbLocation = dbLocation;
             this.capabilities =  capabilities;
-            this.isTvdbV4 = resolveTvdb() ? tvdbApiKey.length() != 32 : false;
+            this.isTvdbV4 = resolveTvdb() ? !(tvdbApiKey.length() == 16 || tvdbApiKey.length() >= 32) : false;
         }
 
         public boolean resolveTmdb() {

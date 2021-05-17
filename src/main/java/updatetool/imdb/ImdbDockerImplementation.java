@@ -112,7 +112,7 @@ public class ImdbDockerImplementation extends Implementation {
         }
         
         if(tvdbApiKey == null || tvdbApiKey.isBlank()) {
-            Logger.info("No TVDB API authorization string detected. Will process TVDB backed TV Series libraries.");
+            Logger.info("No TVDB API authorization string detected. Will not process TVDB backed Movie and TV Series libraries.");
             capabilities.remove(Capabilities.TVDB);
         } else {
             ApiVersion version;
@@ -123,7 +123,7 @@ public class ImdbDockerImplementation extends Implementation {
                 version = new TvdbApiV4(tvdbApiKey, null, null, null, null, null).version();
             }
             apiauthTvdb = tvdbApiKey;
-            Logger.info("TVDB API ({}) authorization enabled IMDB rating update for TV Series with the TVDB agent.", version);
+            Logger.info("TVDB API ({}) authorization enabled IMDB rating update for Movies and TV Series with the TVDB agent.", version);
         }
 
         runEveryNhour = Utility.parseHourIntOrFallback(args.get("schedule"), runEveryNhour, id + " {schedule}");
