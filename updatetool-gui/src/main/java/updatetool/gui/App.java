@@ -167,7 +167,7 @@ public class App extends Application {
             if(!version.equals(v) || !Files.exists(APPLICATION_CONFIG.resolve("tool.jar"))) {
                 runLater(() -> log.appendText("Version not up to date. Downloading: " + v + "\n"));
                 runLater(() -> status.setText("Tool download..."));
-                download(String.format(JAR, version, version), APPLICATION_CONFIG.resolve("tool.jar"));
+                download(String.format(JAR, v, v), APPLICATION_CONFIG.resolve("tool.jar"));
                 Files.writeString(APPLICATION_CONFIG.resolve("V"), v, StandardCharsets.UTF_8);
                 runLater(() -> log.appendText("Download completed.\n"));
             } else {
