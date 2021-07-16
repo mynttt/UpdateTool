@@ -65,7 +65,7 @@ UNLOCK_FOR_NEW_TV_AGENT|Opt-in for libraries using the new TV Show agent. All li
 IGNORE_LIBS|Ignore libraries with certain IDs ([more here](#Ignore-libraries-from-being-updated))
 CAPABILITIES|Custom flags for the tool ([more here](#supply-custom-capability-flags))
 JVM_MAX_HEAP|Specify max. heap allocatable by the JVM (default 256m). Can be useful if you have a really large library (40000+ items) and you run in memory related crashes. Must be specified in bytes (i.e. 256m, 1g, 2g, 512m)
-OVERRIDE_DATABASE_LOCATION|Overrides the path where UpdateTool looks for the Plex database. The database needs to be contained in this folder. Useful if a docker container uses a volume and a different path structure.
+OVERRIDE_DATABASE_LOCATION|Overrides the path where UpdateTool looks for the Plex database. The database needs to be contained in this folder. Useful if a docker container uses a volume and a different path structure. ([more here](#override-the-database-location)
 
 Deprecated variables can still be used although their usage is discouraged.
 
