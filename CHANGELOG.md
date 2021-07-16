@@ -1,3 +1,6 @@
+## 1.5.8
+- Added `OVERRIDE_DATABASE_LOCATION` environment variable in case that the `Plex Media Folder/Plug-in Support/Databases/*.db` folder structure is violated. (Folder needs to contain the database file tho! You can't change the name of that (yet)).
+
 ## 1.5.7
 - Database corruption mitigation reworked in order to support newer plex versions
 - Added some library processing details for easier debugging of potential future issues

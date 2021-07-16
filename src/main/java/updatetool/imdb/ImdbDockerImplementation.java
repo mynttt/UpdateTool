@@ -2,6 +2,7 @@ package updatetool.imdb;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,6 +57,7 @@ public class ImdbDockerImplementation extends Implementation {
         String ignore = System.getenv("IGNORE_LIBS");
         String capabilitiesEnv = System.getenv("CAPABILITIES");
         String unlockForNewTvAgent = System.getenv("UNLOCK_FOR_NEW_TV_AGENT");
+        String overrideDatabaseLocation = System.getenv("OVERRIDE_DATABASE_LOCATION");
         
         EnumSet<Capabilities> capabilities = EnumSet.allOf(Capabilities.class);
         final List<Capabilities> parsed = new ArrayList<>();
@@ -175,9 +177,16 @@ public class ImdbDockerImplementation extends Implementation {
 
         Logger.info("Capabilities: " + capabilities.toString());
         
-        var dbLocation = plexdata.resolve("Plug-in Support/Databases/com.plexapp.plugins.library.db").toAbsolutePath().toString();
+        var dbLocation = getDatabaseLocation(plexdata, overrideDatabaseLocation).toAbsolutePath().toString();
         var config = new ImdbPipelineConfiguration(apikeyTmdb, apiauthTvdb, plexdata.resolve("Metadata/Movies"), dbLocation, capabilities);
         job = new ImdbBatchJob(Main.EXECUTOR, config, plexdata, caches, capabilities);
+    }
+    
+    private static Path getDatabaseLocation(Path plexdata, String env) {
+        if(env == null)
+            return plexdata.resolve("Plug-in Support/Databases/com.plexapp.plugins.library.db");
+        Logger.info("Custom path specified @ {}", env);
+        return Paths.get(env).resolve("com.plexapp.plugins.library.db");
     }
 
     private static class ImdbBatchJob implements Runnable {

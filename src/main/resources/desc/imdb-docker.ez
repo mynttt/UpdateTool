@@ -17,6 +17,9 @@ meta {
              | (Optional) CAPABILITIES: Specify special settings for the tool. Must be entered as a ';' seperated string.
              |            Currently available: [NO_TV, NO_MOVIE]
              |            Example: NO_TV;NO_MOVIE => renders this tool useless
+             | (Optional) OVERRIDE_DATABASE_LOCATION: Override the path where the Plex database is stored.
+             |            Useful for example if the PLEX_FOLDER/Plug-in Support/Databases folder structure is violated (Docker Volumes i.e.).
+             |            Example: OVERRIDE_DATABASE_LOCATION=/volume1/@appstore/PlexMediaServer/Resources (uses DB in Resources folder).
              |
              | Parameters:
              |   - schedule = if present will schedule this task every n hour(s) : must be > 0 : default 12
