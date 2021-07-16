@@ -1,3 +1,7 @@
+## 1.5.7
+- Database corruption mitigation reworked in order to support newer plex versions
+- Added some library processing details for easier debugging of potential future issues
+
 ## 1.5.6b
 - bugfix regarding support for 16 char TVDB v3 keys
 

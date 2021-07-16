@@ -211,6 +211,15 @@ public class ImdbDockerImplementation extends Implementation {
                     libraries.addAll(support.requestMovieLibraries(capabilities));
                 if(!capabilities.contains(Capabilities.NO_TV))
                     libraries.addAll(support.requestSeriesLibraries(capabilities));
+                
+                if(libraries.isEmpty()) {
+                    Logger.error("FATAL ERROR :: NO LIBRARIES EXIST IN DATABASE. EXITING NOW.");
+                    System.exit(-1);
+                }
+                
+                Logger.info("LIBRARIES => PRE LIBRARY FILTERING");
+                libraries.forEach(l -> Logger.info("Found library {} (ID={}) with agent: {} and {} item(s).", l.name, l.id, l.agent, l.items));
+                
                 libraries.removeIf(l -> IGNORE_LIBRARIES.contains(l.id));
                 libraries.removeIf(l -> {
                     if(!l.agent.equals("tv.plex.agents.series"))
@@ -221,6 +230,9 @@ public class ImdbDockerImplementation extends Implementation {
                     }
                     return false;
                 });
+                
+                Logger.info("LIBRARIES => POST LIBRARY FILTERING");
+                libraries.forEach(l -> Logger.info("Will process library {} (ID={}) with agent: {} and {} item(s).", l.name, l.id, l.agent, l.items));
                 metadata = ImdbLibraryMetadata.fetchAll(libraries, new ImdbDatabaseSupport(connection, caches.get("new-agent-mapping")), config); 
             } catch(Exception e) {
                 Logger.error(e.getClass().getSimpleName() + " exception encountered...");
