@@ -96,7 +96,13 @@ public final class ExtraData {
                     value = kv[1].trim();
                 }
                 
-                u.mapping.put(URLDecoder.decode(key, StandardCharsets.UTF_8), URLDecoder.decode(value, StandardCharsets.UTF_8));
+                try { 
+                    u.mapping.put(URLDecoder.decode(key, StandardCharsets.UTF_8), URLDecoder.decode(value, StandardCharsets.UTF_8));
+                } catch(Exception e) {
+                    Logger.error("Tried to decode [KEY] := '{}'", key);
+                    Logger.error("Tried to decode [VALUE] := '{}'", value);
+                    throw Utility.rethrow(e);
+                }
             }
         }
         
