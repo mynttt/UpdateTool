@@ -58,6 +58,7 @@ public class ImdbDockerImplementation extends Implementation {
         String capabilitiesEnv = System.getenv("CAPABILITIES");
         String unlockForNewTvAgent = System.getenv("UNLOCK_FOR_NEW_TV_AGENT");
         String overrideDatabaseLocation = System.getenv("OVERRIDE_DATABASE_LOCATION");
+        String executeUpdatesOverPlexSqliteVersion = System.getenv("USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS");
         
         EnumSet<Capabilities> capabilities = EnumSet.allOf(Capabilities.class);
         final List<Capabilities> parsed = new ArrayList<>();
@@ -178,7 +179,7 @@ public class ImdbDockerImplementation extends Implementation {
         Logger.info("Capabilities: " + capabilities.toString());
         
         var dbLocation = getDatabaseLocation(plexdata, overrideDatabaseLocation).toAbsolutePath().toString();
-        var config = new ImdbPipelineConfiguration(apikeyTmdb, apiauthTvdb, plexdata.resolve("Metadata/Movies"), dbLocation, capabilities);
+        var config = new ImdbPipelineConfiguration(apikeyTmdb, apiauthTvdb, plexdata.resolve("Metadata/Movies"), dbLocation, executeUpdatesOverPlexSqliteVersion, capabilities);
         job = new ImdbBatchJob(Main.EXECUTOR, config, plexdata, caches, capabilities);
     }
     
@@ -242,7 +243,7 @@ public class ImdbDockerImplementation extends Implementation {
                 
                 Logger.info("LIBRARIES => POST LIBRARY FILTERING");
                 libraries.forEach(l -> Logger.info("Will process library {} (ID={}) with agent: {} and {} item(s).", l.name, l.id, l.agent, l.items));
-                metadata = ImdbLibraryMetadata.fetchAll(libraries, new ImdbDatabaseSupport(connection, caches.get("new-agent-mapping")), config); 
+                metadata = ImdbLibraryMetadata.fetchAll(libraries, new ImdbDatabaseSupport(connection, caches.get("new-agent-mapping"), config), config); 
             } catch(Exception e) {
                 Logger.error(e.getClass().getSimpleName() + " exception encountered...");
                 Logger.error("Please contact the maintainer of the application with the stacktrace below if you think this is unwanted behavior.");

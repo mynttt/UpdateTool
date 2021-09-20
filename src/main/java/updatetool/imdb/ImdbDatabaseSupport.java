@@ -1,5 +1,13 @@
 package updatetool.imdb;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -10,26 +18,82 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import org.sqlite.SQLiteException;
 import org.tinylog.Logger;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import updatetool.Globals;
+import updatetool.Main;
 import updatetool.common.DatabaseSupport.LibraryType;
 import updatetool.common.KeyValueStore;
 import updatetool.common.SqliteDatabaseProvider;
 import updatetool.common.Utility;
+import updatetool.imdb.ImdbPipeline.ImdbPipelineConfiguration;
 
 public class ImdbDatabaseSupport {
     private final SqliteDatabaseProvider provider;
     private final KeyValueStore newAgentMapping;
-
-    public ImdbDatabaseSupport(SqliteDatabaseProvider provider) {
-        this(provider, null);
-    }
+    private final ImdbPipelineConfiguration config;
     
-    public ImdbDatabaseSupport(SqliteDatabaseProvider provider, KeyValueStore newAgentMapping) {
+    public ImdbDatabaseSupport(SqliteDatabaseProvider provider, KeyValueStore newAgentMapping, ImdbPipelineConfiguration config) {
         this.provider = provider;
         this.newAgentMapping = newAgentMapping;
+        this.config = config;
+        
+        if(config.executeUpdatesOverPlexSqliteBinary()) {
+            testPlexSqliteBinaryVersion();
+        }
+    }
+    
+    @SuppressFBWarnings("DM_EXIT")
+    private void testPlexSqliteBinaryVersion() {
+        Path p = Paths.get(config.executeUpdatesOverPlexSqliteVersion);
+        if(Files.notExists(p) || Files.isDirectory(p)) {
+            Logger.error("Plex Sqlite3 binary has not been supplied under: {}", config.executeUpdatesOverPlexSqliteVersion);
+            Logger.error("Either supply a correct path or run the application without the environment variable 'USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS'.");
+            Logger.error("Application is shutting down NOW due to invalid configuration...");
+            System.exit(-1);
+        }
+        
+        try {
+            var proc = new ProcessBuilder(config.executeUpdatesOverPlexSqliteVersion.trim()).redirectErrorStream(true).start();
+            OutputStreamWriter br = new OutputStreamWriter(proc.getOutputStream(), StandardCharsets.UTF_8);
+            br.write("select sqlite_version(); PRAGMA compile_options;");
+            br.close();
+
+            StringBuilder sb = new StringBuilder();
+            Main.EXECUTOR.submit(() -> {
+                String line;
+                InputStreamReader isr = new InputStreamReader(proc.getInputStream(), StandardCharsets.UTF_8);
+                try(BufferedReader rdr = new BufferedReader(isr)) {
+                    while ((line = rdr.readLine()) != null) {
+                        sb.append(line).append(" | ");
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+            
+
+            var result = proc.waitFor(1, TimeUnit.SECONDS);
+            if(!result) {
+                Logger.error("Checking Plex SQLite version took more than 1s... Likely invalid binary supplied @ {}. Exiting tool...", config.executeUpdatesOverPlexSqliteVersion);
+                System.exit(-1);
+            } else {
+                if(!sb.toString().startsWith("3.")) {
+                     Logger.error("INVALID PLEX SQLITE BINARY SUPPLIED @ {} -> RETURNED {} != 3.x | APPLICATION WILL SHUTDOWN", config.executeUpdatesOverPlexSqliteVersion, sb.toString());
+                     System.exit(-1);
+                } else {
+                    if(!sb.toString().contains("ENABLE_ICU")) {
+                        Logger.error("INVALID PLEX SQLITE BINARY SUPPLIED @ {} -> No match 'ENABLE_ICU' in loaded extensions. | APPLICATION WILL SHUTDOWN", config.executeUpdatesOverPlexSqliteVersion);
+                        System.exit(-1);
+                    }
+                    Logger.info("Plex SQLite binary version: {}", sb.toString());
+                }
+            }
+        } catch(Exception e) {
+            throw Utility.rethrow(e);
+        }
     }
 
     public static class ImdbMetadataResult {
@@ -160,13 +224,87 @@ public class ImdbDatabaseSupport {
         }
         
         if(!oldAgent.isEmpty()) {
-            Logger.info("Running batch update for {} items with old plex agent.", oldAgent.size());
+            Logger.info("Running batch update for {} item(s) with old plex agent.", oldAgent.size());
             internalBatchUpdate(oldAgent, false);
+        }
+    }
+    
+    private String sanitize(String s) {
+        return s.replace("'", "\"");
+    }
+    
+    @SuppressFBWarnings("DM_EXIT")
+    private void internalBatchUpdateOverPlexSqliteBinary(List<ImdbMetadataResult> items, boolean isNewAgent, String plexSqliteBinaryPath) {
+        StringBuilder cb = new StringBuilder(1000);
+        cb.append("BEGIN TRANSACTION;\n");
+        
+        for(var item : items) {
+            Double d = isNewAgent ? item.audienceRating : item.rating;
+            
+            //TODO: hotfix, investigate further only happened to one person over the entire tool lifetime
+            if(d == null) {
+                Logger.error("Null value encountered. Should not be possible. Skipping entry to not crash tool. Contact maintainer with this dump: " + Objects.toString(item));
+                continue;
+            }
+            
+            String query = isNewAgent ? String.format(
+                    "UPDATE metadata_items SET audience_rating = %s, extra_data = '%s', rating = NULL WHERE id = %s;%n", d, sanitize(item.extraData), item.id) : String.format(
+                    "UPDATE metadata_items SET rating = %s, extra_data = '%s' WHERE id = %s;%n", d, sanitize(item.extraData), item.id);
+            cb.append(query);
+        }
+        cb.append("COMMIT TRANSACTION;");
+        
+        try {
+            var proc = new ProcessBuilder(config.executeUpdatesOverPlexSqliteVersion.trim(), config.dbLocation).redirectErrorStream(true).start();
+            OutputStreamWriter br = new OutputStreamWriter(proc.getOutputStream(), StandardCharsets.UTF_8);
+            br.write(cb.toString());
+            br.close();
+
+            StringBuilder sb2 = new StringBuilder();
+            Main.EXECUTOR.submit(() -> {
+                String line;
+                InputStreamReader isr = new InputStreamReader(proc.getInputStream(), StandardCharsets.UTF_8);
+                try(BufferedReader rdr = new BufferedReader(isr)) {
+                    while ((line = rdr.readLine()) != null) {
+                        Logger.info(line);
+                        sb2.append(line).append(" | ");
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+            
+            var result = proc.waitFor(30, TimeUnit.SECONDS);
+            if(!result) {
+                Logger.error("Executing updates for {} item(s) took longer than 30s... Something bad happened... @ {}. Exiting tool...", config.executeUpdatesOverPlexSqliteVersion);
+                Logger.error("Dumping SQlite 3 STD::OUT");
+                Logger.error("===================");
+                Logger.error(sb2.toString());
+                Logger.error("===================");
+                System.exit(-1);
+            } else {
+                var str = sb2.toString().trim();
+                if(str.isBlank()) {
+                    Logger.info("Update executed successfully via Plex SQLite binary call.");
+                } else {
+                    Logger.warn("Update via Plex SQLite binary call produced potential error messages. Please contact the author of the tool with this output:");
+                    Logger.warn(str);
+                    Logger.warn("==================================================");
+                }
+            }
+        } catch(Exception e) {
+            throw Utility.rethrow(e);
         }
     }
     
     @SuppressFBWarnings({"DM_EXIT", "REC_CATCH_EXCEPTION", "OBL_UNSATISFIED_OBLIGATION", "DE_MIGHT_IGNORE"})
     private void internalBatchUpdate(List<ImdbMetadataResult> items, boolean isNewAgent) {
+        
+        if(config.executeUpdatesOverPlexSqliteBinary()) {
+            internalBatchUpdateOverPlexSqliteBinary(items, isNewAgent, config.executeUpdatesOverPlexSqliteVersion);
+            return;
+        }
+        
         boolean success = true;
         boolean mitigationIcuNeeded, mitigationIcuTriggersDisabled = false;
         List<AutoCloseable> close = new ArrayList<>();

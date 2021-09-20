@@ -69,16 +69,17 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
 
     public static class ImdbPipelineConfiguration {
         private final EnumSet<Capabilities> capabilities;
-        public final String tmdbApiKey, tvdbApiKey, dbLocation;
+        public final String tmdbApiKey, tvdbApiKey, dbLocation, executeUpdatesOverPlexSqliteVersion;
         public final Path metadataRoot;
         public final boolean isTvdbV4;
         
-        public ImdbPipelineConfiguration(String tmdbApiKey, String tvdbApiKey, Path metadataRoot, String dbLocation, EnumSet<Capabilities> capabilities) {
+        public ImdbPipelineConfiguration(String tmdbApiKey, String tvdbApiKey, Path metadataRoot, String dbLocation, String executeUpdatesOverPlexSqliteVersion, EnumSet<Capabilities> capabilities) {
             this.tmdbApiKey = tmdbApiKey;
             this.tvdbApiKey = tvdbApiKey;
             this.metadataRoot = metadataRoot;
             this.dbLocation = dbLocation;
             this.capabilities =  capabilities;
+            this.executeUpdatesOverPlexSqliteVersion = executeUpdatesOverPlexSqliteVersion;
             this.isTvdbV4 = resolveTvdb() ? !(tvdbApiKey.length() == 16 || tvdbApiKey.length() >= 32) : false;
         }
 
@@ -88,6 +89,10 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         
         public boolean resolveTvdb() {
             return capabilities.contains(Capabilities.TVDB);
+        }
+        
+        public boolean executeUpdatesOverPlexSqliteBinary() {
+            return executeUpdatesOverPlexSqliteVersion != null && !executeUpdatesOverPlexSqliteVersion.isBlank();
         }
     }
     
@@ -193,7 +198,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         Logger.info("Updating " + job.items.size() + " via batch request...");
         int counter = 0;
         try(var connection = new SqliteDatabaseProvider(configuration.dbLocation)) {
-            var db = new ImdbDatabaseSupport(connection);
+            var db = new ImdbDatabaseSupport(connection, null,configuration);
             while(true) {
                 if(counter++==(ABORT_DB_LOCK_WAITING_AFTER_N_RETRIES-1))
                     throw new DatabaseLockedException("Plex database is currently locked. After " + ABORT_DB_LOCK_WAITING_AFTER_N_RETRIES + " attempt(s) every " + RETRY_N_SECONDS_IF_DB_LOCKED + " second(s) of accessing an unlocked database this tool is destined to halt execution to prevent endless loops. Either stop Plex to run the tool or start the tool again and hope Plex has removed the lock.");

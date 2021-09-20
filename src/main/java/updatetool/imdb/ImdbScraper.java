@@ -15,7 +15,7 @@ import updatetool.Main;
 import updatetool.common.KeyValueStore;
 
 public class ImdbScraper implements Closeable {
-    private static final int SCRAPE_EVERY_N_DAYS_IGNORE = 30;
+    private static final int SCRAPE_EVERY_N_DAYS_IGNORE = 90;
     private static final int SCRAPE_EVERY_N_DAYS = 7;
     private static final HttpClient CLIENT = HttpClient.newBuilder().followRedirects(Redirect.ALWAYS).version(Version.HTTP_2).connectTimeout(Duration.ofMillis(2000)).build();
     
