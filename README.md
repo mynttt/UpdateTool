@@ -12,6 +12,8 @@ A tool to update the IMDB ratings for Plex libraries that contain movies via the
 
 ## Important
 
+**If you ever experienced corruptions of your database make sure to set `USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS` to `true` in your docker configuration and use at least v1.6.0!**
+
 **To run this without docker on Linux in a headless mode check out [this issue](https://github.com/mynttt/UpdateTool/issues/70)!**
 
 **TVDB is now supported with both v3/v4 APIs. Just supply your legacy API key or v4 Pin and the tool will automatically choose the correct API!**
