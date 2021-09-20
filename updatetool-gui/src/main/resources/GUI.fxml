@@ -48,8 +48,14 @@
             <HBox>
                <children>
                   <Button mnemonicParsing="false" onAction="#openData" text="Open UpdateTool data dir" />
-                  <TextField fx:id="plexFolder" promptText="Plex Data Folder location" HBox.hgrow="ALWAYS" />
+                  <TextField fx:id="plexFolder" promptText="Plex Data Folder location" HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets left="2.0" />
+                     </HBox.margin></TextField>
                </children>
+               <VBox.margin>
+                  <Insets bottom="2.0" />
+               </VBox.margin>
             </HBox>
             <HBox>
                <children>
@@ -58,8 +64,14 @@
                         <Insets top="3.0" />
                      </HBox.margin>
                   </CheckBox>
-                  <TextField fx:id="tmdbKey" promptText="TMDB API Key" HBox.hgrow="ALWAYS" />
+                  <TextField fx:id="tmdbKey" promptText="TMDB API Key" HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets left="2.0" />
+                     </HBox.margin></TextField>
                </children>
+               <VBox.margin>
+                  <Insets bottom="2.0" />
+               </VBox.margin>
             </HBox>
             <HBox>
                <children>
@@ -68,8 +80,14 @@
                         <Insets right="3.0" top="4.0" />
                      </HBox.margin>
                   </CheckBox>
-                  <TextField fx:id="tvdbKey" promptText="TVDB API Key" HBox.hgrow="ALWAYS" />
+                  <TextField fx:id="tvdbKey" promptText="TVDB API Key" HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets left="2.0" />
+                     </HBox.margin></TextField>
                </children>
+               <VBox.margin>
+                  <Insets bottom="2.0" />
+               </VBox.margin>
             </HBox>
             <HBox>
                <children>
@@ -99,6 +117,9 @@
                      </HBox.margin>
                   </TextField>
                </children>
+               <VBox.margin>
+                  <Insets bottom="2.0" />
+               </VBox.margin>
             </HBox>
             <HBox>
                <children>
@@ -107,23 +128,58 @@
                         <Insets top="4.0" />
                      </HBox.margin>
                   </Label>
-                  <TextField fx:id="tvshowoptin" promptText="Opt-in new TV Show agent libraries with IDs (seperate by comma)" HBox.hgrow="ALWAYS" />
+                  <TextField fx:id="tvshowoptin" promptText="Opt-in new TV Show agent libraries with IDs (seperate by comma)" HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets left="2.0" />
+                     </HBox.margin></TextField>
                </children>
+               <VBox.margin>
+                  <Insets bottom="2.0" />
+               </VBox.margin>
+            </HBox>
+            <HBox prefWidth="200.0">
+               <children>
+                  <CheckBox fx:id="plexsqlcheckbox" mnemonicParsing="false" text="Use non-standard Plex native SQLite binary for write access:">
+                     <HBox.margin>
+                        <Insets right="3.0" top="4.0" />
+                     </HBox.margin>
+                  </CheckBox>
+                  <TextField fx:id="plexsqlpath" promptText="Path to Plex Media Server\Ples SQLite binary" HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets left="2.0" />
+                     </HBox.margin>
+                  </TextField>
+               </children>
+               <VBox.margin>
+                  <Insets bottom="2.0" />
+               </VBox.margin>
             </HBox>
             <HBox>
                <children>
                   <TextField fx:id="javabinary" promptText="Path to java 11+ binary" HBox.hgrow="ALWAYS" />
                   <Label text="Run every N hour(s)">
                      <HBox.margin>
-                        <Insets top="4.0" />
+                        <Insets left="2.0" top="4.0" />
                      </HBox.margin>
                   </Label>
-                  <TextField fx:id="hours" promptText="hours &gt; 0" />
-                  <Button fx:id="start" mnemonicParsing="false" onAction="#start" text="Start" />
-                  <Button fx:id="stop" mnemonicParsing="false" onAction="#stopTool" text="Stop" />
+                  <TextField fx:id="hours" promptText="hours &gt; 0">
+                     <HBox.margin>
+                        <Insets left="2.0" />
+                     </HBox.margin></TextField>
+                  <Button fx:id="start" mnemonicParsing="false" onAction="#start" text="Start">
+                     <HBox.margin>
+                        <Insets left="2.0" />
+                     </HBox.margin></Button>
+                  <Button fx:id="stop" mnemonicParsing="false" onAction="#stopTool" text="Stop">
+                     <HBox.margin>
+                        <Insets left="2.0" />
+                     </HBox.margin></Button>
                </children>
             </HBox>
          </children>
+         <BorderPane.margin>
+            <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+         </BorderPane.margin>
       </VBox>
    </top>
 </BorderPane>

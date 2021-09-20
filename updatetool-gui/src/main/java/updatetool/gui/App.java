@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import org.tinylog.Logger;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -82,8 +83,8 @@ public class App extends Application {
         }));
     }
     
-    @FXML TextField plexFolder, tmdbKey, tvdbKey, ignoreLibs, javabinary, hours, tvshowoptin;
-    @FXML CheckBox useTmdb, useTvdb, ignoreMovies, ignoreTv;
+    @FXML TextField plexFolder, tmdbKey, tvdbKey, ignoreLibs, javabinary, hours, tvshowoptin, plexsqlpath;
+    @FXML CheckBox useTmdb, useTvdb, ignoreMovies, ignoreTv, plexsqlcheckbox;
     @FXML TextArea log;
     @FXML Label version, status;
     @FXML Button start, stop;
@@ -103,6 +104,8 @@ public class App extends Application {
         javabinary.textProperty().bindBidirectional(INSTANCE.getJavabinary());
         plexFolder.textProperty().bindBidirectional(INSTANCE.getPlexFolder());
         hours.textProperty().bindBidirectional(INSTANCE.getHours());
+        plexsqlpath.textProperty().bindBidirectional(INSTANCE.getPlexNativeSqlPath());
+        plexsqlcheckbox.selectedProperty().bindBidirectional(INSTANCE.getUsePlexNativeSql());
         
         BooleanBinding p = javabinary.textProperty().isEmpty()
                 .or(Bindings.createBooleanBinding(() -> javabinary.getText().trim().isEmpty(), javabinary.textProperty()))
@@ -151,6 +154,7 @@ public class App extends Application {
     }
     
     private static void download(String url, Path target) throws MalformedURLException, IOException {
+        Logger.info("Download: {}", url);
         URLConnection connection = new URL(url).openConnection();
         Files.copy(connection.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
     }
@@ -159,10 +163,10 @@ public class App extends Application {
         String version;
         runLater(() -> status.setText("Version check..."));
         if(Files.exists(APPLICATION_CONFIG.resolve("V"))) {
-            version = Files.readString(APPLICATION_CONFIG.resolve("V"));
+            version = Files.readString(APPLICATION_CONFIG.resolve("V")).trim();
             runLater(() -> log.appendText("Found version: " + version + "\n"));
             download(VERSION, APPLICATION_CONFIG.resolve("V_TEMP"));
-            String v = Files.readString(APPLICATION_CONFIG.resolve("V_TEMP"));
+            String v = Files.readString(APPLICATION_CONFIG.resolve("V_TEMP")).trim();
             Files.delete(APPLICATION_CONFIG.resolve("V_TEMP"));
             if(!version.equals(v) || !Files.exists(APPLICATION_CONFIG.resolve("tool.jar"))) {
                 runLater(() -> log.appendText("Version not up to date. Downloading: " + v + "\n"));
@@ -176,7 +180,7 @@ public class App extends Application {
         } else {
             runLater(() -> log.appendText("First time downloading UpdateTool.jar\n"));
             download(VERSION, APPLICATION_CONFIG.resolve("V"));
-            version = Files.readString(APPLICATION_CONFIG.resolve("V"));
+            version = Files.readString(APPLICATION_CONFIG.resolve("V")).trim();
             runLater(() -> status.setText("Tool download..."));
             download(String.format(JAR, version, version), APPLICATION_CONFIG.resolve("tool.jar"));
             runLater(() -> log.appendText("Downloaded version: " + version + "\n"));
@@ -205,6 +209,9 @@ public class App extends Application {
                 env.put("UNLOCK_FOR_NEW_TV_AGENT", tvshowoptin.getText().trim().replace(",", ";"));
         } else {
             tvshowoptin.setText("");
+        }
+        if(plexsqlcheckbox.isSelected() && !plexsqlpath.getText().trim().isBlank()) {
+            env.put("USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS", plexsqlpath.getText().trim());
         }
         
         List<String> c = new ArrayList<>();

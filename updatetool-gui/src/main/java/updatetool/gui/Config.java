@@ -68,10 +68,14 @@ public class Config implements Serializable {
         tvShowOptIn = new SimpleStringProperty("");
         javabinary = new SimpleStringProperty("");
         hours = new SimpleStringProperty("12");
+        plexNativeSqlPath = new SimpleStringProperty("");
         useTmdb = new SimpleBooleanProperty();
         useTvdb = new SimpleBooleanProperty();
         ignoreMovies = new SimpleBooleanProperty();
         ignoreTv = new SimpleBooleanProperty();
+        usePlexNativeSql = new SimpleBooleanProperty();
+        plexNativeSqlPath.addListener((o, oo, n) -> plexNativeSqlPathV = n.trim());
+        usePlexNativeSql.addListener((o, oo, n) -> usePlexNativeSqlV = n);
         hours.addListener((o, oo, n) -> hoursV = n.trim());
         plexFolder.addListener((o, oo, n) -> plexFolderV = n.trim());
         tmdbKey.addListener((o, oo, n) -> tmdbKeyV = n.trim());
@@ -98,11 +102,13 @@ public class Config implements Serializable {
         ignoreMovies.set(ignoreMoviesV);
         ignoreTv.set(ignoreTvV);
         hours.set(hoursV);
+        usePlexNativeSql.set(usePlexNativeSqlV);
+        plexNativeSqlPath.set(plexNativeSqlPathV == null ? "" : plexNativeSqlPathV);
         return this;
     }
     
-    private transient SimpleStringProperty plexFolder, tmdbKey,tvdbKey, ignoreLibs, javabinary, hours, tvShowOptIn;
-    private transient SimpleBooleanProperty useTmdb,useTvdb,ignoreMovies, ignoreTv;
+    private transient SimpleStringProperty plexFolder, tmdbKey,tvdbKey, ignoreLibs, javabinary, hours, tvShowOptIn, plexNativeSqlPath;
+    private transient SimpleBooleanProperty useTmdb,useTvdb,ignoreMovies, ignoreTv, usePlexNativeSql;
 
     private String 
         plexFolderV = "", 
@@ -111,13 +117,15 @@ public class Config implements Serializable {
         ignoreLibsV = "",
         tvShowOptInV = "",
         hoursV = "12",
-        javabinaryV = "";
+        javabinaryV = "",
+        plexNativeSqlPathV = "";
 
     private boolean  
         useTmdbV, 
         useTvdbV, 
         ignoreMoviesV, 
-        ignoreTvV;
+        ignoreTvV,
+        usePlexNativeSqlV;
 
     public SimpleStringProperty getPlexFolder() {
         return plexFolder;
@@ -161,5 +169,13 @@ public class Config implements Serializable {
 
     public Property<String> getTvShowOptIn() {
         return tvShowOptIn;
+    }
+
+    public SimpleStringProperty getPlexNativeSqlPath() {
+        return plexNativeSqlPath;
+    }
+
+    public SimpleBooleanProperty getUsePlexNativeSql() {
+        return usePlexNativeSql;
     }
 }
