@@ -63,6 +63,7 @@ Docker is on [dockerhub](https://hub.docker.com/r/mynttt/updatetool) | [UnRaid i
 
 Name | Description
 :-------------------------:|:-------------------------:|
+USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS|Allows to use the non-standard Plex SQLite3 version that diverged so strongly from the vanilla flavour that write operations with vanilla SQLite3 can cause database corruptions! Set this to `true` in the docker when using a version >= 1.6.0! This is the only way to be safe from corruptions as Plex continues to diverge from compatibility with vanilla SQLite3! If you're not using a docker version make sure that this points to the `Plex Media Server/Plex SQLite` binary that is located in the main Plex folder next to the `Plex Media Server` executable.
 TMDB_API_KEY|Enables TMDB Movie/Series library processing
 TVDB_API_KEY|Enables TVDB Series library processing using either the v3 legacy key or the v4 pin
 UNLOCK_FOR_NEW_TV_AGENT|Opt-in for libraries using the new TV Show agent. All libraries that are opted-in this way will have their ratings changed to IMDB ratings by this tool ([more here](#opt-in-for-libraries-using-the-new-tv-show-agent))
