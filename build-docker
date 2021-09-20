@@ -1,3 +1,4 @@
 #!/bin/bash
 #Needs experimental features enabled and qemu support / a builder set up with arm included!
-docker buildx build --progress plain --platform linux/amd64,linux/arm64/v8 --no-cache -t mynttt/updatetool:latest -f updatetool-docker/Dockerfile . --push
+# linux/arm64/v8 currently disabled as there are some issues on my build system
+docker buildx build --progress plain --platform linux/amd64 --no-cache -t mynttt/updatetool:latest -f updatetool-docker/Dockerfile . --push
