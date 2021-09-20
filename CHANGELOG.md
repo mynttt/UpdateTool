@@ -1,6 +1,6 @@
 ## 1.6.0
 - Bumped scraping blacklist expiry from 30 to 90 days
-- Introduced `USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS` environment variable that allows to use Plex's own non-standard SQLite3 version for write operations. This should fix any kind of database corruptions that occurred mysteriously for some users. In docker environments, you must mount the Plex main directory for this to work.
+- Introduced `USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS` environment variable that allows to use Plex's own non-standard SQLite3 version for write operations. This should fix any kind of database corruptions that occurred mysteriously for some users. In non-docker environments, this must point to the Plex specific SQLite binary (contained in the Main Plex Folder next to the Plex Media Server binary). In docker environments this just needs to contain `true` in order to be used as the docker contains a local and stripped down version of Plex for this purpose.
 
 ## 1.5.8
 - Added `OVERRIDE_DATABASE_LOCATION` environment variable in case that the `Plex Media Folder/Plug-in Support/Databases/*.db` folder structure is violated. (Folder needs to contain the database file tho! You can't change the name of that (yet)).
