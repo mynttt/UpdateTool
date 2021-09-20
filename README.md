@@ -212,6 +212,7 @@ Flag | Description
 NO_TV |Ignore all TV Show libraries
 NO_MOVIE | Ignore all Movie libraries
 VERBOSE_XML_ERROR_LOG | Enable verbose XML error output logging
+DONT_THROW_ON_ENCODING_ERROR | Supress forced quits if decoding errors of extra data are encountered due to corrupt items in the library 
 
 Multiple flags can be supplied as a semicolon separated string.
 

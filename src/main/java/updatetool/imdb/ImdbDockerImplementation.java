@@ -38,6 +38,11 @@ public class ImdbDockerImplementation extends Implementation {
     private static final Set<Long> IGNORE_LIBRARIES = new HashSet<>(),
                                    UNLOCK_FOR_NEW_TV_AGENT = new HashSet<>();
     
+    private static final EnumSet<Capabilities> CAPABILITIES = EnumSet.allOf(Capabilities.class);
+    public static final boolean checkCapability(Capabilities capability) {
+        return CAPABILITIES.contains(capability);
+    }
+    
     private int runEveryNhour = 12;
     private String apikeyTmdb, apiauthTvdb;
     private Path plexdata;
@@ -60,7 +65,7 @@ public class ImdbDockerImplementation extends Implementation {
         String overrideDatabaseLocation = System.getenv("OVERRIDE_DATABASE_LOCATION");
         String executeUpdatesOverPlexSqliteVersion = System.getenv("USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS");
         
-        EnumSet<Capabilities> capabilities = EnumSet.allOf(Capabilities.class);
+        EnumSet<Capabilities> capabilities = CAPABILITIES;
         final List<Capabilities> parsed = new ArrayList<>();
 
         if(capabilitiesEnv != null && !capabilitiesEnv.isBlank()) {

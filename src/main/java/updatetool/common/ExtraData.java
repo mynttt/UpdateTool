@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 import javax.annotation.concurrent.NotThreadSafe;
 import org.tinylog.Logger;
+import updatetool.imdb.ImdbDockerImplementation;
 
 @NotThreadSafe
 public final class ExtraData {
@@ -101,7 +102,9 @@ public final class ExtraData {
                 } catch(Exception e) {
                     Logger.error("Tried to decode [KEY] := '{}'", key);
                     Logger.error("Tried to decode [VALUE] := '{}'", value);
-                    throw Utility.rethrow(e);
+                    if(!ImdbDockerImplementation.checkCapability(Capabilities.DONT_THROW_ON_ENCODING_ERROR)) {
+                        throw Utility.rethrow(e);
+                    }
                 }
             }
         }
