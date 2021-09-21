@@ -69,6 +69,7 @@ public class Config implements Serializable {
         javabinary = new SimpleStringProperty("");
         hours = new SimpleStringProperty("12");
         plexNativeSqlPath = new SimpleStringProperty("");
+        capabilities = new SimpleStringProperty("");
         useTmdb = new SimpleBooleanProperty();
         useTvdb = new SimpleBooleanProperty();
         ignoreMovies = new SimpleBooleanProperty();
@@ -76,6 +77,7 @@ public class Config implements Serializable {
         usePlexNativeSql = new SimpleBooleanProperty();
         plexNativeSqlPath.addListener((o, oo, n) -> plexNativeSqlPathV = n.trim());
         usePlexNativeSql.addListener((o, oo, n) -> usePlexNativeSqlV = n);
+        capabilities.addListener((o, oo, n) -> capabilitiesV = n.trim());
         hours.addListener((o, oo, n) -> hoursV = n.trim());
         plexFolder.addListener((o, oo, n) -> plexFolderV = n.trim());
         tmdbKey.addListener((o, oo, n) -> tmdbKeyV = n.trim());
@@ -104,10 +106,11 @@ public class Config implements Serializable {
         hours.set(hoursV);
         usePlexNativeSql.set(usePlexNativeSqlV);
         plexNativeSqlPath.set(plexNativeSqlPathV == null ? "" : plexNativeSqlPathV);
+        capabilities.set(capabilitiesV == null ? "" : capabilitiesV);
         return this;
     }
     
-    private transient SimpleStringProperty plexFolder, tmdbKey,tvdbKey, ignoreLibs, javabinary, hours, tvShowOptIn, plexNativeSqlPath;
+    private transient SimpleStringProperty plexFolder, tmdbKey,tvdbKey, ignoreLibs, javabinary, hours, tvShowOptIn, plexNativeSqlPath, capabilities;
     private transient SimpleBooleanProperty useTmdb,useTvdb,ignoreMovies, ignoreTv, usePlexNativeSql;
 
     private String 
@@ -118,7 +121,8 @@ public class Config implements Serializable {
         tvShowOptInV = "",
         hoursV = "12",
         javabinaryV = "",
-        plexNativeSqlPathV = "";
+        plexNativeSqlPathV = "",
+        capabilitiesV = "";
 
     private boolean  
         useTmdbV, 
@@ -126,6 +130,10 @@ public class Config implements Serializable {
         ignoreMoviesV, 
         ignoreTvV,
         usePlexNativeSqlV;
+
+    public SimpleStringProperty getCapabilities() {
+        return capabilities;
+    }
 
     public SimpleStringProperty getPlexFolder() {
         return plexFolder;

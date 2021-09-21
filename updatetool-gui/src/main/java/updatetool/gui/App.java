@@ -10,16 +10,17 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -33,11 +34,17 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 
 public class App extends Application {
@@ -45,11 +52,14 @@ public class App extends Application {
     private static Parent parent;
     private static Process process;
     private static Stage stage;
+    private static String currentVersion;
     
     private static String readHeader() {
         try {
-            return "UpdateTool GUI (v. " + new String(App.class.getResourceAsStream("/VERSION").readAllBytes(), StandardCharsets.UTF_8) + ")";
+            currentVersion = new String(App.class.getResourceAsStream("/VERSION").readAllBytes(), StandardCharsets.UTF_8).trim();
+            return "UpdateTool GUI (v. " + currentVersion + ")";
         } catch (IOException e) {
+            currentVersion = "0";
             return "UpdateTool GUI (unknown)";
         }
     }
@@ -61,8 +71,47 @@ public class App extends Application {
     private static final String VERSION = "https://raw.githubusercontent.com/mynttt/UpdateTool/master/VERSION";
     private static final String JAR = "https://github.com/mynttt/UpdateTool/releases/download/%s/UpdateTool-%s.jar";
     
+    private void checkGuiVersion() {
+        var version = "https://raw.githubusercontent.com/mynttt/UpdateTool/master/updatetool-gui/VERSION";
+        var path = APPLICATION_CONFIG.resolve("v_gui_tmp");
+        try {
+            download(version, path);
+            var repoVersion = new String(Files.readAllBytes(path), StandardCharsets.UTF_8).trim();
+            int repoInt = Integer.parseInt(repoVersion.replace(".", ""));
+            int currentInt = Integer.parseInt(currentVersion.replace(".", ""));
+            if(currentInt < repoInt) {
+                Alert alert = new Alert(AlertType.WARNING);
+                alert.setTitle("You're using an outdated GUI version!");
+                alert.setHeaderText("You're using an outdated GUI version!");
+                Hyperlink h = new Hyperlink("Download new version here!");
+                h.setOnAction(e -> {
+                    try {
+                        Desktop.getDesktop().browse(new URL(String.format("https://github.com/mynttt/UpdateTool/releases/tag/g%s", repoVersion)).toURI());
+                    } catch (IOException | URISyntaxException e1) {
+                        e1.printStackTrace();
+                    }
+                });
+                TextFlow flow = new TextFlow(new Text(String.format("You're using GUI version %s. Current GUI version is %s.", currentVersion, repoVersion)), h);
+                alert.getDialogPane().setContent(flow);
+                alert.showAndWait();
+            } else {
+                Logger.info("GUI version is up to date! (LOCAL: {}, GITHUB: {})", currentVersion, repoVersion);
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                Files.deleteIfExists(path);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
     @Override
     public void start(Stage primaryStage) throws Exception {
+        primaryStage.getIcons().add(new Image(App.class.getResourceAsStream("/icon.png")));
+        checkGuiVersion();
         primaryStage.setScene(new Scene(FXMLLoader.load(getClass().getResource("/GUI.fxml").toURI().toURL())));
         parent = primaryStage.getScene().getRoot();
         parent.setDisable(true);
@@ -83,7 +132,7 @@ public class App extends Application {
         }));
     }
     
-    @FXML TextField plexFolder, tmdbKey, tvdbKey, ignoreLibs, javabinary, hours, tvshowoptin, plexsqlpath;
+    @FXML TextField plexFolder, tmdbKey, tvdbKey, ignoreLibs, javabinary, hours, tvshowoptin, plexsqlpath, capabilities;
     @FXML CheckBox useTmdb, useTvdb, ignoreMovies, ignoreTv, plexsqlcheckbox;
     @FXML TextArea log;
     @FXML Label version, status;
@@ -104,6 +153,7 @@ public class App extends Application {
         javabinary.textProperty().bindBidirectional(INSTANCE.getJavabinary());
         plexFolder.textProperty().bindBidirectional(INSTANCE.getPlexFolder());
         hours.textProperty().bindBidirectional(INSTANCE.getHours());
+        capabilities.textProperty().bindBidirectional(INSTANCE.getCapabilities());
         plexsqlpath.textProperty().bindBidirectional(INSTANCE.getPlexNativeSqlPath());
         plexsqlcheckbox.selectedProperty().bindBidirectional(INSTANCE.getUsePlexNativeSql());
         
@@ -174,8 +224,10 @@ public class App extends Application {
                 download(String.format(JAR, v, v), APPLICATION_CONFIG.resolve("tool.jar"));
                 Files.writeString(APPLICATION_CONFIG.resolve("V"), v, StandardCharsets.UTF_8);
                 runLater(() -> log.appendText("Download completed.\n"));
+                runLater(() -> this.version.setText(v));
             } else {
                 runLater(() -> log.appendText("Version up to date.\n"));
+                runLater(() -> this.version.setText(version));
             }
         } else {
             runLater(() -> log.appendText("First time downloading UpdateTool.jar\n"));
@@ -184,8 +236,8 @@ public class App extends Application {
             runLater(() -> status.setText("Tool download..."));
             download(String.format(JAR, version, version), APPLICATION_CONFIG.resolve("tool.jar"));
             runLater(() -> log.appendText("Downloaded version: " + version + "\n"));
+            runLater(() -> this.version.setText(version));
         }
-        runLater(() -> this.version.setText(version));
     }
     
     @FXML
@@ -214,7 +266,7 @@ public class App extends Application {
             env.put("USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS", plexsqlpath.getText().trim());
         }
         
-        List<String> c = new ArrayList<>();
+        Set<String> c = new HashSet<>(Arrays.asList(capabilities.getText().split(",")));
         if(ignoreTv.isSelected())
             c.add("NO_TV");
         if(ignoreMovies.isSelected())

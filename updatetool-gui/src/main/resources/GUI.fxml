@@ -121,6 +121,16 @@
                   <Insets bottom="2.0" />
                </VBox.margin>
             </HBox>
+            <HBox prefWidth="200.0">
+               <children>
+                  <Label text="Capabilities">
+                     <HBox.margin>
+                        <Insets right="2.0" top="4.0" />
+                     </HBox.margin>
+                  </Label>
+                  <TextField fx:id="capabilities" promptText="Enter capabilities here (seperate by comma)" HBox.hgrow="ALWAYS" />
+               </children>
+            </HBox>
             <HBox>
                <children>
                   <Label text="Opt-in for libraries using the new TV Show agent with IDs:">
