@@ -232,7 +232,7 @@ CAPABILITIES="NO_TV"
 Render the tool useless by skipping TV and Movie libraries
 
 ```
-CAPABILITIES="NO_TV;NO_MOVIE";
+CAPABILITIES="NO_TV;NO_MOVIE"
 ```
 
 ### Override the database location
@@ -242,7 +242,7 @@ In some cases it might be required to override the location of the database file
 The Plex database file (`com.plexapp.plugins.library.db`) has to be in the supplied folder in order for UpdateTool to recognize it.
 
 ```
-OVERRIDE_DATABASE_LOCATION="/opt/myspecialpath/theplexdb";
+OVERRIDE_DATABASE_LOCATION="/opt/myspecialpath/theplexdb"
 ```
 
 # Technical details
