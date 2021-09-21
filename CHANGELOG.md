@@ -1,3 +1,6 @@
+## 1.6.2
+- Bumped Plex SQLite native binary abortion timeout to avoid false alarms on weaker systems
+
 ## 1.6.1
 - Added capability `DONT_THROW_ON_ENCODING_ERROR` that can be used to prevent forced shutdown if extra data of an item causes decoding errors.
 

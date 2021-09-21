@@ -75,9 +75,12 @@ public class ImdbDatabaseSupport {
             });
             
 
-            var result = proc.waitFor(1, TimeUnit.SECONDS);
+            var result = proc.waitFor(10, TimeUnit.SECONDS);
             if(!result) {
-                Logger.error("Checking Plex SQLite version took more than 1s... Likely invalid binary supplied @ {}. Exiting tool...", config.executeUpdatesOverPlexSqliteVersion);
+                Logger.error("Checking Plex SQLite version took more than 10s... Likely invalid binary supplied @ {}. Exiting tool...", config.executeUpdatesOverPlexSqliteVersion);
+                Logger.error("====== Dumping STD::OUT ======");
+                Logger.error(sb.toString());
+                Logger.error("============");
                 System.exit(-1);
             } else {
                 if(!sb.toString().startsWith("3.")) {
@@ -274,9 +277,9 @@ public class ImdbDatabaseSupport {
                 }
             });
             
-            var result = proc.waitFor(30, TimeUnit.SECONDS);
+            var result = proc.waitFor(60, TimeUnit.SECONDS);
             if(!result) {
-                Logger.error("Executing updates for {} item(s) took longer than 30s... Something bad happened... @ {}. Exiting tool...", config.executeUpdatesOverPlexSqliteVersion);
+                Logger.error("Executing updates for {} item(s) took longer than 60s... Something bad happened... @ {}. Exiting tool...", config.executeUpdatesOverPlexSqliteVersion);
                 Logger.error("Dumping SQlite 3 STD::OUT");
                 Logger.error("===================");
                 Logger.error(sb2.toString());
