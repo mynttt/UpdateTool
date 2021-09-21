@@ -5,7 +5,7 @@ plugins {
     id 'com.github.spotbugs' version '2.0.1'
 }
 
-version = '1.6.2'
+version = '1.6.3'
 sourceCompatibility = '11'
 
 new File(projectDir, "VERSION").text = version;

@@ -1,3 +1,7 @@
+## 1.6.3
+- Added capabilities `IGNORE_NO_MATCHING_RESOLVER_LOG` (Supresses printing items that have no matching resolver to the log) and `IGNORE_SCRAPER_NO_RESULT_LOG` (Supresses printing web scraper no-match results that either have no rating on the IMDB website or are not allowed to be rated by anyone on the IMDB website and thus will never have ratings).
+- Bumped web scraper re-scanning to 14 days
+
 ## 1.6.2
 - Bumped Plex SQLite native binary abortion timeout to avoid false alarms on weaker systems
 

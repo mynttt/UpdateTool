@@ -5,9 +5,16 @@ import java.util.EnumSet;
 import java.util.List;
 
 public enum Capabilities {
-    TMDB, TVDB, NO_TV, NO_MOVIE, VERBOSE_XML_ERROR_LOG, DONT_THROW_ON_ENCODING_ERROR;
+    TMDB, 
+    TVDB, 
+    NO_TV, 
+    NO_MOVIE, 
+    VERBOSE_XML_ERROR_LOG, 
+    DONT_THROW_ON_ENCODING_ERROR,
+    IGNORE_SCRAPER_NO_RESULT_LOG,
+    IGNORE_NO_MATCHING_RESOLVER_LOG;
     
-    private static final List<Capabilities> USER_FLAGS = List.of(NO_MOVIE, NO_TV, DONT_THROW_ON_ENCODING_ERROR, VERBOSE_XML_ERROR_LOG);
+    private static final List<Capabilities> USER_FLAGS = List.of(NO_MOVIE, NO_TV, DONT_THROW_ON_ENCODING_ERROR, VERBOSE_XML_ERROR_LOG, IGNORE_NO_MATCHING_RESOLVER_LOG, IGNORE_SCRAPER_NO_RESULT_LOG);
 
     public static List<Capabilities> getUserFlags() {
         return USER_FLAGS;

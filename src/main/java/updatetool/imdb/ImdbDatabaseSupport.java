@@ -199,7 +199,7 @@ public class ImdbDatabaseSupport {
                 
         if(result != null) {
             if(newAgentMapping.cache(m.guid, result)) {
-                Logger.info("Associated and cached {} with new movie agent guid {} ({}).", result, m.guid, m.title);
+                Logger.info("Associated and cached {} with new movie/TV show agent guid {} ({}).", result, m.guid, m.title);
             }
         } else {
             Logger.warn("No external metadata provider id associated with this guid {} ({}). This item will not be processed any further.", m.guid, m.title);

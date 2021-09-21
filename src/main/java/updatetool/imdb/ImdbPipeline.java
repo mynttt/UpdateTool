@@ -169,7 +169,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
     @Override
     public void transformMetadata(ImdbJob job) throws Exception {
         var map = new HashMap<ImdbMetadataResult, ExportedRating>();
-        job.items.forEach(i -> map.put(i, dataset.getRatingFor(ImdbTransformer.clean(i.imdbId), scraper)));
+        job.items.forEach(i -> map.put(i, dataset.getRatingFor(ImdbTransformer.clean(i.imdbId), i.title, scraper)));
         
         // Threading not possible because of IMDB rate limit
         map.values().forEach(ExportedRating::ensureAvailability);

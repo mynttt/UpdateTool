@@ -12,18 +12,19 @@ import java.util.concurrent.TimeUnit;
 import org.jsoup.Jsoup;
 import org.tinylog.Logger;
 import updatetool.Main;
+import updatetool.common.Capabilities;
 import updatetool.common.KeyValueStore;
 
 public class ImdbScraper implements Closeable {
     private static final int SCRAPE_EVERY_N_DAYS_IGNORE = 90;
-    private static final int SCRAPE_EVERY_N_DAYS = 7;
+    private static final int SCRAPE_EVERY_N_DAYS = 14;
     private static final HttpClient CLIENT = HttpClient.newBuilder().followRedirects(Redirect.ALWAYS).version(Version.HTTP_2).connectTimeout(Duration.ofMillis(2000)).build();
     
     private final KeyValueStore idScrapeExpire = KeyValueStore.of(Main.PWD.resolve("imdbScrapeExpire.json")), 
                                 idCachedValue = KeyValueStore.of(Main.PWD.resolve("imdbScrapeValue.json")),
                                 id404Ignore = KeyValueStore.of(Main.PWD.resolve("imdbScrape404.json"));
     
-    public String scrapeFallback(String imdbId) throws Exception {
+    public String scrapeFallback(String imdbId, String title) throws Exception {
         String expired = idScrapeExpire.lookup(imdbId);
         
         if(id404Ignore.lookup(imdbId) != null) {
@@ -38,7 +39,7 @@ public class ImdbScraper implements Closeable {
                 idCachedValue.remove(imdbId);
             } else {
                 cacheTime = SCRAPE_EVERY_N_DAYS;
-                Logger.info("Scraped rating {} for id {}. Cached for {} day(s)", result, imdbId, SCRAPE_EVERY_N_DAYS);
+                Logger.info("Scraped rating {} for id {} ({}). Cached for {} day(s)", result, imdbId, title, SCRAPE_EVERY_N_DAYS);
                 idCachedValue.cache(imdbId, result);
             }
             
@@ -76,9 +77,13 @@ public class ImdbScraper implements Closeable {
         if(ratingValue.size() == 0) {
             var hasNoRating = doc.select("span.no-rating");
             if(hasNoRating.size() == 1) {
-                Logger.info("IMDB item with id {} has not been rated by anyone yet. Ignoring for {} day(s).", imdbId, SCRAPE_EVERY_N_DAYS_IGNORE);
+                if(!ImdbDockerImplementation.checkCapability(Capabilities.IGNORE_SCRAPER_NO_RESULT_LOG)) {
+                    Logger.info("IMDB item with id {} has not been rated by anyone yet (on the IMDB website). Ignoring for {} day(s).", imdbId, SCRAPE_EVERY_N_DAYS_IGNORE);
+                }
             } else {
-                Logger.info("IMDB item with id {} appears to not be allowed to be rated by anyone. Ignoring for {} day(s).", imdbId, SCRAPE_EVERY_N_DAYS_IGNORE);
+                if(!ImdbDockerImplementation.checkCapability(Capabilities.IGNORE_SCRAPER_NO_RESULT_LOG)) {
+                    Logger.info("IMDB item with id {} appears to not be allowed to be rated by anyone (on the IMDB website). Ignoring for {} day(s).", imdbId, SCRAPE_EVERY_N_DAYS_IGNORE);
+                }
             }
             return null;
         }

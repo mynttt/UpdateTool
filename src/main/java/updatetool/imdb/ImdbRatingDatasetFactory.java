@@ -35,13 +35,14 @@ public final class ImdbRatingDatasetFactory {
     private ImdbRatingDatasetFactory() {}
     
     public static class ScreenScrapedRating implements ExportedRating {
-        private String rating, imdbId;
+        private String rating, imdbId, title;
         private ImdbScraper scraper;
         
-        public ScreenScrapedRating(String rating, String imdbId, ImdbScraper scraper) {
+        public ScreenScrapedRating(String rating, String imdbId, String title, ImdbScraper scraper) {
             this.rating = rating;
             this.imdbId = imdbId;
             this.scraper = scraper;
+            this.title = title;
         }
 
         @Override
@@ -53,7 +54,7 @@ public final class ImdbRatingDatasetFactory {
         public void ensureAvailability() {
             if(rating == null) {
                 try {
-                    var scraped = scraper.scrapeFallback(imdbId);
+                    var scraped = scraper.scrapeFallback(imdbId, title);
                     String scrapedRating = scraped == null ? SCRAPE_FAILED  : scraped;
                     this.rating = scrapedRating;
                 } catch (Exception e) {
@@ -62,6 +63,8 @@ public final class ImdbRatingDatasetFactory {
                     Logger.error("========================================");
                     Logger.error(e);
                     Logger.error("========================================");
+                } finally {
+                    this.title = null;
                 }
             }
         }
@@ -71,9 +74,9 @@ public final class ImdbRatingDatasetFactory {
     public static class ImdbRatingDataset {
         private HashMap<String, String> data = new HashMap<>();
 
-        public ExportedRating getRatingFor(String imdbId, ImdbScraper scraper) {
+        public ExportedRating getRatingFor(String imdbId, String title, ImdbScraper scraper) {
             String rating = data.get(imdbId);
-            return new ScreenScrapedRating(rating, imdbId, scraper);
+            return new ScreenScrapedRating(rating, imdbId, title, scraper);
         }
     }
 
