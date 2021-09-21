@@ -13,6 +13,9 @@ case $D_OS_ARCH in
   "armhf")
   dl_url="https://downloads.plex.tv/plex-media-server-new/1.24.3.5033-757abe6b4/debian/plexmediaserver_1.24.3.5033-757abe6b4_armhf.deb"
   ;;
+  "arm64")
+  dl_url="https://downloads.plex.tv/plex-media-server-new/1.24.3.5033-757abe6b4/debian/plexmediaserver_1.24.3.5033-757abe6b4_arm64.deb"
+  ;;
   *)
   echo "INVALID_ARCHITECTURE_FOR_PLEX_SQLITE_DL: ${D_OS_ARCH}"
   exit -1
@@ -38,5 +41,10 @@ if [[ "$OUTPUT" == "3"* ]]; then
     echo "PLEX_SQLITE_DEPLOYED @ ${PWD}"
 else
     echo "PLEX_SQLITE_DEPLOYMENT_ERROR"
-    exit -1
+    echo "$OUTPUT"
+    if [[ "$D_OS_ARCH" == "arm64" || "$D_OS_ARCH" == "armhf" ]]; then
+        echo "BYPASS_DEPLOYMENT_ERROR"
+    else
+        exit -1
+    fi
 fi
