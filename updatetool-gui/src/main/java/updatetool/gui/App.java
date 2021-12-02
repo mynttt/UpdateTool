@@ -133,7 +133,7 @@ public class App extends Application {
     }
     
     @FXML TextField plexFolder, tmdbKey, tvdbKey, ignoreLibs, javabinary, hours, tvshowoptin, plexsqlpath, capabilities;
-    @FXML CheckBox useTmdb, useTvdb, ignoreMovies, ignoreTv, plexsqlcheckbox;
+    @FXML CheckBox useTmdb, useTvdb, ignoreMovies, ignoreTv, plexsqlcheckbox, autostartChecker;
     @FXML TextArea log;
     @FXML Label version, status;
     @FXML Button start, stop;
@@ -156,6 +156,7 @@ public class App extends Application {
         capabilities.textProperty().bindBidirectional(INSTANCE.getCapabilities());
         plexsqlpath.textProperty().bindBidirectional(INSTANCE.getPlexNativeSqlPath());
         plexsqlcheckbox.selectedProperty().bindBidirectional(INSTANCE.getUsePlexNativeSql());
+        autostartChecker.selectedProperty().bindBidirectional(INSTANCE.getAutostartOnOpen());
         
         BooleanBinding p = javabinary.textProperty().isEmpty()
                 .or(Bindings.createBooleanBinding(() -> javabinary.getText().trim().isEmpty(), javabinary.textProperty()))
@@ -199,6 +200,17 @@ public class App extends Application {
             checkVersion();
             runLater(() -> parent.setDisable(false));
             runLater(() -> status.setText("Tool loaded."));
+            runLater(() -> {
+                if(INSTANCE.getAutostartOnOpen().get()) {
+                    log.appendText("\n=== AUTOSTART ENABLED ===\n");
+                    try {
+                        start();
+                        stage.toFront();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
             return true; 
         });
     }

@@ -18,7 +18,10 @@
    <bottom>
       <HBox prefWidth="803.0" BorderPane.alignment="CENTER">
          <children>
-            <Label text="Status:" />
+            <Label text="Status:">
+               <HBox.margin>
+                  <Insets left="4.0" />
+               </HBox.margin></Label>
             <Label fx:id="status" text="__STATUS__">
                <HBox.margin>
                   <Insets left="5.0" />
@@ -50,8 +53,13 @@
                   <Button mnemonicParsing="false" onAction="#openData" text="Open UpdateTool data dir" />
                   <TextField fx:id="plexFolder" promptText="Plex Data Folder location" HBox.hgrow="ALWAYS">
                      <HBox.margin>
-                        <Insets left="2.0" />
+                        <Insets left="2.0" right="3.0" />
                      </HBox.margin></TextField>
+                  <CheckBox fx:id="autostartChecker" mnemonicParsing="false" text="Autostart on GUI open">
+                     <HBox.margin>
+                        <Insets right="3.0" top="4.0" />
+                     </HBox.margin>
+                  </CheckBox>
                </children>
                <VBox.margin>
                   <Insets bottom="2.0" />

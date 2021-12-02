@@ -75,6 +75,7 @@ public class Config implements Serializable {
         ignoreMovies = new SimpleBooleanProperty();
         ignoreTv = new SimpleBooleanProperty();
         usePlexNativeSql = new SimpleBooleanProperty();
+        autostartOnOpen = new SimpleBooleanProperty();
         plexNativeSqlPath.addListener((o, oo, n) -> plexNativeSqlPathV = n.trim());
         usePlexNativeSql.addListener((o, oo, n) -> usePlexNativeSqlV = n);
         capabilities.addListener((o, oo, n) -> capabilitiesV = n.trim());
@@ -89,6 +90,7 @@ public class Config implements Serializable {
         useTvdb.addListener((o, oo, n) -> useTvdbV = n);
         ignoreMovies.addListener((o, oo, n) -> ignoreMoviesV = n);
         ignoreTv.addListener((o, oo, n) -> ignoreTvV = n);
+        autostartOnOpen.addListener((o, oo, n) -> autostartOnOpenV = n);
     }
     
     private Object readResolve() {
@@ -107,11 +109,12 @@ public class Config implements Serializable {
         usePlexNativeSql.set(usePlexNativeSqlV);
         plexNativeSqlPath.set(plexNativeSqlPathV == null ? "" : plexNativeSqlPathV);
         capabilities.set(capabilitiesV == null ? "" : capabilitiesV);
+        autostartOnOpen.set(autostartOnOpenV);
         return this;
     }
     
     private transient SimpleStringProperty plexFolder, tmdbKey,tvdbKey, ignoreLibs, javabinary, hours, tvShowOptIn, plexNativeSqlPath, capabilities;
-    private transient SimpleBooleanProperty useTmdb,useTvdb,ignoreMovies, ignoreTv, usePlexNativeSql;
+    private transient SimpleBooleanProperty useTmdb,useTvdb,ignoreMovies, ignoreTv, usePlexNativeSql, autostartOnOpen;
 
     private String 
         plexFolderV = "", 
@@ -129,7 +132,8 @@ public class Config implements Serializable {
         useTvdbV, 
         ignoreMoviesV, 
         ignoreTvV,
-        usePlexNativeSqlV;
+        usePlexNativeSqlV,
+        autostartOnOpenV;
 
     public SimpleStringProperty getCapabilities() {
         return capabilities;
@@ -181,6 +185,10 @@ public class Config implements Serializable {
 
     public SimpleStringProperty getPlexNativeSqlPath() {
         return plexNativeSqlPath;
+    }
+
+    public SimpleBooleanProperty getAutostartOnOpen() {
+        return autostartOnOpen;
     }
 
     public SimpleBooleanProperty getUsePlexNativeSql() {
