@@ -15,7 +15,7 @@ plugins {
     id 'eclipse'
 }
 
-version = '1.0.6'
+version = '1.0.7'
 sourceCompatibility = '11'
 
 new File(projectDir, "VERSION").text = version;

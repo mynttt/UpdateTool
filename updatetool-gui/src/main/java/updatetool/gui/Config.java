@@ -84,7 +84,7 @@ public class Config implements Serializable {
         tmdbKey.addListener((o, oo, n) -> tmdbKeyV = n.trim());
         tvdbKey.addListener((o, oo, n) -> tvdbKeyV = n.trim());
         ignoreLibs.addListener((o, oo, n) -> ignoreLibsV = n.trim());
-        tvShowOptIn.addListener((o, oo, n) -> n.trim());
+        tvShowOptIn.addListener((o, oo, n) -> tvShowOptInV = n.trim());
         javabinary.addListener((o, oo, n) -> javabinaryV = n.trim());
         useTmdb.addListener((o, oo, n) -> useTmdbV = n);
         useTvdb.addListener((o, oo, n) -> useTvdbV = n);
