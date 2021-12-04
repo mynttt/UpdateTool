@@ -1,3 +1,6 @@
+## 1.6.3b
+- fixed "database not found" bug that some docker users experienced and could only solve it via a `OVERRIDE_DATABASE_LOCATION` entry
+
 ## 1.6.3
 - Added capabilities `IGNORE_NO_MATCHING_RESOLVER_LOG` (Supresses printing items that have no matching resolver to the log) and `IGNORE_SCRAPER_NO_RESULT_LOG` (Supresses printing web scraper no-match results that either have no rating on the IMDB website or are not allowed to be rated by anyone on the IMDB website and thus will never have ratings).
 - Bumped web scraper re-scanning to 14 days
