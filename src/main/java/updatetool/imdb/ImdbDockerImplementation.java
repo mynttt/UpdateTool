@@ -189,7 +189,7 @@ public class ImdbDockerImplementation extends Implementation {
     }
     
     private static Path getDatabaseLocation(Path plexdata, String env) {
-        if(env == null)
+        if(env == null || env.isBlank())
             return plexdata.resolve("Plug-in Support/Databases/com.plexapp.plugins.library.db");
         Logger.info("Custom path specified @ {}", env);
         return Paths.get(env).resolve("com.plexapp.plugins.library.db");
