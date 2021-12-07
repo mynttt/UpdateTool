@@ -12,11 +12,13 @@ import org.tinylog.Logger;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import updatetool.Main;
 import updatetool.api.ExportedRating;
+import updatetool.common.Capabilities;
 import updatetool.common.Utility;
 import updatetool.exceptions.ImdbDatasetAcquireException;
 
 public final class ImdbRatingDatasetFactory {
     public static final String SCRAPE_FAILED = "SCRAPE_FAILED";
+    public static final String SCRAPE_DISABLED = "SCRAPE_DISABLED";
     
     private static URL urlExceptionHack() {
         try {
@@ -54,9 +56,13 @@ public final class ImdbRatingDatasetFactory {
         public void ensureAvailability() {
             if(rating == null) {
                 try {
-                    var scraped = scraper.scrapeFallback(imdbId, title);
-                    String scrapedRating = scraped == null ? SCRAPE_FAILED  : scraped;
-                    this.rating = scrapedRating;
+                    if(ImdbDockerImplementation.checkCapability(Capabilities.DISABLE_SCREEN_SCRAPE)) {
+                        this.rating = SCRAPE_DISABLED;
+                    } else {
+                        var scraped = scraper.scrapeFallback(imdbId, title);
+                        String scrapedRating = scraped == null ? SCRAPE_FAILED  : scraped;
+                        this.rating = scrapedRating;
+                    }
                 } catch (Exception e) {
                     Logger.error(e.getClass().getSimpleName() + " exception encountered @ Screen Scraping");
                     Logger.error("Please contact the maintainer of the application with the stacktrace below if you think this is unwanted behavior.");

@@ -2,6 +2,7 @@ package updatetool.imdb;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -13,7 +14,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
@@ -58,6 +61,9 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
     private static final int RETRY_N_SECONDS_IF_DB_LOCKED = 20;
     private static final int ABORT_DB_LOCK_WAITING_AFTER_N_RETRIES = 500;
 
+    private static final ScheduledExecutorService SCHEDULER = Executors.newSingleThreadScheduledExecutor();
+    
+    private final Collection<KeyValueStore> caches;
     private final ImdbScraper scraper;
     private final ImdbLibraryMetadata metadata;
     private final ExecutorService service;
@@ -102,6 +108,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         this.configuration = configuration;
         this.dataset = dataset;
         this.scraper = scraper;
+        this.caches = caches.values();
         
         var tmdbResolver = configuration.resolveTmdb() ? new TmdbToImdbResolvement(new TmdbApiV3(configuration.tmdbApiKey, caches.get("tmdb-series"), caches.get("tmdb"), caches.get("tmdb-series-blacklist"), caches.get("tmdb-blacklist"))) : resolveDefault;
         var tvdbResolver = configuration.resolveTvdb() ? new TvdbToImdbResolvement(configuration.isTvdbV4 
@@ -135,6 +142,16 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         List<CompletableFuture<Void>> resolverTasks = new ArrayList<>();
         ConcurrentLinkedDeque<ImdbMetadataResult> resolved = new ConcurrentLinkedDeque<>();
         var items = metadata.request(job.uuid);
+        
+        Logger.info("Starting watchdog to print progress to std::out with a delay and interval of 1 minute...");
+        int max = items.size();
+        AtomicInteger current = new AtomicInteger();
+        
+        var handle = SCHEDULER.scheduleWithFixedDelay(() -> {
+            Logger.info("Current metadata resolvement status: [{}/{}] ({} %) - Next update in 1 minute.", current.get(), max, String.format("%.2f", ((current.get()*1.0/max)*100)));
+        }, 1, 1, TimeUnit.MINUTES);
+        
+        
         for(var item : items) {
             var matcher = RESOLVEMENT.matcher(item.guid);
             if(matcher.find()) {
@@ -142,7 +159,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
                     if(matcher.group(entry.getKey()) == null)
                         continue;
                     resolverTasks.add(CompletableFuture.supplyAsync(() -> entry.getValue().resolve(item), service)
-                            .thenAccept(b -> { if(b) resolved.add(item); }));
+                            .thenAccept(b -> { current.incrementAndGet(); if(b) resolved.add(item); }));
                     break;
                 }
             } else {
@@ -151,6 +168,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         }
         
         resolverTasks.stream().forEach(CompletableFuture::join);
+        Logger.info("Progress printing watchdog has been stopped. Cancelation status: {}", handle.cancel(true));
         
         int resolvedSize = resolved.size();
         int itemsSize = items.size();
@@ -185,6 +203,10 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         Logger.info("Transforming " + map.size() + " item(s)");
         map.entrySet().stream().forEach(ImdbTransformer::updateMetadata);
         Logger.info("Transformed entries for " + map.size() + " items(s).");
+        
+        Logger.info("Save point: Persisting caches to keep queried look-up data in case of crashes or hang-ups.");
+        caches.forEach(KeyValueStore::dump);
+        
         job.stage = PipelineStage.TRANSFORMED_META;
     }
 

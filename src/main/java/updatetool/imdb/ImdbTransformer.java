@@ -22,9 +22,14 @@ public class ImdbTransformer {
         try {
             d = Double.parseDouble(imdb.exportRating());
         } catch(NumberFormatException | NullPointerException e) {
+            if(ImdbRatingDatasetFactory.SCRAPE_DISABLED.equals(imdb.exportRating())) { 
+                return false; 
+            }
+            
             if(!ImdbRatingDatasetFactory.SCRAPE_FAILED.equals(imdb.exportRating())) {
                 Logger.warn("Ignoring: '" + meta.title + "' with IMDB ID: " + meta.imdbId + " supplies no valid rating := '{}'", imdb.exportRating());
             }
+            
             return false;
         }
         

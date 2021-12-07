@@ -218,6 +218,7 @@ VERBOSE_XML_ERROR_LOG | Enable verbose XML error output logging
 DONT_THROW_ON_ENCODING_ERROR | Supress forced quits if decoding errors of extra data are encountered due to corrupt items in the library
 IGNORE_NO_MATCHING_RESOLVER_LOG|Supresses printing items that have no matching resolver to the log
 IGNORE_SCRAPER_NO_RESULT_LOG|Supresses printing web scraper no-match results that either have no rating on the IMDB website or are not allowed to be rated by anyone on the IMDB website and thus will never have ratings
+DISABLE_SCREEN_SCRAPE|Disables the screen scraping unit (extracts IMDB ratings from the website if not in dataset) in case that there are issues with the IMDB web page such as 503 errors and timeouts that cause unsuccessful results and slow down the metadata lookup process immensely.
 
 Multiple flags can be supplied as a semicolon separated string.
 

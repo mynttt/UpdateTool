@@ -14,6 +14,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -163,30 +164,37 @@ public class ImdbDatabaseSupport {
         return requestMetadata("SELECT id, library_section_id, guid, title, extra_data, hash, rating, audience_rating from metadata_items WHERE media_item_count = 0 AND parent_id NOT NULL AND library_section_id = " + libraryId, LibraryType.SERIES);
     }
     
-    private List<ImdbMetadataResult> requestMetadata(String query, LibraryType type) {        
+    private List<ImdbMetadataResult> requestMetadata(String query, LibraryType type) {
+        boolean persistMapping = false;
+        
         try(var handle = provider.queryFor(query)){
             List<ImdbMetadataResult> list = new ArrayList<>();
             while(handle.result().next()) {
                 var m = new ImdbMetadataResult(handle.result(), type);
-                updateNewAgentMetadataMapping(m);
+                if(updateNewAgentMetadataMapping(m)) {
+                    persistMapping = true;
+                }
                 list.add(m);
             }
+            
+            if(persistMapping) { newAgentMapping.dump(); }
+            
             return list;
         } catch (SQLException e) {
             throw Utility.rethrow(e);
         }
     }
 
-    private void updateNewAgentMetadataMapping(ImdbMetadataResult m) throws SQLException {
+    private boolean updateNewAgentMetadataMapping(ImdbMetadataResult m) throws SQLException {
         if(newAgentMapping == null)
-            return;
+            return false;
         
         if(!Globals.isNewAgent(m))
-            return;
+            return false;
         
         String v = newAgentMapping.lookup(m.guid);
         if(v != null && v.startsWith("imdb://"))
-            return;
+            return false;
         
         String result = null;
         try(var handle = provider.queryFor("SELECT t.tag FROM taggings tg LEFT JOIN tags t ON tg.tag_id = t.id AND t.tag_type = 314 WHERE tg.metadata_item_id = " + m.id + " AND t.tag NOT NULL")) {
@@ -196,14 +204,19 @@ public class ImdbDatabaseSupport {
                     result = id;
             }
         }
-                
+
+        boolean returnV = false;
+        
         if(result != null) {
-            if(newAgentMapping.cache(m.guid, result)) {
+            returnV = newAgentMapping.cache(m.guid, result);
+            if(returnV) {
                 Logger.info("Associated and cached {} with new movie/TV show agent guid {} ({}).", result, m.guid, m.title);
             }
         } else {
             Logger.warn("No external metadata provider id associated with this guid {} ({}). This item will not be processed any further.", m.guid, m.title);
         }
+        
+        return returnV;
     }
 
     public void requestBatchUpdateOf(List<ImdbMetadataResult> items) throws SQLiteException {
@@ -238,61 +251,86 @@ public class ImdbDatabaseSupport {
     
     @SuppressFBWarnings("DM_EXIT")
     private void internalBatchUpdateOverPlexSqliteBinary(List<ImdbMetadataResult> items, boolean isNewAgent, String plexSqliteBinaryPath) {
-        StringBuilder cb = new StringBuilder(1000);
-        cb.append("BEGIN TRANSACTION;\n");
         
-        for(var item : items) {
-            Double d = isNewAgent ? item.audienceRating : item.rating;
+        Iterator<String> supplier = new Iterator<String>() {
+            boolean initial = false;
+            boolean last = false;
+            int idx = 0;
             
-            //TODO: hotfix, investigate further only happened to one person over the entire tool lifetime
-            if(d == null) {
-                Logger.error("Null value encountered. Should not be possible. Skipping entry to not crash tool. Contact maintainer with this dump: " + Objects.toString(item));
-                continue;
+            @Override
+            public String next() {
+                if(!initial) { initial = true; return "BEGIN TRANSACTION;\n"; }
+                if(idx++ < items.size()) {
+                    var item = items.get(idx-1);
+                    Double d = isNewAgent ? item.audienceRating : item.rating;
+                    
+                    //TODO: hotfix, investigate further only happened to one person over the entire tool lifetime
+                    if(d == null) {
+                        Logger.error("Null value encountered. Should not be possible. Skipping entry to not crash tool. Contact maintainer with this dump: " + Objects.toString(item));
+                        return null;
+                    }
+                    
+                    return isNewAgent ? String.format(
+                            "UPDATE metadata_items SET audience_rating = %s, extra_data = '%s', rating = NULL WHERE id = %s;%n", d, sanitize(item.extraData), item.id) : String.format(
+                            "UPDATE metadata_items SET rating = %s, extra_data = '%s' WHERE id = %s;%n", d, sanitize(item.extraData), item.id);
+                }
+                last = true;
+                return "COMMIT TRANSACTION;";
             }
             
-            String query = isNewAgent ? String.format(
-                    "UPDATE metadata_items SET audience_rating = %s, extra_data = '%s', rating = NULL WHERE id = %s;%n", d, sanitize(item.extraData), item.id) : String.format(
-                    "UPDATE metadata_items SET rating = %s, extra_data = '%s' WHERE id = %s;%n", d, sanitize(item.extraData), item.id);
-            cb.append(query);
-        }
-        cb.append("COMMIT TRANSACTION;");
+            @Override
+            public boolean hasNext() {
+                return !last;
+            }
+        };
+        
+        StringBuilder outputErrors = new StringBuilder();
         
         try {
             var proc = new ProcessBuilder(config.executeUpdatesOverPlexSqliteVersion.trim(), config.dbLocation).redirectErrorStream(true).start();
-            OutputStreamWriter br = new OutputStreamWriter(proc.getOutputStream(), StandardCharsets.UTF_8);
-            br.write(cb.toString());
-            br.close();
-
-            StringBuilder sb2 = new StringBuilder();
-            Main.EXECUTOR.submit(() -> {
+            
+            var future = Main.EXECUTOR.submit(() -> {
                 String line;
                 InputStreamReader isr = new InputStreamReader(proc.getInputStream(), StandardCharsets.UTF_8);
+                
                 try(BufferedReader rdr = new BufferedReader(isr)) {
                     while ((line = rdr.readLine()) != null) {
                         Logger.info(line);
-                        sb2.append(line).append(" | ");
+                        outputErrors.append(line).append(" | ");
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             });
             
+            OutputStreamWriter br = new OutputStreamWriter(proc.getOutputStream(), StandardCharsets.UTF_8);
+            
+            while(supplier.hasNext()) {
+                var query = supplier.next();
+                if(query == null) continue;
+                br.write(query);
+            }
+            
+            br.close();
+            future.get();
+            
             var result = proc.waitFor(60, TimeUnit.SECONDS);
             if(!result) {
                 Logger.error("Executing updates for {} item(s) took longer than 60s... Something bad happened... @ {}. Exiting tool...", config.executeUpdatesOverPlexSqliteVersion);
                 Logger.error("Dumping SQlite 3 STD::OUT");
                 Logger.error("===================");
-                Logger.error(sb2.toString());
+                Logger.error(outputErrors.toString());
                 Logger.error("===================");
                 System.exit(-1);
             } else {
-                var str = sb2.toString().trim();
+                var str = outputErrors.toString().trim();
                 if(str.isBlank()) {
                     Logger.info("Update executed successfully via Plex SQLite binary call.");
                 } else {
                     Logger.warn("Update via Plex SQLite binary call produced potential error messages. Please contact the author of the tool with this output:");
                     Logger.warn(str);
                     Logger.warn("==================================================");
+                    System.exit(-1);
                 }
             }
         } catch(Exception e) {

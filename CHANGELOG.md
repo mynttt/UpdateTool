@@ -1,3 +1,9 @@
+## 1.6.4
+- New flag `DISABLE_SCREEN_SCRAPE` that allows to disable screen scraping if it causes problems (mainly timeouts and 503 requests which cause an unsuccessful and extremely slow metadata resolvement).
+- Metadata resolvement will now give absolute and relative processed count updates via the log in case a lookup session takes longer than one minute. This is so large libraries do not give the impression of the tool having a hang-up. Example: `Current meta data resolvement status: [27399/46386] (59,07 %) - Next update in 1 minute.`
+- More memory performant query building for native SQL binary usage via lazy loading iterator.
+- Fixed bug where a malformed SQL query causes the tool to halt indefinitely. The tool will now exit and output the malformed queries for further diagnoses.
+
 ## 1.6.3b
 - fixed "database not found" bug that some docker users experienced and could only solve it via a `OVERRIDE_DATABASE_LOCATION` entry
 

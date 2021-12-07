@@ -181,6 +181,10 @@ public class ImdbDockerImplementation extends Implementation {
             }
         }
 
+        if(checkCapability(Capabilities.DISABLE_SCREEN_SCRAPE)) {
+            Logger.info("Screen scraping integration has been disabled by capability: DISABLE_SCREEN_SCRAPE");
+        }
+        
         Logger.info("Capabilities: " + capabilities.toString());
         
         var dbLocation = getDatabaseLocation(plexdata, overrideDatabaseLocation).toAbsolutePath().toString();
@@ -233,7 +237,7 @@ public class ImdbDockerImplementation extends Implementation {
                 }
                 
                 Logger.info("LIBRARIES => PRE LIBRARY FILTERING");
-                libraries.forEach(l -> Logger.info("Found library {} (ID={}) with agent: {} and {} item(s).", l.name, l.id, l.agent, l.items));
+                libraries.forEach(l -> Logger.info("Found library [{}] {} (ID={}) with agent: {} and {} item(s).", l.type, l.name, l.id, l.agent, l.items));
                 
                 libraries.removeIf(l -> IGNORE_LIBRARIES.contains(l.id));
                 libraries.removeIf(l -> {

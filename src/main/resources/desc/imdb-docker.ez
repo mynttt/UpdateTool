@@ -23,6 +23,9 @@ meta {
              | (Optional) USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS: Use Plex's non-standard custom build of SQLite3 for write access.
              |            Useful for users that experience corruption of their database with UpdateTool.
              |            This must point to the SQLite binary that is in the main Plex folder (next to the server binary).
+             | (Optional) DISABLE_SCREEN_SCRAPE: Disables the screen scraping unit (extracts IMDB ratings from the website if not in dataset) 
+                          in case that there are issues with the IMDB web page such as 503 errors and timeouts that cause unsuccessful results and 
+                          slow down the metadata lookup process immensely.
              |
              | Parameters:
              |   - schedule = if present will schedule this task every n hour(s) : must be > 0 : default 12
