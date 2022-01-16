@@ -28,7 +28,7 @@ if [ ! -z "$DOCKER_DEBUG_PRINT_TREE_OF_PLEX_PATHS" ]; then
     if [ ! -z "$PLEX_DATA_DIR" ]; then
         echo "Plex data dir (PLEX_DATA_DIR) => ${PLEX_DATA_DIR}"
 	echo "Printing tree..."
-	tree ${PLEX_DATA_DIR}
+	tree "${PLEX_DATA_DIR}"
 	echo "==================="
     else
         echo "WARNING: PLEX_DATA_DIR IS NOT SET !!!"
@@ -36,7 +36,7 @@ if [ ! -z "$DOCKER_DEBUG_PRINT_TREE_OF_PLEX_PATHS" ]; then
     if [ ! -z "$OVERRIDE_DATABASE_LOCATION" ]; then
         echo "Override database location will be used to search for DB (OVERRIDE_DATABASE_LOCATION) => ${OVERRIDE_DATABASE_LOCATION}"
 	echo "Printing tree..."
-	tree ${OVERRIDE_DATABASE_LOCATION}
+	tree "${OVERRIDE_DATABASE_LOCATION}"
 	echo "==================="
     else
         echo "Not using OVERRIDE_DATABASE_LOCATION as this has not been set."
