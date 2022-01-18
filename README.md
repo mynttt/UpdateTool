@@ -156,13 +156,12 @@ docker run -dit
 
 Because the new agent only allows to choose between TVDB/TMDB ratings via the Plex UI libraries that shall be touched by UpdateTool have to be explicitly opted-in. This is a safety feature to not accidentally wreck libraries of users who wish to not have UpdateTool change their new TV Show agent libraries to IMDB ratings. Until you can set IMDB via the UI this will be the to-go way of having UpdateTool process these libraries.
 
-UNLOCK_FOR_NEW_TV_AGENT takes a list of library ids as a semicolon seperated string. You can find the id of a plex library by opening it in plex and then looking at the URL in the browser.
+UNLOCK_FOR_NEW_TV_AGENT takes a list of library ids as a semicolon seperated string. You can find the id of a plex library by starting the tool and looking at the beginning of the log. It reports the name, type and ID of all detected libraries.
 
 ```
-Lets find the ID for the new TV Show agent library 'New Agent TV Show':
-1.) Select 'New Agent TV Show' in the Plex web interface
-2.) Look at the URL in the browser, it should end like this: &context=content.library&source=1
-3.) source=1 tells us that the ID for 'New Agent TV Show' is 1
+[INFO ] - 2022-01-18 15:21:47 @ ImdbDockerImplementation$ImdbBatchJob.lambda$run$0: Found library [MOVIE] Movies (ID=1) with agent: com.plexapp.agents.imdb and 1831 item(s).
+[INFO ] - 2022-01-18 15:21:47 @ ImdbDockerImplementation$ImdbBatchJob.lambda$run$0: Found library [SERIES] TV Shows (ID=7) with agent: com.plexapp.agents.thetvdb and 2382 item(s).
+item(s).
 ```
 
 **Examples:**
@@ -185,11 +184,12 @@ You can ignore libraries by setting the environment variable **IGNORE_LIBS**.
 
 IGNORE_LIBS takes a list of library ids as a semicolon seperated string. You can find the id of a plex library by opening it in plex and then looking at the URL in the browser.
 
+The way of finding the matching IDs is by looking at the log when the tool starts - it will report the name, type and ID of the detected libraries:
+
 ```
-Lets find the ID for the library 'Movies':
-1.) Select 'Movies' in the Plex web interface
-2.) Look at the URL in the browser, it should end like this: &context=content.library&source=1
-3.) source=1 tells us that the ID for 'Movies' is 1
+[INFO ] - 2022-01-18 15:21:47 @ ImdbDockerImplementation$ImdbBatchJob.lambda$run$0: Found library [MOVIE] Movies (ID=1) with agent: com.plexapp.agents.imdb and 1831 item(s).
+[INFO ] - 2022-01-18 15:21:47 @ ImdbDockerImplementation$ImdbBatchJob.lambda$run$0: Found library [SERIES] TV Shows (ID=7) with agent: com.plexapp.agents.thetvdb and 2382 item(s).
+item(s).
 ```
 
 **Examples:**
