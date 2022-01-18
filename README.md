@@ -20,8 +20,6 @@ A tool to update the IMDB ratings for Plex libraries that contain movies via the
 
 **To run this without docker on Linux in a headless mode check out [this issue](https://github.com/mynttt/UpdateTool/issues/70)!**
 
-**TVDB is now supported with both v3/v4 APIs. Just supply your legacy API key or v4 Pin and the tool will automatically choose the correct API!**
-
 **This tool works with the new Plex TV Show agent. The fallback support however is limited and only supports TVDB v4 and not TMDB v3 right now. This feature is a opt-in so please read more here [more here](#opt-in-for-libraries-using-the-new-tv-show-agent)!**
 
 **While the DB issues are fixed now and using this tool is likely safe to use and never caused issues for myself and a large part of the user base it shall still be noted that this tool should be used with caution and that I'm not responsible for any damages within your PMS database. The database interaction of this tool is minimal and within the milliseconds realm and the queries are executed cleanly by using SQLite's transactions.**
