@@ -161,7 +161,6 @@ Because the new agent only allows to choose between TVDB/TMDB ratings via the Pl
 ```
 [INFO ] - 2022-01-18 15:21:47 @ ImdbDockerImplementation$ImdbBatchJob.lambda$run$0: Found library [MOVIE] Movies (ID=1) with agent: com.plexapp.agents.imdb and 1831 item(s).
 [INFO ] - 2022-01-18 15:21:47 @ ImdbDockerImplementation$ImdbBatchJob.lambda$run$0: Found library [SERIES] TV Shows (ID=7) with agent: com.plexapp.agents.thetvdb and 2382 item(s).
-item(s).
 ```
 
 **Examples:**
