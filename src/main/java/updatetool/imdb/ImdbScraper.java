@@ -8,6 +8,7 @@ import java.net.http.HttpClient.Version;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
+import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 import org.jsoup.Jsoup;
 import org.tinylog.Logger;
@@ -16,8 +17,10 @@ import updatetool.common.Capabilities;
 import updatetool.common.KeyValueStore;
 
 public class ImdbScraper implements Closeable {
-    private static final int SCRAPE_EVERY_N_DAYS_IGNORE = 90;
-    private static final int SCRAPE_EVERY_N_DAYS = 14;
+    private static final String RETURN_LONG_BLACKLIST = "BLS_L";
+    private static final int SCRAPE_EVERY_N_DAYS_IGNORE = 30;
+    private static final int SCRAPE_BLACKLIST_IF_CANT_BE_RATED = 90;
+    private static final int SCRAPE_EVERY_N_DAYS = 7;
     private static final HttpClient CLIENT = HttpClient.newBuilder().followRedirects(Redirect.ALWAYS).version(Version.HTTP_2).connectTimeout(Duration.ofMillis(2000)).build();
     
     private final KeyValueStore idScrapeExpire = KeyValueStore.of(Main.PWD.resolve("imdbScrapeExpire.json")), 
@@ -35,8 +38,9 @@ public class ImdbScraper implements Closeable {
             var result = scrape(imdbId);
             long cacheTime = SCRAPE_EVERY_N_DAYS_IGNORE;
             
-            if(result == null) {
+            if(result == null || result == RETURN_LONG_BLACKLIST) {
                 idCachedValue.remove(imdbId);
+                result = null;
             } else {
                 cacheTime = SCRAPE_EVERY_N_DAYS;
                 Logger.info("Scraped rating {} for id {} ({}). Cached for {} day(s)", result, imdbId, title, SCRAPE_EVERY_N_DAYS);
@@ -72,24 +76,33 @@ public class ImdbScraper implements Closeable {
         }
         
         var doc = Jsoup.parse(response.body());
-        var ratingValue = doc.select("span[itemprop = ratingValue]");
+        var ratingValue = doc.select("span[class*=AggregateRatingButton__RatingScore]");
+        boolean blacklistShort = true;
         
         if(ratingValue.size() == 0) {
-            var hasNoRating = doc.select("span.no-rating");
-            if(hasNoRating.size() == 1) {
+            var canBeRated = doc.select("div[class*=RatingBar__ButtonContainer]");
+            var children = canBeRated.get(0).childNodeSize();
+            
+            if(children > 0) {
                 if(!ImdbDockerImplementation.checkCapability(Capabilities.IGNORE_SCRAPER_NO_RESULT_LOG)) {
-                    Logger.info("IMDB item with id {} has not been rated by anyone yet (on the IMDB website). Ignoring for {} day(s).", imdbId, SCRAPE_EVERY_N_DAYS_IGNORE);
+                    Logger.info("IMDB item with id {} has not been rated by anyone yet on the IMDB website => Thus no rating to parse. Ignoring for {} day(s).", imdbId, SCRAPE_EVERY_N_DAYS_IGNORE);
                 }
             } else {
+                blacklistShort = false;
                 if(!ImdbDockerImplementation.checkCapability(Capabilities.IGNORE_SCRAPER_NO_RESULT_LOG)) {
-                    Logger.info("IMDB item with id {} appears to not be allowed to be rated by anyone (on the IMDB website). Ignoring for {} day(s).", imdbId, SCRAPE_EVERY_N_DAYS_IGNORE);
+                    Logger.info("IMDB item with id {} appears to not be allowed to be rated by anyone (missing rating bar on the IMDB website). Ignoring for {} day(s).", imdbId, SCRAPE_BLACKLIST_IF_CANT_BE_RATED);
                 }
             }
-            return null;
+            return blacklistShort ? null : RETURN_LONG_BLACKLIST;
         }
         
+        HashSet<String> s = new HashSet<>();
         if(ratingValue.size() > 1) {
-            throw new RuntimeException(String.format("Something went wrong with screen scraping the IMDB page for id %s (MORE_THAN_ONE_RESULT). Please contact developer by creating a GitHub issue.", imdbId));
+            ratingValue.forEach(x -> s.add(x.toString()));
+        }
+        
+        if(s.size() > 1) {
+            throw new RuntimeException(String.format("Something went wrong with screen scraping the IMDB page for id %s (MORE_THAN_ONE_RESULT). Please contact developer by creating a GitHub issue and add this data: '%s'", imdbId, s));
         }
         
         String result = ratingValue.get(0).text();

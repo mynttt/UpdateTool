@@ -1,3 +1,8 @@
+## 1.6.5
+- Updated ImdbScraper to handle new IMDB web design. The scraper will now work again instead of throwing tons of `appears to not be allowed to be rated by anyone` messages.
+- Mitigation added to automatically reset the set of scraper blacklisted items for older versions once on start-up, so you don't need to wait for 30 days until the scraper picks up those possibly wrongly blacklisted items again for processing.
+- Changed internal expiration values for Scraper: `Refresh ratings => 7 days`, `Blacklist if unrated => 30 days` and `Blacklist if forbidden to be rated => 90 days` 
+
 ## 1.6.4
 - New capabilities flag `DISABLE_SCREEN_SCRAPE` that allows to disable screen scraping if it causes problems (mainly timeouts and 503 requests which cause an unsuccessful and extremely slow metadata resolvement).
 - Metadata resolvement will now give absolute and relative processed count updates via the log in case a lookup session takes longer than one minute. This is so large libraries do not give the impression of the tool having a hang-up. Example: `Current meta data resolvement status: [27399/46386] (59,07 %) - Next update in 1 minute.`

@@ -15,7 +15,29 @@ public final class Mitigations {
     public static void executeMitigations() {
         executeTypoSwitchCacheResetMitigation();
         executeCacheParameterWrongOrderMitigation();
+        executeCacheResetForImdbScraperUpdateMitigation();
         MITIGATIONS.dump();
+    }
+    
+    private static void executeCacheResetForImdbScraperUpdateMitigation() {
+        String KEY = "executeCacheResetForImdbScraperUpdateMitigation";
+        
+        if(MITIGATIONS.lookup(KEY) != null)
+            return;
+        
+        Logger.info("One time mitigation executed: Reset IMDB webscraper caches for new Imdb web design update");
+        Logger.info("This mitigation will only be executed once.");
+        
+        var idScrapeExpire = KeyValueStore.of(Main.PWD.resolve("imdbScrapeExpire.json"));
+        var idCachedValue = KeyValueStore.of(Main.PWD.resolve("imdbScrapeValue.json"));
+        
+        idScrapeExpire.reset();
+        idScrapeExpire.dump();
+        idCachedValue.reset();
+        idCachedValue.dump();
+        
+        Logger.info("Mitigation completed!");
+        MITIGATIONS.cache(KEY, "");
     }
     
     private static void executeCacheParameterWrongOrderMitigation() {
