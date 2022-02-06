@@ -36,9 +36,10 @@ public class ImdbScraper implements Closeable {
         
         if(expired == null || isExpired(expired)) {
             var result = scrape(imdbId);
-            long cacheTime = SCRAPE_EVERY_N_DAYS_IGNORE;
+            long cacheTime = 0;
             
             if(result == null || result == RETURN_LONG_BLACKLIST) {
+                cacheTime = result == null ? SCRAPE_EVERY_N_DAYS_IGNORE : SCRAPE_BLACKLIST_IF_CANT_BE_RATED;
                 idCachedValue.remove(imdbId);
                 result = null;
             } else {
