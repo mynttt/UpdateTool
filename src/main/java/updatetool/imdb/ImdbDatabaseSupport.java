@@ -197,7 +197,7 @@ public class ImdbDatabaseSupport {
             return false;
         
         String result = null;
-        try(var handle = provider.queryFor("SELECT t.tag FROM taggings tg LEFT JOIN tags t ON tg.tag_id = t.id AND t.tag_type = 314 WHERE tg.metadata_item_id = " + m.id + " AND t.tag NOT NULL")) {
+        try(var handle = provider.queryFor("SELECT t.tag FROM taggings tg LEFT JOIN tags t ON tg.tag_id = t.id AND t.tag_type = 314 WHERE tg.metadata_item_id = " + m.id + " AND t.tag NOT NULL ORDER BY t.tag ASC")) {
             while(handle.result().next()) {
                 String id = handle.result().getString(1);
                 if(result == null || !result.startsWith("imdb://"))
