@@ -64,7 +64,7 @@ public final class ImdbRatingDatasetFactory {
                         this.rating = scrapedRating;
                     }
                 } catch (Exception e) {
-                    Logger.error(e.getClass().getSimpleName() + " exception encountered @ Screen Scraping");
+                    Logger.error(e.getClass().getSimpleName() + " exception encountered @ Screen Scraping [imdb={}]", imdbId);
                     Logger.error("Please contact the maintainer of the application with the stacktrace below if you think this is unwanted behavior.");
                     Logger.error("========================================");
                     Logger.error(e);

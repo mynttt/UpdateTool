@@ -26,6 +26,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import updatetool.Globals;
 import updatetool.Main;
 import updatetool.common.DatabaseSupport.LibraryType;
+import updatetool.common.DatabaseSupport.NewAgentSeriesType;
 import updatetool.common.KeyValueStore;
 import updatetool.common.SqliteDatabaseProvider;
 import updatetool.common.Utility;
@@ -35,6 +36,61 @@ public class ImdbDatabaseSupport {
     private final SqliteDatabaseProvider provider;
     private final KeyValueStore newAgentMapping;
     private final ImdbPipelineConfiguration config;
+    
+    public static class ImdbMetadataResult {
+        //Id will be resolved in the pipeline and not here
+          public String imdbId, extractedId;
+          public String title, hash;
+          public Integer id, libraryId, index;
+          public String extraData, guid;
+          public Double rating, audienceRating;
+          public boolean resolved;
+          public LibraryType type;
+          public NewAgentSeriesType seriesType;
+          
+          public ImdbMetadataResult() {};
+          
+          private ImdbMetadataResult(ResultSet rs, LibraryType type) throws SQLException {
+              this.type = type;
+              id = rs.getInt(1);
+              libraryId = rs.getInt(2);
+              guid = rs.getString(3);
+              title = rs.getString(4);
+              extraData = rs.getString(5);
+              hash = rs.getString(6);
+              rating = (Double) rs.getObject(7);
+              audienceRating = (Double) rs.getObject(8);
+              index = (Integer) rs.getObject(9);
+              seriesType = guid.startsWith("plex://episode") ? NewAgentSeriesType.EPISODE 
+                         : guid.startsWith("plex://season") ? NewAgentSeriesType.SEASON 
+                         : guid.startsWith("plex://show") ? NewAgentSeriesType.SERIES : null;
+          }
+
+          @Override
+          public int hashCode() {
+              return Objects.hashCode(imdbId);
+          }
+
+          @Override
+          public boolean equals(Object obj) {
+              if (this == obj)
+                  return true;
+              if (obj == null)
+                  return false;
+              if (getClass() != obj.getClass())
+                  return false;
+              ImdbMetadataResult other = (ImdbMetadataResult) obj;
+              return Objects.equals(id, other.id);
+          }
+
+        @Override
+        public String toString() {
+            return "ImdbMetadataResult [imdbId=" + imdbId + ", extractedId=" + extractedId + ", title=" + title
+                    + ", hash=" + hash + ", id=" + id + ", libraryId=" + libraryId + ", index=" + index + ", extraData="
+                    + extraData + ", guid=" + guid + ", rating=" + rating + ", audienceRating=" + audienceRating
+                    + ", resolved=" + resolved + ", type=" + type + ", seriesType=" + seriesType + "]";
+        }
+      }
     
     public ImdbDatabaseSupport(SqliteDatabaseProvider provider, KeyValueStore newAgentMapping, ImdbPipelineConfiguration config) {
         this.provider = provider;
@@ -100,68 +156,16 @@ public class ImdbDatabaseSupport {
         }
     }
 
-    public static class ImdbMetadataResult {
-      //Id will be resolved in the pipeline and not here
-        public String imdbId, extractedId;
-        public String title, hash;
-        public Integer id, libraryId;
-        public String extraData, guid;
-        public Double rating, audienceRating;
-        public boolean resolved;
-        public LibraryType type;
-        public boolean hasEpisodeAgentFlag;
-        
-        public ImdbMetadataResult() {};
-        
-        private ImdbMetadataResult(ResultSet rs, LibraryType type) throws SQLException {
-            this.type = type;
-            id = rs.getInt(1);
-            libraryId = rs.getInt(2);
-            guid = rs.getString(3);
-            title = rs.getString(4);
-            extraData = rs.getString(5);
-            hash = rs.getString(6);
-            rating = (Double) rs.getObject(7);
-            audienceRating = (Double) rs.getObject(8);
-            hasEpisodeAgentFlag = guid.startsWith("plex://episode");
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hashCode(imdbId);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (obj == null)
-                return false;
-            if (getClass() != obj.getClass())
-                return false;
-            ImdbMetadataResult other = (ImdbMetadataResult) obj;
-            return Objects.equals(id, other.id);
-        }
-
-        @Override
-        public String toString() {
-            return "ImdbMetadataResult [imdbId=" + imdbId + ", extractedId=" + extractedId + ", title=" + title
-                    + ", hash=" + hash + ", id=" + id + ", libraryId=" + libraryId + ", extraData=" + extraData
-                    + ", guid=" + guid + ", rating=" + rating + ", audienceRating=" + audienceRating + ", resolved="
-                    + resolved + ", type=" + type + "]";
-        }
-    }
-
     public List<ImdbMetadataResult> requestEntries(long libraryId, LibraryType type) {
-        return requestMetadata("SELECT id, library_section_id, guid, title, extra_data, hash, rating, audience_rating from metadata_items WHERE media_item_count = 1 AND library_section_id = " + libraryId, type);
+        return requestMetadata("SELECT id, library_section_id, guid, title, extra_data, hash, rating, audience_rating, \"index\" from metadata_items WHERE media_item_count = 1 AND library_section_id = " + libraryId, type);
     }
 
     public List<ImdbMetadataResult> requestTvSeriesRoot(long libraryId) {
-        return requestMetadata("SELECT id, library_section_id, guid, title, extra_data, hash, rating, audience_rating from metadata_items WHERE media_item_count = 0 AND parent_id IS NULL AND library_section_id = " + libraryId, LibraryType.SERIES);
+        return requestMetadata("SELECT id, library_section_id, guid, title, extra_data, hash, rating, audience_rating, \"index\" from metadata_items WHERE media_item_count = 0 AND parent_id IS NULL AND library_section_id = " + libraryId, LibraryType.SERIES);
     }
     
     public List<ImdbMetadataResult> requestTvSeasonRoot(long libraryId) {
-        return requestMetadata("SELECT id, library_section_id, guid, title, extra_data, hash, rating, audience_rating from metadata_items WHERE media_item_count = 0 AND parent_id NOT NULL AND library_section_id = " + libraryId, LibraryType.SERIES);
+        return requestMetadata("SELECT id, library_section_id, guid, title, extra_data, hash, rating, audience_rating, \"index\" from metadata_items WHERE media_item_count = 0 AND parent_id NOT NULL AND library_section_id = " + libraryId, LibraryType.SERIES);
     }
     
     private List<ImdbMetadataResult> requestMetadata(String query, LibraryType type) {
@@ -193,21 +197,21 @@ public class ImdbDatabaseSupport {
             return false;
         
         String v = newAgentMapping.lookup(m.guid);
-        if(v != null && v.startsWith("imdb://"))
+        if(v != null && v.contains("imdb://"))
             return false;
         
-        String result = null;
+        StringBuilder sb = new StringBuilder();
         try(var handle = provider.queryFor("SELECT t.tag FROM taggings tg LEFT JOIN tags t ON tg.tag_id = t.id AND t.tag_type = 314 WHERE tg.metadata_item_id = " + m.id + " AND t.tag NOT NULL ORDER BY t.tag ASC")) {
             while(handle.result().next()) {
-                String id = handle.result().getString(1);
-                if(result == null || !result.startsWith("imdb://"))
-                    result = id;
+                sb.append(handle.result().getString(1)).append("|");
             }
         }
-
+        
+        if(sb.length() > 0) { sb.deleteCharAt(sb.length()-1); }
+        String result = sb.toString();
         boolean returnV = false;
         
-        if(result != null) {
+        if(!result.trim().isBlank()) {
             returnV = newAgentMapping.cache(m.guid, result);
             if(returnV) {
                 Logger.info("Associated and cached {} with new movie/TV show agent guid {} ({}).", result, m.guid, m.title);

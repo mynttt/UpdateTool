@@ -170,6 +170,9 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         resolverTasks.stream().forEach(CompletableFuture::join);
         Logger.info("Progress printing watchdog has been stopped. Cancelation status: {}", handle.cancel(true));
         
+        Logger.info("Save point: Persisting caches to keep queried look-up data in case of crashes or hang-ups.");
+        caches.forEach(KeyValueStore::dump);
+        
         int resolvedSize = resolved.size();
         int itemsSize = items.size();
         

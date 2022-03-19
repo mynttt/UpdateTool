@@ -18,6 +18,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import updatetool.common.DatabaseSupport.LibraryType;
+import updatetool.common.DatabaseSupport.NewAgentSeriesType;
 import updatetool.common.HttpRunner;
 import updatetool.common.KeyValueStore;
 import updatetool.common.Utility;
@@ -274,7 +275,7 @@ public class TvdbApiV4 extends AbstractApi implements TvdbApi {
         if(parts.length == 3) {
             resolveLegacyLookup(parts, result);
         } else {
-            runner.run(result.type == LibraryType.MOVIE ? () -> queryForMovie(result.extractedId) : result.hasEpisodeAgentFlag ? () -> queryForEpisode(result.extractedId) : () -> queryForSeries(result.extractedId), result);
+            runner.run(result.type == LibraryType.MOVIE ? () -> queryForMovie(result.extractedId) : result.seriesType == NewAgentSeriesType.EPISODE ? () -> queryForEpisode(result.extractedId) : () -> queryForSeries(result.extractedId), result);
         }
     }
 

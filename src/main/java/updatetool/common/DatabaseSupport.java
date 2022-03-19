@@ -15,6 +15,10 @@ public class DatabaseSupport {
         this.provider = provider;
     }
 
+    public enum NewAgentSeriesType {
+        SERIES, SEASON, EPISODE;
+    }
+    
     public enum LibraryType {
         MOVIE(1),
         SERIES(2);

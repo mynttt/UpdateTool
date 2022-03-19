@@ -16,6 +16,13 @@ import updatetool.Main;
 import updatetool.common.Capabilities;
 import updatetool.common.KeyValueStore;
 
+/*
+ * Test cases:
+ *      System.out.println(scr.scrapeFallback("tt12850272", "test"));
+        System.out.println(scr.scrapeFallback("tt13846366", "test"));
+        System.out.println(scr.scrapeFallback("tt14001894", "test"));
+ */
+
 public class ImdbScraper implements Closeable {
     private static final String RETURN_LONG_BLACKLIST = "BLS_L";
     private static final int SCRAPE_EVERY_N_DAYS_IGNORE = 30;
@@ -77,12 +84,12 @@ public class ImdbScraper implements Closeable {
         }
         
         var doc = Jsoup.parse(response.body());
-        var ratingValue = doc.select("span[class*=AggregateRatingButton__RatingScore]");
+        var ratingValue = doc.select("div[data-testid*=hero-rating-bar__aggregate-rating__score]");
         boolean blacklistShort = true;
         
         if(ratingValue.size() == 0) {
-            var canBeRated = doc.select("div[class*=RatingBar__ButtonContainer]");
-            var children = canBeRated.get(0).childNodeSize();
+            var canBeRated = doc.select("div[data-testid*=hero-rating-bar__user-rating__unrated]");
+            var children = canBeRated.size();
             
             if(children > 0) {
                 if(!ImdbDockerImplementation.checkCapability(Capabilities.IGNORE_SCRAPER_NO_RESULT_LOG)) {
@@ -106,7 +113,7 @@ public class ImdbScraper implements Closeable {
             throw new RuntimeException(String.format("Something went wrong with screen scraping the IMDB page for id %s (MORE_THAN_ONE_RESULT). Please contact developer by creating a GitHub issue and add this data: '%s'", imdbId, s));
         }
         
-        String result = ratingValue.get(0).text();
+        String result = ratingValue.get(0).getAllElements().get(1).text().replace(",", ".");
         
         try {
             return result;

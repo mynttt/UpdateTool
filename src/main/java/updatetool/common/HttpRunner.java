@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.tinylog.Logger;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class HttpRunner<B, R, P> {
     private final int maxTries;
@@ -35,6 +36,14 @@ public class HttpRunner<B, R, P> {
         }
     }
     
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+    private static String trim(Object o) {
+        if (o == null) return null;
+        String s = o.toString();
+        if(s == null) return s;
+        return s.trim();
+    }
+    
     public static class HttpCodeHandler<B, R, P> {
         private final Map<Integer, Handler<B, R, P>> handlers = new HashMap<>();
         private final Handler<B, R, P> defaultHandler;
@@ -49,7 +58,7 @@ public class HttpRunner<B, R, P> {
             this.defaultHandler = defaultHandler == null 
                     ? (body, result, payload) 
                         -> {
-                            Logger.error("{} : Unhandled HTTP Error [response={} | payload={}]", identifier, body, body.body());
+                            Logger.error("{} : Unhandled HTTP Error [response={} | payload={}]", identifier, trim(body), trim(body.body()));
                             return RunnerResult.ofFailure(result);
                         }
                     : defaultHandler;

@@ -186,7 +186,6 @@ public class ImdbDockerImplementation extends Implementation {
         }
         
         Logger.info("Capabilities: " + capabilities.toString());
-        
         var dbLocation = getDatabaseLocation(plexdata, overrideDatabaseLocation).toAbsolutePath().toString();
         var config = new ImdbPipelineConfiguration(apikeyTmdb, apiauthTvdb, plexdata.resolve("Metadata/Movies"), dbLocation, executeUpdatesOverPlexSqliteVersion, capabilities);
         job = new ImdbBatchJob(Main.EXECUTOR, config, plexdata, caches, capabilities);

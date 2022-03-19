@@ -16,7 +16,25 @@ public final class Mitigations {
         executeTypoSwitchCacheResetMitigation();
         executeCacheParameterWrongOrderMitigation();
         executeCacheResetForImdbScraperUpdateMitigation();
+        executeNewAgentMappingFormatReset();
         MITIGATIONS.dump();
+    }
+    
+    private static void executeNewAgentMappingFormatReset() {
+        String KEY = "executeNewAgentMappingFormatReset";
+        
+        if(MITIGATIONS.lookup(KEY) != null)
+            return;
+        
+        Logger.info("One time mitigation executed: Reset new-agent-mapping.json for new storage format.");
+        Logger.info("This mitigation will only be executed once.");
+        
+        var newAgentMapping = KeyValueStore.of(Main.PWD.resolve("new-agent-mapping.json"));
+        newAgentMapping.reset();
+        newAgentMapping.dump();
+        
+        Logger.info("Mitigation completed!");
+        MITIGATIONS.cache(KEY, "");
     }
     
     private static void executeCacheResetForImdbScraperUpdateMitigation() {

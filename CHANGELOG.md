@@ -1,3 +1,7 @@
+## 1.6.6
+- Fixed broken ImdbScraper due to changes on IMDBs website.
+- Updated the IMDB resolvement process to now factor in both TVDB/TMDB instead of just choosing one of them. This is in preparation to hopefully soon support IMDB lookup for items that only have a TMDB ID from the new Plex agent.
+
 ## 1.6.5
 - Updated ImdbScraper to handle new IMDB web design. The scraper will now work again instead of throwing tons of `appears to not be allowed to be rated by anyone` messages.
 - Mitigation added to automatically reset the set of scraper blacklisted items for older versions once on start-up, so you don't need to wait for 30 days until the scraper picks up those possibly wrongly blacklisted items again for processing.
