@@ -14,7 +14,7 @@ A tool to update the IMDB ratings for Plex libraries that contain movies via the
 
 **If you get rating updates on your episodes but not on your TV Shows, you'll have to get access to a TVDB API key. This is because the tool finds IMDB IDs that are associated with the episodes in the database, but for the TV Shows it only finds TVDB IDs that have to be resolved into IMDB IDs by calling their API. Unless you have a key, this is not possible and means that no updates are processed for these items. [You can get a key for free by using their points system.](https://thetvdb.com/points)**
 
-**This tool works with the new Plex TV Show agent. The fallback support however is limited and only supports TVDB v4 and not TMDB v3 right now. This feature is a opt-in so please read [more here](#opt-in-for-libraries-using-the-new-tv-show-agent)! Else the new libaries will not be processed by the tool!**
+**This tool works with the new Plex TV Show agent. The fallback support however is limited and only supports TVDB v4 and not TMDB v3 right now. This feature is a opt-in so please read [more here](#opt-in-for-libraries-using-the-new-tv-show-agent)! Else the libraries using the new Plex TV Show agent will not be processed by the tool!**
 
 -----
 
