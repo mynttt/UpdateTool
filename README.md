@@ -65,6 +65,7 @@ Docker is on [dockerhub](https://hub.docker.com/r/mynttt/updatetool) | [UnRaid i
 
 Name | Description
 :-------------------------:|:-------------------------:|
+`RESTART_ON_CRASH`|Automatically restarts the tool within the docker in case a crash is encountered. This must be set to `true` to have any effect. Once a crash is encountered, the docker container will not stop anymore but instead wait 10 seconds before trying to launch the tool again.
 `USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS`|Allows to use the non-standard Plex SQLite3 version that diverged so strongly from the vanilla flavour that write operations with vanilla SQLite3 can cause database corruptions! Set this to `true` in the docker when using a version >= 1.6.0! This is the only way to be safe from corruptions as Plex continues to diverge from compatibility with vanilla SQLite3! If you're not using a docker version make sure that this points to the `Plex Media Server/Plex SQLite` binary that is located in the main Plex folder next to the `Plex Media Server` executable.
 `OVERRIDE_DATABASE_LOCATION`|Overrides the path where UpdateTool looks for the Plex database. The database needs to be contained in this folder. Useful if a docker container uses a volume and a different path structure. ([more here](#override-the-database-location))
 `TMDB_API_KEY`|Enables TMDB Movie/Series library processing
