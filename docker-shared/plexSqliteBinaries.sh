@@ -3,18 +3,20 @@
 D_OS_ARCH=$(dpkg --print-architecture)
 echo "ARCH :: $D_OS_ARCH"
 
+
+
 case $D_OS_ARCH in
   "amd64")
-  dl_url="https://downloads.plex.tv/plex-media-server-new/1.25.0.5282-2edd3c44d/debian/plexmediaserver_1.25.0.5282-2edd3c44d_amd64.deb"
+  dl_url="https://downloads.plex.tv/plex-media-server-new/1.27.2.5929-a806c5905/debian/plexmediaserver_1.27.2.5929-a806c5905_amd64.deb"
   ;;
   "i386")
-  dl_url="https://downloads.plex.tv/plex-media-server-new/1.25.0.5282-2edd3c44d/debian/plexmediaserver_1.25.0.5282-2edd3c44d_i386.deb"
+  dl_url="https://downloads.plex.tv/plex-media-server-new/1.27.2.5929-a806c5905/debian/plexmediaserver_1.27.2.5929-a806c5905_i386.deb"
   ;;
   "armhf")
-  dl_url="https://downloads.plex.tv/plex-media-server-new/1.25.0.5282-2edd3c44d/debian/plexmediaserver_1.25.0.5282-2edd3c44d_armhf.deb"
+  dl_url="https://downloads.plex.tv/plex-media-server-new/1.27.2.5929-a806c5905/debian/plexmediaserver_1.27.2.5929-a806c5905_armhf.deb"
   ;;
   "arm64")
-  dl_url="https://downloads.plex.tv/plex-media-server-new/1.25.0.5282-2edd3c44d/debian/plexmediaserver_1.25.0.5282-2edd3c44d_arm64.deb"
+  dl_url="https://downloads.plex.tv/plex-media-server-new/1.27.2.5929-a806c5905/debian/plexmediaserver_1.27.2.5929-a806c5905_arm64.deb"
   ;;
   *)
   echo "INVALID_ARCHITECTURE_FOR_PLEX_SQLITE_DL: ${D_OS_ARCH}"
