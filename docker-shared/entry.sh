@@ -14,14 +14,19 @@ fi
 
 echo "MAX JVM HEAP: ${__heap}"
 
-if [ ! -z "$USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS" ]; then
-    if [[ "$USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS" == "true" ]]; then
-        echo "Enabled native Plex SQLite binary for use in write access!"
-        USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS="/usr/app/plexsqlitedriver/Plex SQLite"
-        export USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS
-    else
-        unset USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS
-    fi
+if [ -z "$USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS" ]; then
+    echo "Update: 18.07.2022 - Forcing unset variable \$USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS to 'true' in order to minimize accidental database corruptions."
+    echo "If you for whatever reason don't want this set it to anything else than 'true'."
+    USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS="true"
+fi
+
+if [[ "$USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS" == "true" ]]; then
+    echo "Enabled native Plex SQLite binary for use in write access!"
+    USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS="/usr/app/plexsqlitedriver/Plex SQLite"
+    export USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS
+else
+    echo "\$USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS has been explicitly disabled! This is a potentially dangerous operation that can corrupt your database! Unset it or set it to 'true' in order to reverse this!"
+    unset USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS
 fi
 
 if [ ! -z "$DOCKER_DEBUG_PRINT_TREE_OF_PLEX_PATHS" ]; then
