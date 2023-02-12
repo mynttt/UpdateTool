@@ -286,7 +286,7 @@ java -jar UpdateTool-xxx.jar imdb-docker {schedule=5}
 
 ### GUI
 
-There is also a GUI to assist users that feel uncomfortable with the CLI way of interacting with the tool. It supports Windows, MacOS and Linux and only [requires the Java 11+ runtime](https://adoptopenjdk.net/?variant=openjdk11&jvmVariant=hotspot) and can be downloaded [here](https://github.com/mynttt/UpdateTool/releases/tag/g1.0.7).
+There is also a GUI to assist users that feel uncomfortable with the CLI way of interacting with the tool. It supports Windows, MacOS and Linux and only [requires the Java 11+ runtime](https://adoptium.net/) and can be downloaded [here](https://github.com/mynttt/UpdateTool/releases/tag/g1.0.7).
 
 ![](https://raw.githubusercontent.com/mynttt/UpdateTool/master/img/gui.PNG)
 
