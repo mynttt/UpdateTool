@@ -4,7 +4,7 @@ cd /usr/app
 cd /config
 PLEX_DATA_DIR="/plexdata"
 export PLEX_DATA_DIR
-RUN_EVERY_N_HOURS=${RUN_EVERY_N_HOURS:="12"}
+RUN_EVERY_N_HOURS=${RUN_EVERY_N_HOURS:="24"}
 
 if [ -z "$JVM_MAX_HEAP" ]; then
     __heap="-Xmx256m"
