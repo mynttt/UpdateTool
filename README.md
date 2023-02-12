@@ -16,7 +16,7 @@ A tool to update the IMDB ratings for Plex libraries that contain movies via the
 
 **This tool works with the new Plex TV Show agent. The fallback support however is limited and only supports TVDB v4 and not TMDB v3 right now. This feature is a opt-in so please read [more here](#opt-in-for-libraries-using-the-new-tv-show-agent)! Else the libraries using the new Plex TV Show agent will not be processed by the tool!**
 
-[![](img/db-info.png)](https://support.plex.tv/articles/repair-a-corrupted-database/)
+[![](img/info.png)](https://support.plex.tv/articles/repair-a-corrupted-database/)
 
 -----
 
