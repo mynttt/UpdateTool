@@ -1,3 +1,7 @@
+## 1.7.0
+- Removed transactions from native SQLite binary interaction + using batch mode on binary to hopefully mitigate further SQLite corruption issues
+- Added `PRINT_SQLITE_BINARY_EXECUTE_STATEMENTS` capability to further diagnose future potential SQLite statement/corruption issues
+
 ## 1.6.6
 - Fixed broken ImdbScraper due to changes on IMDBs website.
 - Updated the IMDB resolvement process to now factor in both TVDB/TMDB instead of just choosing one of them. This is in preparation to hopefully soon support IMDB lookup for items that only have a TMDB ID from the new Plex agent.

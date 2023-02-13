@@ -15,8 +15,15 @@ meta {
              | (Optional) IGNORE_LIBS: Ignore libraries from being touched by this tool by supplying a set of library ids as a semicolon ';' seperated string.
              |            Example: Ignoring 1 => IGNORE_LIBS=1 | Ignoring 1, 2, 3 => IGNORE_LIBS=1;2;3
              | (Optional) CAPABILITIES: Specify special settings for the tool. Must be entered as a ';' seperated string.
-             |            Currently available: [NO_TV, NO_MOVIE]
-             |            Example: NO_TV;NO_MOVIE => renders this tool useless
+             |            Currently available: 
+             |            - NO_TV => Ignore all TV Show libraries
+             |            - NO_MOVIE => Ignore all Movie libraries
+             |            - VERBOSE_XML_ERROR_LOG => Enable verbose XML error output logging
+             |            - DONT_THROW_ON_ENCODING_ERROR => Supress forced quits if decoding errors of extra data are encountered due to corrupt items in the library
+             |            - IGNORE_NO_MATCHING_RESOLVER_LOG => Supresses printing items that have no matching resolver to the log
+             |            - IGNORE_SCRAPER_NO_RESULT_LOG => Supresses printing web scraper no-match results that either have no rating on the IMDB website or are not allowed to be rated by anyone on the IMDB website and thus will never have ratings
+             |            - DISABLE_SCREEN_SCRAPE => Disables the screen scraping unit in case there are issues/timeouts with the IMDB page to not slow down metadata processing
+             |            - PRINT_SQLITE_BINARY_EXECUTE_STATEMENTS => Prints out the SQLite binary execute statements for diagnostic purposes
              | (Optional) OVERRIDE_DATABASE_LOCATION: Override the path where the Plex database is stored.
              |            Useful for example if the PLEX_FOLDER/Plug-in Support/Databases folder structure is violated (Docker Volumes i.e.).
              |            Example: OVERRIDE_DATABASE_LOCATION=/volume1/@appstore/PlexMediaServer/Resources (uses DB in Resources folder).
@@ -24,8 +31,8 @@ meta {
              |            Useful for users that experience corruption of their database with UpdateTool.
              |            This must point to the SQLite binary that is in the main Plex folder (next to the server binary).
              | (Optional) DISABLE_SCREEN_SCRAPE: Disables the screen scraping unit (extracts IMDB ratings from the website if not in dataset) 
-                          in case that there are issues with the IMDB web page such as 503 errors and timeouts that cause unsuccessful results and 
-                          slow down the metadata lookup process immensely.
+             |            in case that there are issues with the IMDB web page such as 503 errors and timeouts that cause unsuccessful results and 
+             |            slow down the metadata lookup process immensely.
              |
              | Parameters:
              |   - schedule = if present will schedule this task every n hour(s) : must be > 0 : default 12
