@@ -186,9 +186,9 @@ public class TvdbApiV4 extends AbstractApi implements TvdbApi {
         }
     }
 
-    private HttpResponse<String> queryForEpisode(String id) {
+    private HttpResponse<String> queryForMovie(String id) {
         try {
-            return send(HttpRequest.newBuilder(new URI(String.format("%s/episodes/%s/extended", BASE_URL, id)))
+            return send(HttpRequest.newBuilder(new URI(String.format("%s/movies/%s/extended", BASE_URL, id)))
                     .GET()
                     .header("Authorization", authToken)
                     .build());
@@ -199,18 +199,7 @@ public class TvdbApiV4 extends AbstractApi implements TvdbApi {
     
     private HttpResponse<String> queryForSeries(String id) {
         try {
-            return send(HttpRequest.newBuilder(new URI(String.format("%s/series/%s/extended", BASE_URL, id)))
-                    .GET()
-                    .header("Authorization", authToken)
-                    .build());
-        } catch (IOException | InterruptedException | URISyntaxException e) {
-            throw Utility.rethrow(e);
-        }
-    }
-    
-    private HttpResponse<String> queryForMovie(String id) {
-        try {
-            return send(HttpRequest.newBuilder(new URI(String.format("%s/movies/%s/extended", BASE_URL, id)))
+            return send(HttpRequest.newBuilder(new URI(String.format("%s/series/%s/extended?short=true", BASE_URL, id)))
                     .GET()
                     .header("Authorization", authToken)
                     .build());
@@ -228,6 +217,17 @@ public class TvdbApiV4 extends AbstractApi implements TvdbApi {
         } catch (IOException | InterruptedException | URISyntaxException e) {
             throw Utility.rethrow(e);
         }  
+    }
+    
+    private HttpResponse<String> queryForEpisode(String id) {
+        try {
+            return send(HttpRequest.newBuilder(new URI(String.format("%s/episodes/%s/extended", BASE_URL, id)))
+                    .GET()
+                    .header("Authorization", authToken)
+                    .build());
+        } catch (IOException | InterruptedException | URISyntaxException e) {
+            throw Utility.rethrow(e);
+        }
     }
     
     @Override

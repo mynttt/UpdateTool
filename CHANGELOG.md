@@ -1,6 +1,9 @@
 ## 1.7.0
 - Removed transactions from native SQLite binary interaction + using batch mode on binary to hopefully mitigate further SQLite corruption issues
 - Added `PRINT_SQLITE_BINARY_EXECUTE_STATEMENTS` capability to further diagnose future potential SQLite statement/corruption issues
+- Deprecated all code of now defunct TVDB v3 API
+- Optimization of TVDB Show lookup efficiency
+- Removed deprecated und useless XML file update feature
 
 ## 1.6.6
 - Fixed broken ImdbScraper due to changes on IMDBs website.
