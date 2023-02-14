@@ -6,7 +6,7 @@
 PLEX_DATA_DIR=""
 export PLEX_DATA_DIR
 
-RUN_EVERY_N_HOURS="12"
+RUN_EVERY_N_HOURS="24"
 export RUN_EVERY_N_HOURS
 
 # Restart on crash (set to anything else than true to disable)

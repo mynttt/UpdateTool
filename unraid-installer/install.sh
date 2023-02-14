@@ -4,7 +4,7 @@ set -e
 
 echo "Welcome to the UpdateTool for localized UnRaid Environments Installer."
 
-echo -e "\nAre you sure to install this in:\n\n'${PWD}/UpdateTool/'?\n\n[yes/no]"
+echo -e "\nAre you sure to install this in:\n\n'${PWD}/updatetool/'?\n\n[yes/no]"
 read x
 if [ "$x" != "yes" ]
 then
@@ -40,3 +40,7 @@ echo "Copying config/controlscript..."
 cd ..
 cp dependencies/config_default.sh config.sh
 cp dependencies/updatetool.sh .
+
+echo "*******************************"
+echo "INSTALLATION DONE"
+echo "*******************************"
