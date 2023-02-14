@@ -31,7 +31,7 @@ dl_url="https://downloads.plex.tv/plex-media-server-new/${FLAVOUR}/debian/plexme
 
 # Extract
 wget -v -O plex_tmp "$dl_url"
-../../Dependencies/ar vx plex_tmp
+../../dependencies/ar vx plex_tmp
 tar -xf data.tar.xz
 rm plex_tmp debian-binary _gpgplex control.tar.gz data.tar.xz
 mv "usr/lib/plexmediaserver" "plexsqlitedriver"
