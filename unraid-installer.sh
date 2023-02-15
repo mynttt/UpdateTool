@@ -29,5 +29,5 @@ echo "Starting installer... Make sure to follow instructions!"
 chmod +x install.sh
 chmod +x dependencies/*
 ./install.sh
-echo "Installer has ended. Removing myself..."
-rm install.sh
+echo "Installer has ended successfully. Removing myself..."
+rm $0
