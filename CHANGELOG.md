@@ -4,6 +4,7 @@
 - Deprecated all code of now defunct TVDB v3 API
 - Optimization of TVDB Show lookup efficiency
 - Removed deprecated und useless XML file update feature
+- Due to UnRaid/Docker inter-communication suspected database corruptions an installer to run UpdateTool bare metal on UnRaid has been created
 
 ## 1.6.6
 - Fixed broken ImdbScraper due to changes on IMDBs website.
