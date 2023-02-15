@@ -1,10 +1,13 @@
 #!/bin/bash
 
+SCRIPT_DIR="$( dirname -- "$BASH_SOURCE"; )";
+cd "${SCRIPT_DIR}"
+
 set -e
 
 echo "Welcome to the UpdateTool for localized UnRaid Environments Installer."
 
-echo -e "\nAre you sure to install this in:\n\n'${PWD}/updatetool/'?\n\n[yes/no]"
+echo -e "\nAre you sure to install this in:\n\n'${SCRIPT_DIR}/updatetool'?\nRunning this installer again will reset the instasllation.\n[yes/no]"
 read x
 if [ "$x" != "yes" ]
 then

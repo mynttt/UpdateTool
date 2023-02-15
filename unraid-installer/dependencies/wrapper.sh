@@ -1,11 +1,10 @@
 #!/bin/bash
 JAVA_ID="c01bbaaa-1da9-4c4d-b4ed-23a2d59abca1"
+SCRIPT_DIR="$1"
 
-set -e
-echo $PWD
-. ./config.sh
-cd updatetool
-../dependencies/bootstrap_updatetool_jar.sh
+. "${SCRIPT_DIR}/config.sh"
+cd "${SCRIPT_DIR}/updatetool"
+"${SCRIPT_DIR}/dependencies/bootstrap_updatetool_jar.sh" > /dev/null 2>&1
 
 echo "MAX JVM HEAP: ${JVM_MAX_HEAP}"
 
@@ -17,7 +16,7 @@ fi
 
 if [[ "$USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS" == "true" ]]; then
     echo "Enabled native Plex SQLite binary for use in write access!"
-    USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS="{$PWD}/plex_sqlite/plexsqlitedriver/Plex SQLite"
+    USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS="${SCRIPT_DIR}/updatetool/plex_sqlite/plexsqlitedriver/Plex SQLite"
     export USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS
 else
     echo "\$USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS has been explicitly disabled! This is a potentially dangerous operation that can corrupt your database! Unset it or set it to 'true' in order to reverse this!"
@@ -43,22 +42,22 @@ if [ ! -z "$DOCKER_DEBUG_PRINT_TREE_OF_PLEX_PATHS" ]; then
     fi
 fi
 
-echo "**** Invoking tool! Logs in ${PWD} ****"
+echo "**** Invoking tool! Logs in ${SCRIPT_DIR}/updatetool ****"
 
 if [ ! -z "$RESTART_ON_CRASH" ]; then
     if [[ "$RESTART_ON_CRASH" == "true" ]]; then
-	echo "**** \$RESTART_ON_CRASH set to true => update tool will restart automatically within 10 seconds after encountering a crash. ****"
+	echo "**** \$RESTART_ON_CRASH set to true => update tool will restart automatically within 180 seconds after encountering a crash. ****"
 	while true
 	do
-	    ../updatetool/jdk/bin/java -Xms64m "-Xmx${JVM_MAX_HEAP}" -XX:+UseG1GC -XX:MinHeapFreeRatio=15 -XX:MaxHeapFreeRatio=30 -Djavaid="$JAVA_ID" -jar tool.jar imdb-docker "{schedule=$RUN_EVERY_N_HOURS}"
-	    echo "**** Binary has crashed. Restart in 10 seconds... ****"
-	    sleep 10
+	    "${SCRIPT_DIR}/updatetool/jdk/bin/java" -Xms64m "-Xmx${JVM_MAX_HEAP}" -XX:+UseG1GC -XX:MinHeapFreeRatio=15 -XX:MaxHeapFreeRatio=30 -Djavaid="$JAVA_ID" -jar tool.jar imdb-docker "{schedule=$RUN_EVERY_N_HOURS}"
+	    echo "**** Binary has crashed. Restart in 180 seconds... ****"
+	    sleep 180
 	done
     else
         echo "**** \$RESTART_ON_CRASH not set to true => container will shutdown with tool exit. ****"
-        ../updatetool/jdk/bin/java -Xms64m "-Xmx${JVM_MAX_HEAP}" -XX:+UseG1GC -XX:MinHeapFreeRatio=15 -XX:MaxHeapFreeRatio=30 -Djavaid="$JAVA_ID" -jar tool.jar imdb-docker "{schedule=$RUN_EVERY_N_HOURS}"
+        "${SCRIPT_DIR}/updatetool/jdk/bin/java" -Xms64m "-Xmx${JVM_MAX_HEAP}" -XX:+UseG1GC -XX:MinHeapFreeRatio=15 -XX:MaxHeapFreeRatio=30 -Djavaid="$JAVA_ID" -jar tool.jar imdb-docker "{schedule=$RUN_EVERY_N_HOURS}"
     fi
 else
     echo "**** \$RESTART_ON_CRASH not set to true => container will shutdown with tool exit. ****"
-    ../updatetool/jdk/bin/java -Xms64m "-Xmx${JVM_MAX_HEAP}" -XX:+UseG1GC -XX:MinHeapFreeRatio=15 -XX:MaxHeapFreeRatio=30 -Djavaid="$JAVA_ID" -jar tool.jar imdb-docker "{schedule=$RUN_EVERY_N_HOURS}"
+    "${SCRIPT_DIR}/updatetool/jdk/bin/java" -Xms64m "-Xmx${JVM_MAX_HEAP}" -XX:+UseG1GC -XX:MinHeapFreeRatio=15 -XX:MaxHeapFreeRatio=30 -Djavaid="$JAVA_ID" -jar tool.jar imdb-docker "{schedule=$RUN_EVERY_N_HOURS}"
 fi
