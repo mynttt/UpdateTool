@@ -8,6 +8,12 @@ echo "***************************"
 echo "Welcome to the UpdateTool UnRaid/Linux standalone installer!"
 echo "You are executing this script in ${PWD}"
 echo "***************************"
+echo "The following files/folders will be created:"
+echo
+echo "- ${PWD}/updatetool/"
+echo "- ${PWD}/dependencies/"
+echo "- ${PWD}/(install.sh|config.sh|updatetool.sh)"
+echo
 echo "Are you sure to install this tool here in ${PWD}? [yes/no]"
 read x
 if [ "$x" != "yes" ]
