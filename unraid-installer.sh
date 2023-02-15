@@ -22,7 +22,7 @@ then
     exit 1
 fi
 echo "Downloading installer and dependencies..."
-wget --no-cache -O "updatetool-installer.zip" "$MASTER_URL" 2>&1 | grep "^wget:"
+wget --no-cache -O "updatetool-installer.zip" "$MASTER_URL" > /dev/null 2>&1
 unzip "updatetool-installer.zip"
 rm "updatetool-installer.zip"
 echo "Starting installer... Make sure to follow instructions!"
