@@ -71,18 +71,11 @@ Name | Description
 `USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS`|Allows to use the non-standard Plex SQLite3 version that diverged so strongly from the vanilla flavour that write operations with vanilla SQLite3 can cause database corruptions! Set this to `true` in the docker when using a version >= 1.6.0! This is the only way to be safe from corruptions as Plex continues to diverge from compatibility with vanilla SQLite3! If you're not using a docker version make sure that this points to the `Plex Media Server/Plex SQLite` binary that is located in the main Plex folder next to the `Plex Media Server` executable.
 `OVERRIDE_DATABASE_LOCATION`|Overrides the path where UpdateTool looks for the Plex database. The database needs to be contained in this folder. Useful if a docker container uses a volume and a different path structure. ([more here](#override-the-database-location))
 `TMDB_API_KEY`|Enables TMDB Movie/Series library processing
-`TVDB_API_KEY`|Enables TVDB Series library processing using either the v3 legacy key or the v4 pin
+`TVDB_API_KEY`|Enables TVDB Series library processing using the v4 pin
 `UNLOCK_FOR_NEW_TV_AGENT`|Opt-in for libraries using the new TV Show agent. All libraries that are opted-in this way will have their ratings changed to IMDB ratings by this tool ([more here](#opt-in-for-libraries-using-the-new-tv-show-agent))
 `IGNORE_LIBS`|Ignore libraries with certain IDs ([more here](#Ignore-libraries-from-being-updated))
 `CAPABILITIES`|Custom flags for the tool ([more here](#supply-custom-capability-flags))
 `JVM_MAX_HEAP`|Only relevant for the docker. Specify max. heap allocatable by the JVM (default 256m). Can be useful if you have a really large library (40000+ items) and you run in memory related crashes. Must be specified in bytes (i.e. 256m, 1g, 2g, 512m)
-
-Deprecated variables can still be used although their usage is discouraged.
-
-### Deprecated Environment Variables
-Name | Description | Deprecation
-:-------------------------:|:-------------------------:|:-------------------------:|
-`TVDB_AUTH_STRING`|Enables TVDB Series library processing|API Key is enough for this tool to work
 
 ## Docker on UnRaid
 
@@ -217,11 +210,11 @@ Flag | Description
 :-------------------------:|:-------------------------:|
 `NO_TV` |Ignore all TV Show libraries
 `NO_MOVIE` | Ignore all Movie libraries
-`VERBOSE_XML_ERROR_LOG` | Enable verbose XML error output logging
 `DONT_THROW_ON_ENCODING_ERROR` | Supress forced quits if decoding errors of extra data are encountered due to corrupt items in the library
 `IGNORE_NO_MATCHING_RESOLVER_LOG`|Supresses printing items that have no matching resolver to the log
 `IGNORE_SCRAPER_NO_RESULT_LOG`|Supresses printing web scraper no-match results that either have no rating on the IMDB website or are not allowed to be rated by anyone on the IMDB website and thus will never have ratings
 `DISABLE_SCREEN_SCRAPE`|Disables the screen scraping unit (extracts IMDB ratings from the website if not in dataset) in case that there are issues with the IMDB web page such as 503 errors and timeouts that cause unsuccessful results and slow down the metadata lookup process immensely.
+`PRINT_SQLITE_BINARY_EXECUTE_STATEMENTS`|Prints out the SQLite binary execute statements for diagnostic purposes
 
 Multiple flags can be supplied as a semicolon separated string.
 

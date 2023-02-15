@@ -25,6 +25,7 @@ import org.tinylog.Logger;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import updatetool.Globals;
 import updatetool.Main;
+import updatetool.common.Capabilities;
 import updatetool.common.DatabaseSupport.LibraryType;
 import updatetool.common.DatabaseSupport.NewAgentSeriesType;
 import updatetool.common.KeyValueStore;
@@ -257,13 +258,11 @@ public class ImdbDatabaseSupport {
     private void internalBatchUpdateOverPlexSqliteBinary(List<ImdbMetadataResult> items, boolean isNewAgent, String plexSqliteBinaryPath) {
         
         Iterator<String> supplier = new Iterator<String>() {
-            boolean initial = false;
             boolean last = false;
             int idx = 0;
             
             @Override
             public String next() {
-                if(!initial) { initial = true; return "BEGIN TRANSACTION;\n"; }
                 if(idx++ < items.size()) {
                     var item = items.get(idx-1);
                     Double d = isNewAgent ? item.audienceRating : item.rating;
@@ -279,7 +278,7 @@ public class ImdbDatabaseSupport {
                             "UPDATE metadata_items SET rating = %s, extra_data = '%s' WHERE id = %s;%n", d, sanitize(item.extraData), item.id);
                 }
                 last = true;
-                return "COMMIT TRANSACTION;";
+                return ".exit";
             }
             
             @Override
@@ -291,7 +290,7 @@ public class ImdbDatabaseSupport {
         StringBuilder outputErrors = new StringBuilder();
         
         try {
-            var proc = new ProcessBuilder(config.executeUpdatesOverPlexSqliteVersion.trim(), config.dbLocation).redirectErrorStream(true).start();
+            var proc = new ProcessBuilder(config.executeUpdatesOverPlexSqliteVersion.trim(), config.dbLocation, "-batch").redirectErrorStream(true).start();
             
             var future = Main.EXECUTOR.submit(() -> {
                 String line;
@@ -309,13 +308,22 @@ public class ImdbDatabaseSupport {
             
             OutputStreamWriter br = new OutputStreamWriter(proc.getOutputStream(), StandardCharsets.UTF_8);
             
+            Logger.info("Binary::EXECUTE_START");
+            
             while(supplier.hasNext()) {
                 var query = supplier.next();
-                if(query == null) continue;
+                if(query == null)
+                    continue;
+                
+                if(ImdbDockerImplementation.checkCapability(Capabilities.PRINT_SQLITE_BINARY_EXECUTE_STATEMENTS))
+                    Logger.info("Binary::EXECUTE => {}", query.trim());
+                
                 br.write(query);
             }
             
+            Logger.info("Binary::EXECUTE_END");
             br.close();
+            
             future.get();
             
             var result = proc.waitFor(60, TimeUnit.SECONDS);

@@ -28,7 +28,6 @@ import updatetool.common.SqliteDatabaseProvider;
 import updatetool.common.Utility;
 import updatetool.common.externalapis.AbstractApi.ApiVersion;
 import updatetool.common.externalapis.TmdbApiV3;
-import updatetool.common.externalapis.TvdbApiV3;
 import updatetool.common.externalapis.TvdbApiV4;
 import updatetool.exceptions.ApiCallFailedException;
 import updatetool.exceptions.ImdbDatasetAcquireException;
@@ -56,7 +55,6 @@ public class ImdbDockerImplementation extends Implementation {
     @SuppressFBWarnings("DM_EXIT")
     public void bootstrap(Map<String, String> args) throws Exception {
         apikeyTmdb = System.getenv("TMDB_API_KEY");
-        String tvdbAuthLegacy = System.getenv("TVDB_AUTH_STRING");
         String tvdbApiKey = System.getenv("TVDB_API_KEY");
         String data = System.getenv("PLEX_DATA_DIR");
         String ignore = System.getenv("IGNORE_LIBS");
@@ -109,28 +107,12 @@ public class ImdbDockerImplementation extends Implementation {
             Logger.info("TMDB API key enabled TMDB <=> IMDB matching. Will process TMDB backed Movie and TV Series libraries and TMDB orphans.");
         }
         
-        if(tvdbAuthLegacy != null && !tvdbAuthLegacy.isBlank()) {
-            Logger.warn("Don't use legacy environment variable TVDB_AUTH_STRING. Use TVDB_API_KEY instead by only providing the TVDB API key.");
-            String[] info = tvdbAuthLegacy.split(";");
-            if(info.length == 3) {
-                tvdbApiKey = info[2];
-            } else {
-                Logger.error("Invalid TVDB API authorization string given. Must contain 3 items seperated by a ';'. Will ignore TV Series with the TVDB agent.");
-            }
-        }
-        
         if(tvdbApiKey == null || tvdbApiKey.isBlank()) {
             Logger.info("No TVDB API authorization string detected. Will not process TVDB backed Movie and TV Series libraries.");
             capabilities.remove(Capabilities.TVDB);
         } else {
-            ApiVersion version;
-            if(tvdbApiKey.length() == 16 || tvdbApiKey.length() >= 32) {
-                tvdbApiKey = tvdbApiKey.trim();
-                version = new TvdbApiV3(tvdbApiKey, null, null, null, null).version();
-            } else {
-                version = new TvdbApiV4(tvdbApiKey, null, null, null, null, null).version();
-            }
-            apiauthTvdb = tvdbApiKey;
+            ApiVersion version = new TvdbApiV4(tvdbApiKey, null, null, null, null, null).version();
+            apiauthTvdb = tvdbApiKey.trim();
             Logger.info("TVDB API ({}) authorization enabled IMDB rating update for Movies and TV Series with the TVDB agent.", version);
         }
 

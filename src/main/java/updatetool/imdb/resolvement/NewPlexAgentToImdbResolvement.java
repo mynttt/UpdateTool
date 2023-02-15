@@ -102,10 +102,6 @@ public class NewPlexAgentToImdbResolvement implements AgentResolvementStrategy<I
             return false;
         }
         
-        //TODO: TVDB v3 API is incapable of resolving this at the moment
-        if(toResolve.type == LibraryType.SERIES && fallbackTvdb.getVersion() == ApiVersion.TVDB_V3)
-            return false;
-        
         String oldGuid = toResolve.guid;
         toResolve.guid = candidate;
         boolean success = fallbackTvdb.resolve(toResolve);

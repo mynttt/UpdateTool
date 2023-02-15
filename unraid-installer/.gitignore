@@ -1,0 +1,4 @@
+config.sh
+updatetool.sh
+updatetool/
+*.log
