@@ -42,6 +42,8 @@ if [ ! -z "$DOCKER_DEBUG_PRINT_TREE_OF_PLEX_PATHS" ]; then
     fi
 fi
 
+
+cd "${SCRIPT_DIR}/updatetool" 
 echo "**** Invoking tool! Logs in ${SCRIPT_DIR}/updatetool ****"
 
 if [ ! -z "$RESTART_ON_CRASH" ]; then
@@ -49,15 +51,15 @@ if [ ! -z "$RESTART_ON_CRASH" ]; then
 	echo "**** \$RESTART_ON_CRASH set to true => update tool will restart automatically within 180 seconds after encountering a crash. ****"
 	while true
 	do
-	    "${SCRIPT_DIR}/updatetool/jdk/bin/java" -Xms64m "-Xmx${JVM_MAX_HEAP}" -XX:+UseG1GC -XX:MinHeapFreeRatio=15 -XX:MaxHeapFreeRatio=30 -Djavaid="$JAVA_ID" -jar tool.jar imdb-docker "{schedule=$RUN_EVERY_N_HOURS}"
+	    "jdk/bin/java" -Xms64m "-Xmx${JVM_MAX_HEAP}" -XX:+UseG1GC -XX:MinHeapFreeRatio=15 -XX:MaxHeapFreeRatio=30 -Djavaid="$JAVA_ID" -jar tool.jar imdb-docker "{schedule=$RUN_EVERY_N_HOURS}"
 	    echo "**** Binary has crashed. Restart in 180 seconds... ****"
 	    sleep 180
 	done
     else
         echo "**** \$RESTART_ON_CRASH not set to true => container will shutdown with tool exit. ****"
-        "${SCRIPT_DIR}/updatetool/jdk/bin/java" -Xms64m "-Xmx${JVM_MAX_HEAP}" -XX:+UseG1GC -XX:MinHeapFreeRatio=15 -XX:MaxHeapFreeRatio=30 -Djavaid="$JAVA_ID" -jar tool.jar imdb-docker "{schedule=$RUN_EVERY_N_HOURS}"
+        "jdk/bin/java" -Xms64m "-Xmx${JVM_MAX_HEAP}" -XX:+UseG1GC -XX:MinHeapFreeRatio=15 -XX:MaxHeapFreeRatio=30 -Djavaid="$JAVA_ID" -jar tool.jar imdb-docker "{schedule=$RUN_EVERY_N_HOURS}"
     fi
 else
     echo "**** \$RESTART_ON_CRASH not set to true => container will shutdown with tool exit. ****"
-    "${SCRIPT_DIR}/updatetool/jdk/bin/java" -Xms64m "-Xmx${JVM_MAX_HEAP}" -XX:+UseG1GC -XX:MinHeapFreeRatio=15 -XX:MaxHeapFreeRatio=30 -Djavaid="$JAVA_ID" -jar tool.jar imdb-docker "{schedule=$RUN_EVERY_N_HOURS}"
+    "jdk/bin/java" -Xms64m "-Xmx${JVM_MAX_HEAP}" -XX:+UseG1GC -XX:MinHeapFreeRatio=15 -XX:MaxHeapFreeRatio=30 -Djavaid="$JAVA_ID" -jar tool.jar imdb-docker "{schedule=$RUN_EVERY_N_HOURS}"
 fi
