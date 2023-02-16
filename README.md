@@ -134,8 +134,6 @@ docker run -dit
     -e RUN_EVERY_N_HOURS=12 \
      # Optional parameter: will try to get an IMDB ID from TMDB matched items
     -e TMDB_API_KEY=yourkey \
-     # Three items are required to auth with TVDB username, userkey, apikey
-     # Supply these as semicolon seperated values. Example: username;DAWIDK9CJKWFJAWKF;e33914feabd52e8192011b0ce6c8
     -e TVDB_API_KEY=tvdbapikey \
      # The plex data root (that contains Plug-ins, Metadata, ...
      # https://support.plex.tv/articles/202915258-where-is-the-plex-media-server-data-directory-located/
