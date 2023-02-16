@@ -3,6 +3,7 @@ package updatetool.imdb;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -11,25 +12,31 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.xml.parsers.DocumentBuilderFactory;
 import org.sqlite.SQLiteException;
 import org.tinylog.Logger;
+import com.google.common.collect.Lists;
 import updatetool.api.AgentResolvementStrategy;
 import updatetool.api.ExportedRating;
 import updatetool.api.Pipeline;
 import updatetool.common.Capabilities;
 import updatetool.common.DatabaseSupport.LibraryType;
+import updatetool.common.ErrorReports;
 import updatetool.common.KeyValueStore;
 import updatetool.common.SqliteDatabaseProvider;
 import updatetool.common.Utility;
 import updatetool.common.externalapis.TmdbApiV3;
+import updatetool.common.externalapis.TvdbApiV3;
 import updatetool.common.externalapis.TvdbApiV4;
 import updatetool.exceptions.ApiCallFailedException;
 import updatetool.exceptions.DatabaseLockedException;
@@ -50,6 +57,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
                 + "|(?<TVDB>agents.thetvdb:\\/\\/)"
             );
 
+    private static final int LIST_PARTITIONS = 16;
     private static final int RETRY_N_SECONDS_IF_DB_LOCKED = 20;
     private static final int ABORT_DB_LOCK_WAITING_AFTER_N_RETRIES = 500;
 
@@ -69,6 +77,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         private final EnumSet<Capabilities> capabilities;
         public final String tmdbApiKey, tvdbApiKey, dbLocation, executeUpdatesOverPlexSqliteVersion;
         public final Path metadataRoot;
+        public final boolean isTvdbV4;
         
         public ImdbPipelineConfiguration(String tmdbApiKey, String tvdbApiKey, Path metadataRoot, String dbLocation, String executeUpdatesOverPlexSqliteVersion, EnumSet<Capabilities> capabilities) {
             this.tmdbApiKey = tmdbApiKey;
@@ -77,6 +86,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
             this.dbLocation = dbLocation;
             this.capabilities =  capabilities;
             this.executeUpdatesOverPlexSqliteVersion = executeUpdatesOverPlexSqliteVersion;
+            this.isTvdbV4 = resolveTvdb() ? !(tvdbApiKey.length() == 16 || tvdbApiKey.length() >= 32) : false;
         }
 
         public boolean resolveTmdb() {
@@ -100,10 +110,11 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         this.scraper = scraper;
         this.caches = caches.values();
         
-        var tmdbResolver = configuration.resolveTmdb() ? new TmdbToImdbResolvement(new TmdbApiV3(configuration.tmdbApiKey, caches.get("tmdb-series"), caches.get("tmdb"), caches.get("tmdb-series-blacklist"), caches.get("tmdb-blacklist"))) 
-                           : resolveDefault;
-        var tvdbResolver = configuration.resolveTvdb() ? new TvdbToImdbResolvement(new TvdbApiV4(configuration.tvdbApiKey, caches.get("tvdb"), caches.get("tvdb-blacklist"), caches.get("tvdb-movie"), caches.get("tvdb-movie-blacklist"), caches.get("tvdb-legacy-mapping")))
-                           : resolveDefault;
+        var tmdbResolver = configuration.resolveTmdb() ? new TmdbToImdbResolvement(new TmdbApiV3(configuration.tmdbApiKey, caches.get("tmdb-series"), caches.get("tmdb"), caches.get("tmdb-series-blacklist"), caches.get("tmdb-blacklist"))) : resolveDefault;
+        var tvdbResolver = configuration.resolveTvdb() ? new TvdbToImdbResolvement(configuration.isTvdbV4 
+                ? new TvdbApiV4(configuration.tvdbApiKey, caches.get("tvdb"), caches.get("tvdb-blacklist"), caches.get("tvdb-movie"), caches.get("tvdb-movie-blacklist"), caches.get("tvdb-legacy-mapping"))
+                : new TvdbApiV3(configuration.tvdbApiKey, caches.get("tvdb"), caches.get("tvdb-blacklist"), caches.get("tvdb-movie"), caches.get("tvdb-movie-blacklist"))) 
+                : resolveDefault;
         
         TmdbToImdbResolvement r1 = tmdbResolver == resolveDefault ? null : (TmdbToImdbResolvement) tmdbResolver;
         TvdbToImdbResolvement r2 = tvdbResolver == resolveDefault ? null : (TvdbToImdbResolvement) tvdbResolver;
@@ -206,7 +217,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
     public void updateDatabase(ImdbJob job) throws Exception {
         if(job.items.isEmpty()) {
             Logger.info("Nothing to update. Skipping...");
-            job.stage = PipelineStage.COMPLETED;
+            job.stage = PipelineStage.DB_UPDATED;
             return;
         }
         Logger.info("Updating " + job.items.size() + " via batch request...");
@@ -227,10 +238,48 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
                 }
             }
             Logger.info("Batch request finished successfully. Database is now up to date!");
-            job.stage = PipelineStage.COMPLETED;
+            job.stage = PipelineStage.DB_UPDATED;
         } catch(Exception e) {
             throw Utility.rethrow(e);
         }
+    }
+
+    @Override
+    public void updateXML(ImdbJob job) throws Exception {
+        Logger.info("Updating XML fallback files for " + job.items.size() + " item(s).");
+        int n = job.items.size()/LIST_PARTITIONS;
+        var sublists = Lists.partition(job.items, n == 0 ? 1 : n);
+        var factory = DocumentBuilderFactory.newInstance();
+        AtomicInteger counter = new AtomicInteger();
+        HashMap<Future<Void>, ImdbXmlWorker> map = new HashMap<>();
+        var nofile = Collections.synchronizedCollection(new ArrayList<String>());
+        for(var sub : sublists) {
+            var worker = new ImdbXmlWorker(sub, factory.newDocumentBuilder(), counter, job.items.size(), nofile, configuration.metadataRoot);
+            map.put(service.submit(worker), worker);
+        }
+        Throwable t = null;
+        List<List<ImdbMetadataResult>> cleanup = new ArrayList<>();
+        for(var entry : map.entrySet()) {
+            try {
+                entry.getKey().get();
+            } catch(ExecutionException e) {
+                t = e.getCause();
+            }
+            cleanup.add(entry.getValue().completed);
+        }
+        for(var c : cleanup)
+            job.items.removeAll(c);
+        if(nofile.size() > 0 && configuration.capabilities.contains(Capabilities.VERBOSE_XML_ERROR_LOG)) {
+            String errorFile = "xml-error-" + job.uuid + "-" + job.library + ".log";
+            Logger.warn(nofile.size() + " XML file(s) have failed to be updated due to them not being present on the file system.");
+            Logger.warn("This is not an issue as they're not important for Plex as it reads the ratings from the database.");
+            Logger.warn("The files have been dumped as " + errorFile + " in the PWD.");
+            ErrorReports.fileReport(nofile, errorFile);
+        }
+        if(t != null)
+            throw Utility.rethrow(t);
+        Logger.info("Completed updating of XML fallback files.");
+        job.stage = PipelineStage.COMPLETED;
     }
 
 }

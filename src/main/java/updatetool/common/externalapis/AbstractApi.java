@@ -16,7 +16,7 @@ import updatetool.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
 public abstract class AbstractApi {
     
     public enum ApiVersion {
-        TMDB_V3, TMDB_V4, TVDB_V4;
+        TMDB_V3, TMDB_V4, TVDB_V3, TVDB_V4;
     }
     
     private final HttpClient client;
