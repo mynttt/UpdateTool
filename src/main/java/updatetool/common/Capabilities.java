@@ -8,7 +8,7 @@ public enum Capabilities {
     TMDB, 
     TVDB, 
     NO_TV, 
-    NO_MOVIE,
+    NO_MOVIE, 
     DONT_THROW_ON_ENCODING_ERROR,
     IGNORE_SCRAPER_NO_RESULT_LOG,
     IGNORE_NO_MATCHING_RESOLVER_LOG,

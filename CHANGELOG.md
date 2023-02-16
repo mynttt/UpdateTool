@@ -1,3 +1,6 @@
+## 1.7.1
+- reinistated TVDB v3 API as it is still functional
+
 ## 1.7.0
 - Removed transactions from native SQLite binary interaction + using batch mode on binary to hopefully mitigate further SQLite corruption issues
 - Added `PRINT_SQLITE_BINARY_EXECUTE_STATEMENTS` capability to further diagnose future potential SQLite statement/corruption issues
