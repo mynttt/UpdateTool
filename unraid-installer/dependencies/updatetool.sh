@@ -56,7 +56,7 @@ stop() {
     fi
 }
 
-restart() {
+update() {
     echo "Attempting stop..."
     stop
     echo "Bootstrapping SQLite3 binary... (u-sql3.log)"
@@ -72,10 +72,21 @@ restart() {
     start
 }
 
+restart() {
+    echo "Attempting stop..."
+    stop
+    echo "Attempting start..."
+    start
+}
+
 case "$VAR" in
 
     status)
         status
+        ;;
+
+    update)
+        update
         ;;
 
     restart)
@@ -91,6 +102,6 @@ case "$VAR" in
         ;;
 
     *)
-        echo "Invalid option -> (start|stop|status|restart)"
+        echo "Invalid option -> (start|stop|restart|status|update)"
         ;;
 esac
