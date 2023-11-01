@@ -46,7 +46,7 @@ start() {
 stop() {
     w_pid=$(pgrep -f "$WRAPPER_ID")
     j_pid=$(pgrep -f "$JAVA_ID")
-    
+
     if [[ ! -z $w_pid || ! -z $j_pid ]]; then
         kill -9 $w_pid > /dev/null 2>&1
         kill -9 $j_pid > /dev/null 2>&1
@@ -68,7 +68,7 @@ update() {
     echo "UPDATE DONE"
     echo "*********************"
     echo "Attempting start..."
-    cd "${SCRIPT_DIR}"
+    cd ..
     start
 }
 
