@@ -1,3 +1,8 @@
+## 1.8.0
+- Support for Plex v1.40.0.7775+ key:value format in extra data
+- Older version of extra data for versions < v1.40.0.7775 is still supported
+- The type is automatically determined based on the raw data, no user interaction needed
+
 ## 1.7.1
 - reinistated TVDB v3 API as it is still functional
 

@@ -72,10 +72,10 @@ public class ImdbTransformer {
         var targetBadge = isNewAgent ? NEW_IMDB : OLD_IMDB;
         if(!extra.contains(targetBadge)) {
             Logger.info("(Set) Set IMDB Badge for: {}", meta.title);
-            extra.prepend(targetBadge.getKey(), targetBadge.getValue());
+            extra.updateBadge(targetBadge.getKey(), targetBadge.getValue());
         }
         
-        meta.extraData = extra.toURI();
+        meta.extraData = extra.export();
     }
 
     // Cleaning required because of interesting data from TVDB
