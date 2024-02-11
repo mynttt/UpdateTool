@@ -4,15 +4,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import updatetool.Globals;
 
 public abstract class ExtraData {
     protected Map<String, String> mapping = new LinkedHashMap<>();
     
     public static ExtraData of(String data)  {
         
-        // New Extra Data is never null
         if(data == null)
-            return new OldExtraData(null);
+            return Globals.IS_NEW_EXTRA_DATA ? new NewExtraData(null) : new OldExtraData(null);
         
         if(data.startsWith("{")) {
             return new NewExtraData(data);

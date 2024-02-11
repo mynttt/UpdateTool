@@ -1,12 +1,17 @@
 package updatetool;
 
 import java.util.List;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import updatetool.common.Pair;
 import updatetool.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
 
 public final class Globals {
 
     private Globals() {}
+    
+    // This is set in ImdbDatabaseSupport to understand if we use the new or old format for null valued ExtraData that is then initiated by the tool for the first time
+    @SuppressFBWarnings("MS_CANNOT_BE_FINAL")
+    public static boolean IS_NEW_EXTRA_DATA = false;
     
     /*
      * Badges

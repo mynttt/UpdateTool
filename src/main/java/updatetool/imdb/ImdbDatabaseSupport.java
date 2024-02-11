@@ -37,6 +37,7 @@ public class ImdbDatabaseSupport {
     private final SqliteDatabaseProvider provider;
     private final KeyValueStore newAgentMapping;
     private final ImdbPipelineConfiguration config;
+    private final boolean isNewExtraData;
     
     public static class ImdbMetadataResult {
         //Id will be resolved in the pipeline and not here
@@ -93,6 +94,7 @@ public class ImdbDatabaseSupport {
         }
       }
     
+    @SuppressFBWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
     public ImdbDatabaseSupport(SqliteDatabaseProvider provider, KeyValueStore newAgentMapping, ImdbPipelineConfiguration config) {
         this.provider = provider;
         this.newAgentMapping = newAgentMapping;
@@ -100,6 +102,19 @@ public class ImdbDatabaseSupport {
         
         if(config.executeUpdatesOverPlexSqliteBinary()) {
             testPlexSqliteBinaryVersion();
+        }
+        
+        isNewExtraData = checkExtraDataFormat();
+        Logger.info("NewExtraDataFormat has been identified as: {}", isNewExtraData);
+        Globals.IS_NEW_EXTRA_DATA = isNewExtraData;
+    }
+    
+    private boolean checkExtraDataFormat() {
+        String QUERY = "SELECT COUNT(version) FROM schema_migrations WHERE version = 202309200901;";
+        try(var handle = provider.queryFor(QUERY)) {
+            return handle.result().getInt(1) == 1;
+        } catch (SQLException e) {
+            throw Utility.rethrow(e);
         }
     }
     

@@ -251,7 +251,8 @@ public class ImdbDockerImplementation extends Implementation {
                 
                 Logger.info("LIBRARIES => POST LIBRARY FILTERING");
                 libraries.forEach(l -> Logger.info("Will process library {} (ID={}) with agent: {} and {} item(s).", l.name, l.id, l.agent, l.items));
-                metadata = ImdbLibraryMetadata.fetchAll(libraries, new ImdbDatabaseSupport(connection, caches.get("new-agent-mapping"), config), config); 
+                metadata = ImdbLibraryMetadata.fetchAll(libraries, new ImdbDatabaseSupport(connection, caches.get("new-agent-mapping"), config), config);
+                
             } catch(Exception e) {
                 Logger.error(e.getClass().getSimpleName() + " exception encountered...");
                 Logger.error("Please contact the maintainer of the application with the stacktrace below if you think this is unwanted behavior.");
