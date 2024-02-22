@@ -320,8 +320,13 @@ public class ImdbDockerImplementation extends Implementation {
                 Logger.error("The application will terminate now.");
                 System.exit(-1);
             }
+            
+            if(checkCapability(Capabilities.ON_DEMAND)) {
+                Logger.info("ON_DEMAND configured. Exiting after running once now!");
+                System.exit(0);
+            }
+            
         }
-
     }
 
     @Override

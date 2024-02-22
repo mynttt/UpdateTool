@@ -32,6 +32,7 @@ meta {
              | (Optional) DISABLE_SCREEN_SCRAPE: Disables the screen scraping unit (extracts IMDB ratings from the website if not in dataset) 
              |            in case that there are issues with the IMDB web page such as 503 errors and timeouts that cause unsuccessful results and 
              |            slow down the metadata lookup process immensely.
+             | (Optional) ON_DEMAND: Exit after running one time; ignoring the schedule every n hour(s) behavior.
              |
              | Parameters:
              |   - schedule = if present will schedule this task every n hour(s) : must be > 0 : default 12

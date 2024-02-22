@@ -220,6 +220,7 @@ Flag | Description
 `IGNORE_SCRAPER_NO_RESULT_LOG`|Supresses printing web scraper no-match results that either have no rating on the IMDB website or are not allowed to be rated by anyone on the IMDB website and thus will never have ratings
 `DISABLE_SCREEN_SCRAPE`|Disables the screen scraping unit (extracts IMDB ratings from the website if not in dataset) in case that there are issues with the IMDB web page such as 503 errors and timeouts that cause unsuccessful results and slow down the metadata lookup process immensely.
 `PRINT_SQLITE_BINARY_EXECUTE_STATEMENTS`|Prints out the SQLite binary execute statements for diagnostic purposes
+`ON_DEMAND`|Quit after running once, ignoring the (n) hour scheduling
 
 Multiple flags can be supplied as a semicolon separated string.
 

@@ -1,3 +1,7 @@
+## 1.8.1
+- `ON_DEMAND` capability flag supplied to bypass hourly scheduling for on-demand runs
+This update is not interesting for docker/gui/script users interested in scheduled execution.
+
 ## 1.8.0
 - Support for Plex v1.40.0.7775+ key:value format in extra data
 - Older version of extra data for versions < v1.40.0.7775 is still supported
