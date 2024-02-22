@@ -15,8 +15,11 @@ plugins {
     id 'eclipse'
 }
 
-version = '1.0.7'
+version = '1.0.8'
 sourceCompatibility = '11'
+
+def jfxVersion
+jfxVersion = '19.0.2.1'
 
 new File(projectDir, "VERSION").text = version;
 new File(projectDir, "src/main/resources/VERSION").text = version;
@@ -61,25 +64,25 @@ dependencies {
     compile group: 'org.tinylog', name: 'tinylog-impl', version: '2.0.1'
     compile group: 'net.harawata', name: 'appdirs', version: '1.0.3'
     
-    implementation "org.openjfx:javafx-base:13:${platform}"
-    implementation "org.openjfx:javafx-controls:13:${platform}"
-    implementation "org.openjfx:javafx-fxml:13:${platform}"
-    implementation "org.openjfx:javafx-graphics:13:${platform}"
+    implementation "org.openjfx:javafx-base:${jfxVersion}:${platform}"
+    implementation "org.openjfx:javafx-controls:${jfxVersion}:${platform}"
+    implementation "org.openjfx:javafx-fxml:${jfxVersion}:${platform}"
+    implementation "org.openjfx:javafx-graphics:${jfxVersion}:${platform}"
     
-    win "org.openjfx:javafx-base:13:win"
-    win "org.openjfx:javafx-controls:13:win"
-    win "org.openjfx:javafx-fxml:13:win"
-    win "org.openjfx:javafx-graphics:13:win"
+    win "org.openjfx:javafx-base:${jfxVersion}:win"
+    win "org.openjfx:javafx-controls:${jfxVersion}:win"
+    win "org.openjfx:javafx-fxml:${jfxVersion}:win"
+    win "org.openjfx:javafx-graphics:${jfxVersion}:win"
     
-    linux "org.openjfx:javafx-graphics:13:linux"
-    linux "org.openjfx:javafx-base:13:linux"
-    linux "org.openjfx:javafx-controls:13:linux"
-    linux "org.openjfx:javafx-fxml:13:linux"
+    linux "org.openjfx:javafx-graphics:${jfxVersion}:linux"
+    linux "org.openjfx:javafx-base:${jfxVersion}:linux"
+    linux "org.openjfx:javafx-controls:${jfxVersion}:linux"
+    linux "org.openjfx:javafx-fxml:${jfxVersion}:linux"
     
-    mac "org.openjfx:javafx-graphics:13:mac"
-    mac "org.openjfx:javafx-base:13:mac"
-    mac "org.openjfx:javafx-controls:13:mac"
-    mac "org.openjfx:javafx-fxml:13:mac"
+    mac "org.openjfx:javafx-graphics:${jfxVersion}:mac"
+    mac "org.openjfx:javafx-base:${jfxVersion}:mac"
+    mac "org.openjfx:javafx-controls:${jfxVersion}:mac"
+    mac "org.openjfx:javafx-fxml:${jfxVersion}:mac"
 
     // Use JUnit Jupiter API for testing.
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.5.2'

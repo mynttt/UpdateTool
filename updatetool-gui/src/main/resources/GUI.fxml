@@ -51,6 +51,11 @@
             <HBox>
                <children>
                   <Button mnemonicParsing="false" onAction="#openData" text="Open UpdateTool data dir" />
+                  <Label text="Plex Data Directory:">
+                     <HBox.margin>
+                        <Insets top="5.0" />
+                     </HBox.margin>
+                  </Label>
                   <TextField fx:id="plexFolder" promptText="Plex Data Folder location" HBox.hgrow="ALWAYS">
                      <HBox.margin>
                         <Insets left="2.0" right="3.0" />

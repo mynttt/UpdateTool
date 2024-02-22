@@ -181,8 +181,10 @@ public class App extends Application {
                     } catch(Exception e) {
                         error = true;
                     }
-                    if(error && !running.get())
-                        runLater(() -> log.appendText("Set correct plex media server folder (the one with 'Plug-in Support' in it).\n"));
+                    if(error && !running.get()) {
+                        String text = "Set correct plex media server folder (the one with 'Plug-in Support' in it) (Current=" + plexFolder.textProperty().get() + ").\n";
+                        runLater(() -> log.appendText(text));
+                    }
                     return error;
                 }, plexFolder.textProperty()));
         
