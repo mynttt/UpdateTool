@@ -9,6 +9,7 @@ import static updatetool.common.Utility.doubleToOneDecimalString;
 import java.util.Map;
 import org.tinylog.Logger;
 import updatetool.api.ExportedRating;
+import updatetool.common.Capabilities;
 import updatetool.common.ExtraData;
 import updatetool.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
 
@@ -64,9 +65,11 @@ public class ImdbTransformer {
         
         ExtraData extra = ExtraData.of(meta.extraData);
         
-        if(extra.containsAny(STRIP)) {
-            Logger.info("(Remove) Stripping useless badge data (RT, TMDB, TVDB) for: {}", meta.title);
-            STRIP.forEach(p -> extra.deleteKey(p.getKey()));
+        if(!ImdbDockerImplementation.checkCapability(Capabilities.DONT_STRIP_OTHER_RATING_PROVIDERS)) {
+            if(extra.containsAny(STRIP)) {
+                Logger.info("(Remove) Stripping useless badge data (RT, TMDB, TVDB) for: {}", meta.title);
+                STRIP.forEach(p -> extra.deleteKey(p.getKey()));
+            }
         }
         
         var targetBadge = isNewAgent ? NEW_IMDB : OLD_IMDB;

@@ -1,3 +1,7 @@
+## 1.8.2
+- `DONT_STRIP_OTHER_RATING_PROVIDERS` capability flag supplied to prevent the removal of other rating provider labels.
+This skips the background step behind `(Remove) Stripping useless badge data (RT, TMDB, TVDB) for: <ITEM>`
+
 ## 1.8.1
 - `ON_DEMAND` capability flag supplied to bypass hourly scheduling for on-demand runs
 This update is not interesting for docker/gui/script users interested in scheduled execution.

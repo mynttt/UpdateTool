@@ -33,6 +33,7 @@ meta {
              |            in case that there are issues with the IMDB web page such as 503 errors and timeouts that cause unsuccessful results and 
              |            slow down the metadata lookup process immensely.
              | (Optional) ON_DEMAND: Exit after running one time; ignoring the schedule every n hour(s) behavior.
+             | (Optional) DONT_STRIP_OTHER_RATING_PROVIDERS: Keeps other metadata providers such as Rotten Tomatoes or The Movie DB when performing update operations with the database.
              |
              | Parameters:
              |   - schedule = if present will schedule this task every n hour(s) : must be > 0 : default 12
