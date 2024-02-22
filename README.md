@@ -221,6 +221,7 @@ Flag | Description
 `DISABLE_SCREEN_SCRAPE`|Disables the screen scraping unit (extracts IMDB ratings from the website if not in dataset) in case that there are issues with the IMDB web page such as 503 errors and timeouts that cause unsuccessful results and slow down the metadata lookup process immensely.
 `PRINT_SQLITE_BINARY_EXECUTE_STATEMENTS`|Prints out the SQLite binary execute statements for diagnostic purposes
 `ON_DEMAND`|Quit after running once, ignoring the (n) hour scheduling
+`DONT_STRIP_OTHER_RATING_PROVIDERS`|Skips the step where rating labels provided by other providers such as TMDB/Rotten Tomatoes are removed
 
 Multiple flags can be supplied as a semicolon separated string.
 
