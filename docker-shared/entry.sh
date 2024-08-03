@@ -6,6 +6,23 @@ PLEX_DATA_DIR="/plexdata"
 export PLEX_DATA_DIR
 RUN_EVERY_N_HOURS=${RUN_EVERY_N_HOURS:="24"}
 
+D_OS_ARCH=$(dpkg --print-architecture)
+
+case $D_OS_ARCH in
+  "i386")
+  export HACK_TO_BYPASS_THIS_ON_ARM_BUILDS="yes"
+  ;;
+  "armhf")
+  export HACK_TO_BYPASS_THIS_ON_ARM_BUILDS="yes"
+  ;;
+  "arm64")
+  export HACK_TO_BYPASS_THIS_ON_ARM_BUILDS="yes"
+  ;;
+  *)
+  echo "OS OK: NO BYPASS REQUIRED"
+  ;;
+esac
+
 if [ -z "$JVM_MAX_HEAP" ]; then
     __heap="-Xmx256m"
 else 
