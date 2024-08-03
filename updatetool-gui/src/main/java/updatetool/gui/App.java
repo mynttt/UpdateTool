@@ -158,6 +158,9 @@ public class App extends Application {
         plexsqlcheckbox.selectedProperty().bindBidirectional(INSTANCE.getUsePlexNativeSql());
         autostartChecker.selectedProperty().bindBidirectional(INSTANCE.getAutostartOnOpen());
         
+        // Must always be enabled from now on!
+        plexsqlcheckbox.setSelected(true);
+        
         BooleanBinding p = javabinary.textProperty().isEmpty()
                 .or(Bindings.createBooleanBinding(() -> javabinary.getText().trim().isEmpty(), javabinary.textProperty()))
                 .or(plexFolder.textProperty().isEmpty())
@@ -198,7 +201,8 @@ public class App extends Application {
             });
         });
         
-        SERVICE.submit(() -> { 
+        SERVICE.submit(() -> {
+            runLater(() -> { if(!INSTANCE.getAutostartOnOpen().get()) { stage.toFront(); }});
             checkVersion();
             runLater(() -> parent.setDisable(false));
             runLater(() -> status.setText("Tool loaded."));
@@ -252,6 +256,11 @@ public class App extends Application {
             runLater(() -> log.appendText("Downloaded version: " + version + "\n"));
             runLater(() -> this.version.setText(version));
         }
+    }
+    
+    @FXML
+    void openBrowserForCorruptionUrl() throws Exception {
+        Desktop.getDesktop().browse(new URL("https://github.com/mynttt/UpdateTool/wiki/FAQ:-Database-Corruption-Issues").toURI());
     }
     
     @FXML

@@ -1,3 +1,8 @@
+## 1.9.0
+- Dump of ENV @ bootstrap to diagnose issues with wrongly configured systems in the future
+- Deprecate running SQLite writes without having the Plex SQLite Binary configured to prevent corruptions (if you use the docker this has no impact)
+- If you really want to run via JDBC you can set the environment variable `HACK_TO_BYPASS_THIS_ON_ARM_BUILDS` to any value to bypass this check.
+
 ## 1.8.2
 - `DONT_STRIP_OTHER_RATING_PROVIDERS` capability flag supplied to prevent the removal of other rating provider labels.
 This skips the background step behind `(Remove) Stripping useless badge data (RT, TMDB, TVDB) for: <ITEM>`

@@ -15,7 +15,7 @@ plugins {
     id 'eclipse'
 }
 
-version = '1.0.8'
+version = '1.0.9'
 sourceCompatibility = '11'
 
 def jfxVersion
@@ -63,6 +63,8 @@ if (currentOS.isWindows()) {
 dependencies {
     compile group: 'org.tinylog', name: 'tinylog-impl', version: '2.0.1'
     compile group: 'net.harawata', name: 'appdirs', version: '1.0.3'
+    compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.6.2'
+    
     
     implementation "org.openjfx:javafx-base:${jfxVersion}:${platform}"
     implementation "org.openjfx:javafx-controls:${jfxVersion}:${platform}"

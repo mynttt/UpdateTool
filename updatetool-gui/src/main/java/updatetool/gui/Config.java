@@ -74,10 +74,10 @@ public class Config implements Serializable {
         useTvdb = new SimpleBooleanProperty();
         ignoreMovies = new SimpleBooleanProperty();
         ignoreTv = new SimpleBooleanProperty();
-        usePlexNativeSql = new SimpleBooleanProperty();
+        usePlexNativeSql = new SimpleBooleanProperty(true);
         autostartOnOpen = new SimpleBooleanProperty();
         plexNativeSqlPath.addListener((o, oo, n) -> plexNativeSqlPathV = n.trim());
-        usePlexNativeSql.addListener((o, oo, n) -> usePlexNativeSqlV = n);
+        usePlexNativeSql.addListener((o, oo, n) -> usePlexNativeSqlV = true);
         capabilities.addListener((o, oo, n) -> capabilitiesV = n.trim());
         hours.addListener((o, oo, n) -> hoursV = n.trim());
         plexFolder.addListener((o, oo, n) -> plexFolderV = n.trim());
@@ -106,7 +106,7 @@ public class Config implements Serializable {
         ignoreMovies.set(ignoreMoviesV);
         ignoreTv.set(ignoreTvV);
         hours.set(hoursV);
-        usePlexNativeSql.set(usePlexNativeSqlV);
+        usePlexNativeSql.set(true);
         plexNativeSqlPath.set(plexNativeSqlPathV == null ? "" : plexNativeSqlPathV);
         capabilities.set(capabilitiesV == null ? "" : capabilitiesV);
         autostartOnOpen.set(autostartOnOpenV);
@@ -127,6 +127,7 @@ public class Config implements Serializable {
         plexNativeSqlPathV = "",
         capabilitiesV = "";
 
+    @SuppressWarnings("unused") // We can't remove it not to break configs
     private boolean  
         useTmdbV, 
         useTvdbV, 

@@ -65,6 +65,16 @@ public class ImdbDockerImplementation extends Implementation {
         String overrideDatabaseLocation = System.getenv("OVERRIDE_DATABASE_LOCATION");
         String executeUpdatesOverPlexSqliteVersion = System.getenv("USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS");
         
+        Logger.info("DUMP OF ENV_VARS: [{}]",System.getenv());
+        
+        if(executeUpdatesOverPlexSqliteVersion == null) {
+            if(System.getenv("HACK_TO_BYPASS_THIS_ON_ARM_BUILDS") == null) {
+                Logger.error("You have started UpdateTool without the environment variable USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS set to Plex's SQLite binary. Because of database corruption issues in the past it is no longer allowed to run UpdateTool that way.");
+                Logger.error("More information here: https://github.com/mynttt/UpdateTool/wiki/FAQ:-Database-Corruption-Issues");
+                System.exit(-1);
+            }
+        }
+        
         EnumSet<Capabilities> capabilities = CAPABILITIES;
         final List<Capabilities> parsed = new ArrayList<>();
 
