@@ -1,3 +1,9 @@
 #!/bin/bash
 # Preconditions: https://netfuture.ch/2020/05/multi-arch-docker-image-easy/
+
+# Big fuck up; no versioned docker images in the past lmao - use latest to push as in the past
 docker buildx build --progress plain --platform linux/amd64,linux/arm64/v8 --builder docker-multiarch --no-cache -t mynttt/updatetool:latest -f updatetool-docker/Dockerfile . --push
+
+# But now also create a tagged release for the future
+TAG=$(cat VERSION)
+docker buildx build --progress plain --platform linux/amd64,linux/arm64/v8 --builder docker-multiarch --no-cache -t "mynttt/updatetool:$TAG" -f updatetool-docker/Dockerfile . --push

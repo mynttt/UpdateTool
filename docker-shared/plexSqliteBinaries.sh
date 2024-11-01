@@ -1,6 +1,6 @@
 #!/bin/bash
 
-FLAVOR="1.40.4.8679-424562606"
+FLAVOR="1.41.1.9057-af5eaea7a"
 D_OS_ARCH=$(dpkg --print-architecture)
 echo "ARCH :: $D_OS_ARCH"
 
