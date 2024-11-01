@@ -1,3 +1,7 @@
+## 1.9.2
+- Log message improvement for items with no external Id's associated that makes fixing the match easier by giving the full context: `No external id associated with guid plex://episode/5d9c14e2e98e47001eba13c9 (..EPISODE_NAME.. <- ..SEASON_NAME.. <- ..SHOW_NAME..). Unable to process...`
+- Library processing messages now give more context for people who want to monitor the logs i.e. `[INFO ] - 2024-11-01 14:04:13 @ ImdbPipeline.transformMetadata: Transformed entries for 0 items(s) (Library=TV Shows).`
+
 ## 1.9.1
 - Changed code in `ImdbLibraryMetadata` that prevented resolving metadata for users with TV Shows when no TVDB API Key was present.
 - The recommended way to use this tool is still in combination with a TVDB & TMDB API Key.

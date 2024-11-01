@@ -39,11 +39,21 @@ public class ImdbDatabaseSupport {
     private final ImdbPipelineConfiguration config;
     private final boolean isNewExtraData;
     
+    public static class RequestedImdbMetadata {
+        public List<ImdbMetadataResult> results;
+        public Map<Integer, ImdbMetadataResult> mapping;
+
+        private RequestedImdbMetadata(List<ImdbMetadataResult> results, Map<Integer, ImdbMetadataResult> mapping) {
+            this.results = results;
+            this.mapping = mapping;
+        }
+    }
+
     public static class ImdbMetadataResult {
         //Id will be resolved in the pipeline and not here
           public String imdbId, extractedId;
           public String title, hash;
-          public Integer id, libraryId, index;
+          public Integer id, libraryId, index, parentId;
           public String extraData, guid;
           public Double rating, audienceRating;
           public boolean resolved;
@@ -52,7 +62,7 @@ public class ImdbDatabaseSupport {
           
           public ImdbMetadataResult() {};
           
-          private ImdbMetadataResult(ResultSet rs, LibraryType type) throws SQLException {
+          private ImdbMetadataResult(ResultSet rs, LibraryType type, Map<Integer, ImdbMetadataResult> tvHierarchicalContext) throws SQLException {
               this.type = type;
               id = rs.getInt(1);
               libraryId = rs.getInt(2);
@@ -66,6 +76,11 @@ public class ImdbDatabaseSupport {
               seriesType = guid.startsWith("plex://episode") ? NewAgentSeriesType.EPISODE 
                          : guid.startsWith("plex://season") ? NewAgentSeriesType.SEASON 
                          : guid.startsWith("plex://show") ? NewAgentSeriesType.SERIES : null;
+              parentId = rs.getInt(10);
+
+              if(seriesType == NewAgentSeriesType.SERIES || seriesType == NewAgentSeriesType.SEASON) {
+                tvHierarchicalContext.put(id, this);
+              }
           }
 
           @Override
@@ -172,25 +187,26 @@ public class ImdbDatabaseSupport {
         }
     }
 
-    public List<ImdbMetadataResult> requestEntries(long libraryId, LibraryType type) {
-        return requestMetadata("SELECT id, library_section_id, guid, title, extra_data, hash, rating, audience_rating, \"index\" from metadata_items WHERE media_item_count = 1 AND library_section_id = " + libraryId, type);
+    public RequestedImdbMetadata requestEntries(long libraryId, LibraryType type) {
+        return requestMetadata("SELECT id, library_section_id, guid, title, extra_data, hash, rating, audience_rating, \"index\", parent_id from metadata_items WHERE media_item_count = 1 AND library_section_id = " + libraryId, type);
     }
 
-    public List<ImdbMetadataResult> requestTvSeriesRoot(long libraryId) {
-        return requestMetadata("SELECT id, library_section_id, guid, title, extra_data, hash, rating, audience_rating, \"index\" from metadata_items WHERE media_item_count = 0 AND parent_id IS NULL AND library_section_id = " + libraryId, LibraryType.SERIES);
+    public RequestedImdbMetadata requestTvSeriesRoot(long libraryId) {
+        return requestMetadata("SELECT id, library_section_id, guid, title, extra_data, hash, rating, audience_rating, \"index\", parent_id from metadata_items WHERE media_item_count = 0 AND parent_id IS NULL AND library_section_id = " + libraryId, LibraryType.SERIES);
     }
     
-    public List<ImdbMetadataResult> requestTvSeasonRoot(long libraryId) {
-        return requestMetadata("SELECT id, library_section_id, guid, title, extra_data, hash, rating, audience_rating, \"index\" from metadata_items WHERE media_item_count = 0 AND parent_id NOT NULL AND library_section_id = " + libraryId, LibraryType.SERIES);
+    public RequestedImdbMetadata requestTvSeasonRoot(long libraryId) {
+        return requestMetadata("SELECT id, library_section_id, guid, title, extra_data, hash, rating, audience_rating, \"index\", parent_id from metadata_items WHERE media_item_count = 0 AND parent_id NOT NULL AND library_section_id = " + libraryId, LibraryType.SERIES);
     }
-    
-    private List<ImdbMetadataResult> requestMetadata(String query, LibraryType type) {
+
+    private RequestedImdbMetadata requestMetadata(String query, LibraryType type) {
         boolean persistMapping = false;
         
         try(var handle = provider.queryFor(query)){
             List<ImdbMetadataResult> list = new ArrayList<>();
+            Map<Integer, ImdbMetadataResult> mapping = new HashMap<>();
             while(handle.result().next()) {
-                var m = new ImdbMetadataResult(handle.result(), type);
+                var m = new ImdbMetadataResult(handle.result(), type, mapping);
                 if(updateNewAgentMetadataMapping(m)) {
                     persistMapping = true;
                 }
@@ -199,7 +215,7 @@ public class ImdbDatabaseSupport {
             
             if(persistMapping) { newAgentMapping.dump(); }
             
-            return list;
+            return new RequestedImdbMetadata(list, mapping);
         } catch (SQLException e) {
             throw Utility.rethrow(e);
         }
@@ -232,8 +248,6 @@ public class ImdbDatabaseSupport {
             if(returnV) {
                 Logger.info("Associated and cached {} with new movie/TV show agent guid {} ({}).", result, m.guid, m.title);
             }
-        } else {
-            Logger.warn("No external metadata provider id associated with this guid {} ({}). This item will not be processed any further.", m.guid, m.title);
         }
         
         return returnV;

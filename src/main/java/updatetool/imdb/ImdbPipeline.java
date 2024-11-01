@@ -111,7 +111,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         
         TmdbToImdbResolvement r1 = tmdbResolver == resolveDefault ? null : (TmdbToImdbResolvement) tmdbResolver;
         TvdbToImdbResolvement r2 = tvdbResolver == resolveDefault ? null : (TvdbToImdbResolvement) tvdbResolver;
-        var newAgentResolver = new NewPlexAgentToImdbResolvement(caches.get("new-agent-mapping"), r1, r2);
+        var newAgentResolver = new NewPlexAgentToImdbResolvement(caches.get("new-agent-mapping"), r1, r2, metadata);
         
         resolveMovies.put("IMDB", new ImdbResolvement());
         resolveMovies.put("TMDB", tmdbResolver);
@@ -169,7 +169,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         int resolvedSize = resolved.size();
         int itemsSize = items.size();
         
-        Logger.info("Filtered " + (itemsSize-resolvedSize) + " invalid item(s).");
+        Logger.info("Filtered " + (itemsSize-resolvedSize) + " invalid item(s) (Library=" + job.library + ").");
         job.stage = PipelineStage.ANALYSED_DB;
         job.items = new ArrayList<>(resolved);
     }
@@ -190,15 +190,15 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         var noUpdate = map.entrySet().stream().filter(Predicate.not(ImdbTransformer::needsUpdate)).collect(Collectors.toSet());
         
         if(!noUpdate.isEmpty()) {
-            Logger.info(noUpdate.size() + " item(s) need no update.");
+            Logger.info(noUpdate.size() + " item(s) need no update. (Library=" + job.library + ")");
             for(var item : noUpdate) {
                 map.remove(item.getKey());
                 job.items.remove(item.getKey());
             }
         }
-        Logger.info("Transforming " + map.size() + " item(s)");
+        Logger.info("Transforming " + map.size() + " item(s) (Library=" + job.library +")");
         map.entrySet().stream().forEach(ImdbTransformer::updateMetadata);
-        Logger.info("Transformed entries for " + map.size() + " items(s).");
+        Logger.info("Transformed entries for " + map.size() + " items(s) (Library=" + job.library + ").");
         
         Logger.info("Save point: Persisting caches to keep queried look-up data in case of crashes or hang-ups.");
         caches.forEach(KeyValueStore::dump);

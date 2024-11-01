@@ -8,17 +8,20 @@ import updatetool.common.DatabaseSupport.LibraryType;
 import updatetool.common.KeyValueStore;
 import updatetool.common.externalapis.AbstractApi.ApiVersion;
 import updatetool.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
+import updatetool.imdb.ImdbLibraryMetadata;
 import updatetool.imdb.ImdbUtility;
 
 public class NewPlexAgentToImdbResolvement implements AgentResolvementStrategy<ImdbMetadataResult> {
     private final KeyValueStore cache;
     private final TmdbToImdbResolvement fallbackTmdb;
     private final TvdbToImdbResolvement fallbackTvdb;
+    private final ImdbLibraryMetadata metadata;
     
-    public NewPlexAgentToImdbResolvement(KeyValueStore cache, TmdbToImdbResolvement fallbackTmdb, TvdbToImdbResolvement fallbackTvdb) {
+    public NewPlexAgentToImdbResolvement(KeyValueStore cache, TmdbToImdbResolvement fallbackTmdb, TvdbToImdbResolvement fallbackTvdb, ImdbLibraryMetadata metadata) {
         this.cache = cache;
         this.fallbackTmdb = fallbackTmdb;
         this.fallbackTvdb = fallbackTvdb;
+        this.metadata = metadata;
         
         if(fallbackTmdb == null)
             Logger.warn("No TMDB fallback set. Will not resolve new plex agent items if they only have a TMDB id associated.");
@@ -32,7 +35,7 @@ public class NewPlexAgentToImdbResolvement implements AgentResolvementStrategy<I
         String candidateTmp = cache.lookup(toResolve.guid);
 
         if(candidateTmp == null) {
-            Logger.error("No external id associated with guid {} ({}).", toResolve.guid, toResolve.title);
+            Logger.error("No external id associated with guid {} ({}). Unable to process...", toResolve.guid, metadata.getFullQualifiedName(toResolve));
             return false;
         }
         
@@ -51,7 +54,7 @@ public class NewPlexAgentToImdbResolvement implements AgentResolvementStrategy<I
         }
         
         if(isImdb + isTmdb + isTvdb == -3) {
-            Logger.warn("Unhandled external ID in ({} => {}) = ({}). Please contact the author of the tool if you want to diagnose this further.", toResolve.type, toResolve.title, candidateTmp);
+            Logger.warn("Unhandled external ID in ({} => {}) = ({}). Please contact the author of the tool if you want to diagnose this further.", toResolve.type, metadata.getFullQualifiedName(toResolve), candidateTmp);
             return false;
         }
         
