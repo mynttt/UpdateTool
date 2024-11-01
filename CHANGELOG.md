@@ -1,3 +1,7 @@
+## 1.9.1
+- Changed code in `ImdbLibraryMetadata` that prevented resolving metadata for users with TV Shows when no TVDB API Key was present.
+- The recommended way to use this tool is still in combination with a TVDB & TMDB API Key.
+
 ## 1.9.0
 - Dump of ENV @ bootstrap to diagnose issues with wrongly configured systems in the future
 - Deprecate running SQLite writes without having the Plex SQLite Binary configured to prevent corruptions (if you use the docker this has no impact)
