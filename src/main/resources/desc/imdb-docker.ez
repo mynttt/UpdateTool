@@ -35,6 +35,7 @@ meta {
              | (Optional) ON_DEMAND: Exit after running one time; ignoring the schedule every n hour(s) behavior.
              | (Optional) DONT_STRIP_OTHER_RATING_PROVIDERS: Keeps other metadata providers such as Rotten Tomatoes or The Movie DB when performing update operations with the database.
              | (Optional) IGNORE_TV_SHOW_EPISODES: Do not provide IMDB metadata for TV Show episodes.
+             | (Optional) DUMP_ENV_VARS_ON_STARTUP: Dump environment variables on startup for troubelshooting purposes.
              |
              | Parameters:
              |   - schedule = if present will schedule this task every n hour(s) : must be > 0 : default 12

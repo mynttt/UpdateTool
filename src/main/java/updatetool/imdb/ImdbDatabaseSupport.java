@@ -409,8 +409,8 @@ public class ImdbDatabaseSupport {
             }
             rs.close();
             
-            mitigationIcuNeeded = false; //storedSql.size() > 0;
-            // Logger.info("PlexDB ICU Mitigation enabled: {}", mitigationIcuNeeded);
+            mitigationIcuNeeded = storedSql.size() > 0;
+            Logger.info("PlexDB ICU Mitigation enabled: {}", mitigationIcuNeeded);
             
             if(mitigationIcuNeeded) {
                 Logger.info("=== DATABASE CORRUPTION MITIGATION ===");

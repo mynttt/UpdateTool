@@ -65,8 +65,6 @@ public class ImdbDockerImplementation extends Implementation {
         String overrideDatabaseLocation = System.getenv("OVERRIDE_DATABASE_LOCATION");
         String executeUpdatesOverPlexSqliteVersion = System.getenv("USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS");
         
-        Logger.info("DUMP OF ENV_VARS: [{}]",System.getenv());
-        
         if(executeUpdatesOverPlexSqliteVersion == null) {
             if(System.getenv("HACK_TO_BYPASS_THIS_ON_ARM_BUILDS") == null) {
                 Logger.error("You have started UpdateTool without the environment variable USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS set to Plex's SQLite binary. Because of database corruption issues in the past it is no longer allowed to run UpdateTool that way.");
@@ -100,6 +98,10 @@ public class ImdbDockerImplementation extends Implementation {
                     );
         } else {
             capabilities.removeAll(Capabilities.getUserFlags());
+        }
+        
+        if(capabilities.contains(Capabilities.DUMP_ENV_VARS_ON_STARTUP)) {
+            Logger.info("DUMP OF ENV_VARS: [{}]",System.getenv());
         }
 
         Objects.requireNonNull(data, "Environment variable PLEX_DATA_DIR is not set");
