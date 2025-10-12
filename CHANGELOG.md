@@ -1,3 +1,12 @@
+## 2.0.0
+- upgraded build system & codebase to Java 21 LTS in order to realize long term support of this tool
+- fixed OutOfMemory issues regarding IMDB data sets for users with low memory systems (i.e. <= 256Mi)
+- added capabilities `IGNORE_TV_SHOW_EPISODES` and `DUMP_ENV_VARS_ON_STARTUP` for configuration
+- added better output for unknown items; instead of only name + guid it now outputs the item id + library id so you can investigate the item in the database yourself
+
+For GUI users nothing should change besides that you will need to upgrade to Java 21+ in order to run the tool (running the binary with Java 11 will fail as that version is too old).
+- The existing GUI jar works on Java21+ without problems (verified on Windows).
+
 ## 1.9.2
 - Log message improvement for items with no external Id's associated that makes fixing the match easier by giving the full context: `No external id associated with guid plex://episode/5d9c14e2e98e47001eba13c9 (..EPISODE_NAME.. <- ..SEASON_NAME.. <- ..SHOW_NAME..). Unable to process...`
 - Library processing messages now give more context for people who want to monitor the logs i.e. `[INFO ] - 2024-11-01 14:04:13 @ ImdbPipeline.transformMetadata: Transformed entries for 0 items(s) (Library=TV Shows).`
