@@ -1,5 +1,7 @@
 ## 2.0.0
 - upgraded build system & codebase to Java 21 LTS in order to realize long term support of this tool
+  - Java 11 LTS is no longer supported - 21 will be supported for the next 2 1/2 years and upgrading to 25 LTS will be really simple now
+  - because of this changing the runtime requirements I'm bumping a major release here
 - fixed OutOfMemory issues regarding IMDB data sets for users with low memory systems (i.e. <= 256Mi)
 - added capabilities `IGNORE_TV_SHOW_EPISODES` and `DUMP_ENV_VARS_ON_STARTUP` for configuration
 - added better output for unknown items; instead of only name + guid it now outputs the item id + library id so you can investigate the item in the database yourself
