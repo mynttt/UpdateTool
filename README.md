@@ -12,22 +12,6 @@ A tool to update the IMDB ratings for Plex libraries that contain movies via the
 
 ## Important
 
-> [!NOTE]
-> If you receive rating updates for episodes but not for TV shows, you need a **TVDB API key**.
->
-> This occurs because the tool retrieves IMDb IDs for episodes directly from the database, but for TV shows it only finds TVDB IDs. These must be resolved into IMDb IDs via the TVDB API, which requires a valid key.
->
-> Without an API key, TV show ratings cannot be updated - you can [get a free TVDB API key through their points system](https://thetvdb.com/points).
-
-> [!TIP]
-> The **new Plex TV Show agent** is now the default for Plex libraries.  
->
-> This tool supports the new agent, but fallback support is limited — it currently only works with **TVDB v4** and not **TMDB v3**.  
->
-> To enable processing of libraries that use the new agent, you must explicitly opt in. Otherwise, those libraries will be skipped.  
->
-> Read more about how to opt in [here](#opt-in-for-libraries-using-the-new-tv-show-agent).
-
 > [!CAUTION]
 > While recent database issues have been resolved and the tool has proven stable for most users, it should still be used **with caution**.  
 >
@@ -44,6 +28,22 @@ A tool to update the IMDB ratings for Plex libraries that contain movies via the
 > The author assumes no responsibility for any potential damage to your Plex Media Server database.
 >
 > [Plex Official DB Repair Instructions](https://support.plex.tv/articles/repair-a-corrupted-database/) - [DBRepair Community Tool](https://github.com/ChuckPa/DBRepair)
+
+> [!NOTE]
+> If you receive rating updates for episodes but not for TV shows, you need a **TVDB API key**.
+>
+> This occurs because the tool retrieves IMDb IDs for episodes directly from the database, but for TV shows it only finds TVDB IDs. These must be resolved into IMDb IDs via the TVDB API, which requires a valid key.
+>
+> Without an API key, TV show ratings cannot be updated - you can [get a free TVDB API key through their points system](https://thetvdb.com/points).
+
+> [!TIP]
+> The **new Plex TV Show agent** is now the default for Plex libraries.  
+>
+> This tool supports the new agent, but fallback support is limited — it currently only works with **TVDB v4** and not **TMDB v3**.  
+>
+> To enable processing of libraries that use the new agent, you must explicitly opt in. Otherwise, those libraries will be skipped.  
+>
+> Read more about how to opt in [here](#opt-in-for-libraries-using-the-new-tv-show-agent).
 
 -----
 
@@ -104,11 +104,7 @@ Name | Description | Deprecation
 
 ## Docker on UnRaid
 
-There is a template repository available now: https://github.com/mynttt/unraid-templates
-
-You can add that repository under `Template repositories:` in the UnRaid Docker section, hit save and thus will be able to add UpdateTool via the `Add Container` button.
-
-A configuration skeleton will be added and you will have to set up the `Plex Media Server` directory and optionally your TVDB / TMDB API Keys in case you want to use TMBD / TVDB resolvement.
+~~There is a template repository available now: https://github.com/mynttt/unraid-templates~~ - No support for UnRaid atm - make sure to just run the docker image there.
 
 After completing the configuration steps, you can start the container. If it has errors, it will stop. The log in the config folder shows you what it does or why it crashed if that happens.
 
@@ -240,6 +236,8 @@ Flag | Description
 `PRINT_SQLITE_BINARY_EXECUTE_STATEMENTS`|Prints out the SQLite binary execute statements for diagnostic purposes
 `ON_DEMAND`|Quit after running once, ignoring the (n) hour scheduling
 `DONT_STRIP_OTHER_RATING_PROVIDERS`|Skips the step where rating labels provided by other providers such as TMDB/Rotten Tomatoes are removed
+`IGNORE_TV_SHOW_EPISODES`|Don't update ratings for TV Show episodes
+`DUMP_ENV_VARS_ON_STARTUP`|Dump environment variables on startup for debugging purposes
 
 Multiple flags can be supplied as a semicolon separated string.
 
@@ -271,7 +269,7 @@ OVERRIDE_DATABASE_LOCATION="/opt/myspecialpath/theplexdb"
 
 ### Technical Runtime requirements
 
-- Java >= 11
+- Java >= 21
 
 This tool supplies one mode at the moment:
 
@@ -306,7 +304,7 @@ java -jar UpdateTool-xxx.jar imdb-docker {schedule=5}
 
 ### GUI
 
-There is also a GUI to assist users that feel uncomfortable with the CLI way of interacting with the tool. It supports Windows, MacOS and Linux and only [requires the Java 11+ runtime](https://adoptium.net/) and can be downloaded [here](https://github.com/mynttt/UpdateTool/releases/tag/g1.0.9).
+There is also a GUI to assist users that feel uncomfortable with the CLI way of interacting with the tool. It supports Windows, MacOS and Linux and only [requires the Java 21+ runtime](https://adoptium.net/de/temurin/releases?version=21&os=any&arch=any) and can be downloaded [here](https://github.com/mynttt/UpdateTool/releases/tag/g1.0.9).
 
 ![](https://raw.githubusercontent.com/mynttt/UpdateTool/master/img/gui.PNG)
 
