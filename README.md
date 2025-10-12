@@ -12,25 +12,43 @@ A tool to update the IMDB ratings for Plex libraries that contain movies via the
 
 ## Important
 
-**If you get rating updates on your episodes but not on your TV Shows, you'll have to get access to a TVDB API key. This is because the tool finds IMDB IDs that are associated with the episodes in the database, but for the TV Shows it only finds TVDB IDs that have to be resolved into IMDB IDs by calling their API. Unless you have a key, this is not possible and means that no updates are processed for these items. [You can get a key for free by using their points system.](https://thetvdb.com/points)**
+> [!NOTE]
+> If you receive rating updates for episodes but not for TV shows, you need a **TVDB API key**.
+>
+> This occurs because the tool retrieves IMDb IDs for episodes directly from the database, but for TV shows it only finds TVDB IDs. These must be resolved into IMDb IDs via the TVDB API, which requires a valid key.
+>
+> Without an API key, TV show ratings cannot be updated - you can [get a free TVDB API key through their points system](https://thetvdb.com/points).
 
-**This tool works with the new Plex TV Show agent. The fallback support however is limited and only supports TVDB v4 and not TMDB v3 right now. This feature is a opt-in so please read [more here](#opt-in-for-libraries-using-the-new-tv-show-agent)! Else the libraries using the new Plex TV Show agent will not be processed by the tool!**
+> [!TIP]
+> The **new Plex TV Show agent** is now the default for Plex libraries.  
+>
+> This tool supports the new agent, but fallback support is limited — it currently only works with **TVDB v4** and not **TMDB v3**.  
+>
+> To enable processing of libraries that use the new agent, you must explicitly opt in. Otherwise, those libraries will be skipped.  
+>
+> Read more about how to opt in [here](#opt-in-for-libraries-using-the-new-tv-show-agent).
 
-[![](img/info.png)](https://support.plex.tv/articles/repair-a-corrupted-database/)
+> [!CAUTION]
+> While recent database issues have been resolved and the tool has proven stable for most users, it should still be used **with caution**.  
+>
+> Plex uses **SQLite**, which is not fully ACID-compliant and can become unstable when accessed concurrently by multiple processes.  
+>
+> While most users experience no issues, this setup can theoretically lead to database corruption — especially when the Plex database is stored on **NFS shares**.
+>
+> **Make sure you take backups of your database when initially testing out this tool on your setup!**
+>
+> Running this tool on a **desktop PC** or in a **shared Docker volume** is considered safe.
+>
+> However, functionality may break if the Plex database schema changes or if IMDb stops providing a public rating dataset. In such cases, the tool will safely stop execution without affecting your database.  
+>
+> The author assumes no responsibility for any potential damage to your Plex Media Server database.
+>
+> [Plex Official DB Repair Instructions](https://support.plex.tv/articles/repair-a-corrupted-database/) - [DBRepair Community Tool](https://github.com/ChuckPa/DBRepair)
 
 -----
 
-~**Make sure to set `USE_PLEX_SQLITE_BINARY_FOR_WRITE_ACCESS` to `true` in your docker configuration (or if using the GUI, set the path to the Plex SQLite binary) and use at least v1.6.0! Plex non-standard SQLite3 version diverged so strongly from vanilla SQLite3 that not using this feature can cause database corruptions in rare cases. Read more [in the environment variable guide](https://github.com/mynttt/UpdateTool#environment-variables-guide)!**~ => **This is now enforced via the docker instead of being an opt-in in order to protect users from accidental database corruptions. You can still opt-out by setting it to `false`.**
-
-**To run this without docker on Linux in a headless mode check out [this issue](https://github.com/mynttt/UpdateTool/issues/70)!**
-
-**While the DB issues are fixed now and using this tool is likely safe to use and never caused issues for myself and a large part of the user base it shall still be noted that this tool should be used with caution and that I'm not responsible for any damages within your PMS database. The database interaction of this tool is minimal and within the milliseconds realm and the queries are executed cleanly by using SQLite's transactions.**
-
-**This tool could in theory break if either the Plex database schema changes or IMDB stops providing a public rating dataset! This would not be dangerous tho as it stops when something goes wrong.**
-
-**If you want to run this on Windows without docker look [here](https://github.com/mynttt/UpdateTool/wiki/Installation-on-Windows)! There is also a GUI for the tool that is discussed [here](#GUI).**
-
-**TV Show updates are done by aired season / aired episode. If you use DVD order for some reason please create an issue and I will implement a flag for you to switch the tool between. Plex uses aired season / aired episode by default tho!**
+- to run this without docker on Linux in a headless mode check out [this issue](https://github.com/mynttt/UpdateTool/issues/70)
+- if you want to run this on Windows without docker look [here](https://github.com/mynttt/UpdateTool/wiki/Installation-on-Windows) - there is also a GUI for the tool that is discussed [here](#GUI).
 
 ## What does this do?
 
