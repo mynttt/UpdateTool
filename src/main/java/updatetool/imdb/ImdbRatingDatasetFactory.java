@@ -6,15 +6,16 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
 import org.tinylog.Logger;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import updatetool.Main;
 import updatetool.api.ExportedRating;
 import updatetool.common.Capabilities;
 import updatetool.common.Utility;
 import updatetool.exceptions.ImdbDatasetAcquireException;
+import updatetool.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
 
 public final class ImdbRatingDatasetFactory {
     public static final String SCRAPE_FAILED = "SCRAPE_FAILED";
@@ -77,17 +78,8 @@ public final class ImdbRatingDatasetFactory {
         }
         
     }
-    
-    public static class ImdbRatingDataset {
-        private HashMap<String, String> data = new HashMap<>();
 
-        public ExportedRating getRatingFor(String imdbId, String title, ImdbScraper scraper) {
-            String rating = data.get(imdbId);
-            return new ScreenScrapedRating(rating, imdbId, title, scraper);
-        }
-    }
-
-    public static ImdbRatingDataset requestSet() throws ImdbDatasetAcquireException {
+    public static void requestSet() throws ImdbDatasetAcquireException {
         try {
             long lastUpdate = lastUpdated();
             if(System.currentTimeMillis() - UPDATE_DATA_INTERVAL >= lastUpdate) {
@@ -105,9 +97,6 @@ public final class ImdbRatingDatasetFactory {
                 Logger.info("IMDB Dataset not found (./{}). Refreshing dataset...", RATING_SET);
                 fetchData();
             }
-            var data = new ImdbRatingDataset();
-            readData(data);
-            return data;
         } catch(Exception e) {
             throw new ImdbDatasetAcquireException("Failed to acquire imdb dataset!", e);
         }
@@ -151,20 +140,35 @@ public final class ImdbRatingDatasetFactory {
         Logger.info("Extraction completed.");
     }
     
-    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE")
-    private static void readData(ImdbRatingDataset target) {
-        Logger.info("Reading data...");
+    public static HashMap<ImdbMetadataResult, ExportedRating> loadFromDataset(List<ImdbMetadataResult> items, ImdbScraper scraper) {
+        var data = new HashMap<ImdbMetadataResult, ExportedRating>();
+        
+        var lookup = new HashMap<String, ImdbMetadataResult>();
+        items.forEach(i -> lookup.put(i.imdbId, i));
+        
+        // Stage 1: Process ITEMS that are for sure in the dataset
+        Logger.info("Reading data of IMDB Dataset via Buffer...");
         try(var reader = Files.newBufferedReader(Main.PWD.resolve(RATING_SET))) {
             reader.readLine(); //Skip header
             String s;
             while((s = reader.readLine()) != null) {
                 var split = s.split("\\s+");
-                target.data.put(split[0], split[1]);
+                var imdbId = split[0];
+                var rating = split[1];
+                
+                var candidate = lookup.remove(imdbId);
+                
+                if(candidate != null) {
+                    data.put(candidate, new ScreenScrapedRating(rating, imdbId, candidate.title, scraper));
+                }
             }
         } catch(IOException e) {
             throw Utility.rethrow(e);
         }
-        Logger.info("{} lines read.", target.data.size());
+        
+        // Stage 2: Prepare leftovers to be screenscraped if enabled
+        lookup.values().forEach(i -> data.put(i, new ScreenScrapedRating(null, i.imdbId, i.title, scraper)));
+
+        return data;
     }
-    
 }

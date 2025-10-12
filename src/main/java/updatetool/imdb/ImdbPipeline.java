@@ -35,7 +35,6 @@ import updatetool.common.externalapis.TvdbApiV4;
 import updatetool.exceptions.ApiCallFailedException;
 import updatetool.exceptions.DatabaseLockedException;
 import updatetool.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
-import updatetool.imdb.ImdbRatingDatasetFactory.ImdbRatingDataset;
 import updatetool.imdb.resolvement.DefaultResolvement;
 import updatetool.imdb.resolvement.ImdbResolvement;
 import updatetool.imdb.resolvement.NewPlexAgentToImdbResolvement;
@@ -60,7 +59,6 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
     private final ImdbScraper scraper;
     private final ImdbLibraryMetadata metadata;
     private final ExecutorService service;
-    private final ImdbRatingDataset dataset;
     private final ImdbPipelineConfiguration configuration;
     private final HashMap<String, AgentResolvementStrategy<ImdbMetadataResult>> resolveMovies = new HashMap<>(), resolveSeries = new HashMap<>();
     private final EnumMap<LibraryType, HashMap<String, AgentResolvementStrategy<ImdbMetadataResult>>> resolvers = new EnumMap<>(LibraryType.class);
@@ -95,11 +93,10 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
         }
     }
     
-    public ImdbPipeline(ImdbLibraryMetadata metadata, ExecutorService service, Map<String, KeyValueStore> caches, ImdbPipelineConfiguration configuration, ImdbRatingDataset dataset, ImdbScraper scraper) throws ApiCallFailedException {
+    public ImdbPipeline(ImdbLibraryMetadata metadata, ExecutorService service, Map<String, KeyValueStore> caches, ImdbPipelineConfiguration configuration ,ImdbScraper scraper) throws ApiCallFailedException {
         this.service = service;
         this.metadata = metadata;
         this.configuration = configuration;
-        this.dataset = dataset;
         this.scraper = scraper;
         this.caches = caches.values();
         
@@ -182,8 +179,7 @@ public class ImdbPipeline extends Pipeline<ImdbJob> {
 
     @Override
     public void transformMetadata(ImdbJob job) throws Exception {
-        var map = new HashMap<ImdbMetadataResult, ExportedRating>();
-        job.items.forEach(i -> map.put(i, dataset.getRatingFor(ImdbTransformer.clean(i.imdbId), i.title, scraper)));
+        var map = ImdbRatingDatasetFactory.loadFromDataset(job.items, scraper);
         
         // Threading not possible because of IMDB rate limit
         map.values().forEach(ExportedRating::ensureAvailability);
