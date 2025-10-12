@@ -132,7 +132,7 @@ public class HttpRunner<B, R, P> {
                 ex = e;
                 Logger.warn("{} : HTTP request failed or pipeline processing error ({}). [{}/{}] => {}",
                         identifier, e.getClass().getSimpleName(), i+1, maxTries, e.getMessage());
-                Logger.warn("{} : Dumping HTTP response => {} | Payload: {}", response, response.body());
+                Logger.warn("{} : Dumping HTTP response => {} | Payload: {}", response, response != null ? response.body() : null);
             }
         }
         

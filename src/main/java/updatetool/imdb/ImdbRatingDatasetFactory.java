@@ -1,8 +1,8 @@
 package updatetool.imdb;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
@@ -21,9 +21,10 @@ public final class ImdbRatingDatasetFactory {
     public static final String SCRAPE_DISABLED = "SCRAPE_DISABLED";
     
     private static URL urlExceptionHack() {
+        
         try {
-            return new URL("https://datasets.imdbws.com/title.ratings.tsv.gz");
-        } catch (MalformedURLException e) {
+            return URI.create("https://datasets.imdbws.com/title.ratings.tsv.gz").toURL();
+        } catch (Exception e) {
             throw Utility.rethrow(e);
         }
     }

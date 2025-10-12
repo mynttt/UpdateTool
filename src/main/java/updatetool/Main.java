@@ -77,6 +77,7 @@ public class Main {
             System.exit(-1);
         }
         
+        Logger.info("Java Version: {}", System.getProperty("java.version"));
         Logger.info("Running version: {}", VERSION);
         Logger.info("Args: {}", parsedArgs);
         

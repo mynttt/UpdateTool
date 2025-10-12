@@ -1,9 +1,13 @@
 package updatetool.imdb;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
+import org.tinylog.Logger;
+import updatetool.common.Capabilities;
 import updatetool.common.DatabaseSupport.Library;
+import updatetool.common.DatabaseSupport.LibraryType;
 import updatetool.common.DatabaseSupport.NewAgentSeriesType;
 import updatetool.imdb.ImdbDatabaseSupport.ImdbMetadataResult;
 import updatetool.imdb.ImdbPipeline.ImdbPipelineConfiguration;
@@ -14,14 +18,20 @@ public class ImdbLibraryMetadata {
     
     private ImdbLibraryMetadata() {}
 
-    public static ImdbLibraryMetadata fetchAll(List<Library> libraries, ImdbDatabaseSupport db, ImdbPipelineConfiguration configuration) {
+    public static ImdbLibraryMetadata fetchAll(List<Library> libraries, ImdbDatabaseSupport db, ImdbPipelineConfiguration configuration, EnumSet<Capabilities> capabilities) {
         var meta = new ImdbLibraryMetadata();
         for(var lib : libraries) {
             List<ImdbMetadataResult> list = new ArrayList<>(100);
-
-            var items = db.requestEntries(lib.id, lib.type);
-            list.addAll(items.results);
-            meta.mapping.putAll(items.mapping);
+            
+            var skipRequestEntries = lib.type == LibraryType.SERIES && capabilities.contains(Capabilities.IGNORE_TV_SHOW_EPISODES);
+            
+            if(skipRequestEntries) {
+                Logger.info("IGNORE_TV_SHOW_EPISODES set for TV Show library: {} ({}) - will not process TV Episodes.", lib.name, lib.id);
+            } else {
+                var items = db.requestEntries(lib.id, lib.type);
+                list.addAll(items.results);
+                meta.mapping.putAll(items.mapping);
+            }
 
             var seriesRoot = db.requestTvSeriesRoot(lib.id);
             list.addAll(seriesRoot.results);
@@ -33,6 +43,7 @@ public class ImdbLibraryMetadata {
 
             meta.metadata.put(lib.uuid, list);
         }
+        
         return meta;
     }
 

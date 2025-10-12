@@ -287,11 +287,16 @@ public class ImdbDatabaseSupport {
     private void internalBatchUpdateOverPlexSqliteBinary(List<ImdbMetadataResult> items, boolean isNewAgent, String plexSqliteBinaryPath) {
         
         Iterator<String> supplier = new Iterator<String>() {
-            boolean last = false;
+            boolean last = false, begin = false;
             int idx = 0;
             
             @Override
             public String next() {
+                if(!begin) {
+                    begin = true;
+                    return "BEGIN TRANSACTION;";
+                }
+                
                 if(idx++ < items.size()) {
                     var item = items.get(idx-1);
                     Double d = isNewAgent ? item.audienceRating : item.rating;
@@ -307,7 +312,7 @@ public class ImdbDatabaseSupport {
                             "UPDATE metadata_items SET rating = %s, extra_data = '%s' WHERE id = %s;%n", d, sanitize(item.extraData), item.id);
                 }
                 last = true;
-                return ".exit";
+                return "COMMIT;\n.exit";
             }
             
             @Override
@@ -404,8 +409,8 @@ public class ImdbDatabaseSupport {
             }
             rs.close();
             
-            mitigationIcuNeeded = storedSql.size() > 0;
-            Logger.info("PlexDB ICU Mitigation enabled: {}", mitigationIcuNeeded);
+            mitigationIcuNeeded = false; //storedSql.size() > 0;
+            // Logger.info("PlexDB ICU Mitigation enabled: {}", mitigationIcuNeeded);
             
             if(mitigationIcuNeeded) {
                 Logger.info("=== DATABASE CORRUPTION MITIGATION ===");
